@@ -1,0 +1,36 @@
+{
+    "name": "puzzlemi",
+    "version": "0.0.1",
+    "description": "PuzzleMI",
+    "main": "index.js",
+    "scripts": {
+        "start": "react-scripts-ts start",
+        "build": "react-scripts-ts build",
+        "test": "react-scripts-ts test --env=jsdom",
+        "eject": "react-scripts-ts eject"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/soney/puzzlemi.git"
+    },
+    "author": "",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/soney/puzzlemi/issues"
+    },
+    "homepage": "https://github.com/soney/puzzlemi#readme",
+    "dependencies": {
+        "create-react-app": "^1.5.2",
+        "sdb-ts": "^0.2.5",
+        "react": "^16.5.2",
+        "react-dom": "^16.5.2",
+        "react-scripts-ts": "2.17.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^23.3.2",
+        "@types/node": "^10.11.2",
+        "@types/react": "^16.4.14",
+        "@types/react-dom": "^16.0.8",
+        "typescript": "^3.1.1"
+    }
+}
