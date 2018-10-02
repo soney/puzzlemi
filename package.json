@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/soney/puzzlemi#readme",
   "dependencies": {
+    "@types/codemirror": "0.0.61",
     "@types/showdown": "^1.7.5",
     "bootstrap": "^4.1.3",
     "codemirror": "^5.40.2",

@@ -1,24 +1,25 @@
-import * as CodeMirror from 'codemirror';
 import * as React from "react";
 import * as showdown from 'showdown';
+import { IPMCodeChangeEvent, PMCode } from './PMCode';
 
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/markdown/markdown';
+export interface IPMProblemDescriptionChangedEvent {
+    value: string;
+}
 
 interface IPMProblemDescriptionProps {
     canEdit: boolean;
     description: string;
+    onChange?: (e: IPMProblemDescriptionChangedEvent) => void;
 };
 
 interface IPMProblemDescriptionState {
-    contents: string,
-    editing: boolean
+    contents: string;
+    editing: boolean;
 };
 
 export class PMProblemDescription extends React.Component<IPMProblemDescriptionProps, IPMProblemDescriptionState> {
     private converter: showdown.Converter = new showdown.Converter();
-    private textareaNode: HTMLTextAreaElement;
-    private codeMirror: CodeMirror;
+    private oldContents: string;
 
     constructor(props:IPMProblemDescriptionProps, state:IPMProblemDescriptionState) {
         super(props, state);
@@ -28,7 +29,11 @@ export class PMProblemDescription extends React.Component<IPMProblemDescriptionP
         };
     };
 
-    public componentDidMount():void {
+    public componentDidUpdate(prevProps: IPMProblemDescriptionProps):void {
+        const { description } = this.props;
+        if(description !== prevProps.description) {
+            this.setState({ contents: description });
+        }
     };
 
     public render():React.ReactNode {
@@ -36,11 +41,7 @@ export class PMProblemDescription extends React.Component<IPMProblemDescriptionP
             return <div>
                 <button className="btn btn-default btn-sm" onClick={this.cancelEditing}>Cancel</button>
                 <button className="btn btn-default btn-sm" onClick={this.doneEditing}>Done</button>
-                <textarea
-                    ref={this.textareaRef}
-                    defaultValue={this.props.description}
-                    autoComplete="off"
-                />
+                <PMCode value={this.state.contents} options={{lineNumbers: false, mode: 'markdown'}} onChange={this.updateContents} />
             </div>
         } else {
             return <div>
@@ -49,31 +50,29 @@ export class PMProblemDescription extends React.Component<IPMProblemDescriptionP
             </div>;
         }
     };
-    private textareaRef = (el: HTMLTextAreaElement): void => {
-        this.textareaNode = el;
-        if(el) {
-            this.codeMirror = CodeMirror.fromTextArea(this.textareaNode, {
-                lineNumbers: false,
-                mode: 'markdown'
-            });
-            this.codeMirror.setValue(this.state.contents);
-        }
+    private updateContents = (e: IPMCodeChangeEvent): void => {
+        this.setState({ contents: e.value });
     }
     private beginEditing = (): void => {
+        this.oldContents = this.state.contents;
         this.setState({ editing: true });
     };
     private doneEditing = (): void => {
-        this.codeMirror.toTextArea();
+        if(this.props.onChange) {
+            this.props.onChange({ value: this.state.contents });
+        }
         this.setState({
-            contents: this.codeMirror.getValue(),
             editing: false,
         });
+        delete this.oldContents;
     }
     private cancelEditing = (): void => {
-        this.codeMirror.toTextArea();
+        // this.codeMirror.toTextArea();
         this.setState({
-            editing: false,
+            contents: this.oldContents,
+            editing: false
         });
+        delete this.oldContents;
     }
     private getProblemDescriptionHTML(): {__html: string} {
         return { __html: this.converter.makeHtml(this.state.contents) };

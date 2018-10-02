@@ -1,9 +1,24 @@
 import * as React from "react";
 
+export interface IPMFileContentsChangedEvent {
+    name: string;
+    contents: string;
+}
+export interface IPMFileNameChangedEvent {
+    oldName: string;
+    name: string;
+}
+export interface IPMFileDeleteEvent {
+    name: string;
+}
+
 interface IPMFileProps {
-    filename: string,
-    contents: string,
-    canEdit: boolean
+    filename: string;
+    contents: string;
+    canEdit: boolean;
+    onNameChange?: (e: IPMFileNameChangedEvent) => void;
+    onContentsChange?: (e: IPMFileContentsChangedEvent) => void;
+    onDelete?: (e: IPMFileDeleteEvent) => void;
 };
 
 interface IPMFileState {
@@ -24,6 +39,17 @@ export class PMFile extends React.Component<IPMFileProps, IPMFileState> {
         };
     };
 
+    public componentDidUpdate(prevProps: IPMFileProps):void {
+        const { filename, contents } = this.props;
+        console.log(filename, prevProps.filename);
+        if(filename !== prevProps.filename) {
+            this.setState({ name: filename });
+        }
+        if(contents !== prevProps.contents) {
+            this.setState({ data: contents });
+        }
+    };
+
     public render():React.ReactNode {
         if(this.state.editing) {
             return <div>
@@ -34,19 +60,33 @@ export class PMFile extends React.Component<IPMFileProps, IPMFileState> {
             </div>
         } else {
             return <div>
-                <button className="btn btn-default btn-xs" onClick={this.beginEditing} style={{ display: this.props.canEdit ? '' : 'none' }}>Edit</button>
+                {this.props.canEdit && 
+                    <button className="btn btn-default btn-xs" onClick={this.beginEditing} style={{ display: this.props.canEdit ? '' : 'none' }}>Edit</button>}
+                {this.props.canEdit && 
+                    <button className="btn btn-default btn-xs" onClick={this.deleteFile} style={{ display: this.props.canEdit ? '' : 'none' }}>Delete</button>}
                 <strong>{this.state.name}:</strong>
                 {this.state.data}
             </div>;
         }
     };
 
+    private deleteFile = (): void => {
+        if(this.props.onDelete) {
+            this.props.onDelete({ name: this.state.name });
+        }
+    }
     private beginEditing = (): void => {
         this.oldData = this.state.data;
         this.oldName = this.state.name;
         this.setState({ editing: true });
     };
     private doneEditing = (): void => {
+        if(this.oldName !== this.state.name && this.props.onNameChange) {
+            this.props.onNameChange({ name: this.state.name, oldName: this.oldName });
+        }
+        if(this.oldData !== this.state.data && this.props.onContentsChange) {
+            this.props.onContentsChange({ name: this.state.name, contents: this.state.data });
+        }
         this.setState({ editing: false });
         delete this.oldData;
         delete this.oldName;

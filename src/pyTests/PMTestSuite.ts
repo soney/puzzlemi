@@ -49,8 +49,11 @@ export class PMTestSuite {
     public getTests(): PMAssertion[] {
         return this.assertions;
     }
-    public getLatestResult(assertion: PMAssertion): IPMTestResult | null {
-        const assertionIndex = this.assertions.indexOf(assertion);
+    public setAssertions(assertions: PMAssertion[]): void {
+        this.assertions = assertions;
+    }
+    public getLatestResult(assertionIndex: number): IPMTestResult | null {
+        // const assertionIndex = this.assertions.indexOf(assertion);
         if(assertionIndex >= 0) {
             if(this.testResults.length > assertionIndex) {
                 return this.testResults[assertionIndex];

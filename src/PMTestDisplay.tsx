@@ -1,12 +1,23 @@
 import * as React from "react";
 import * as showdown from 'showdown';
-import { PMAssertion } from "./pyTests/PMTest";
 import { IPMTestResult } from "./pyTests/PMTestSuite";
 
+export interface IPMTestDeleteEvent { }
+export interface IPMTestChangedEvent {
+    actual: string;
+    expected: string;
+    description: string;
+}
+
 interface IPMTestDisplayProps {
+    actual: string;
     canEdit: boolean;
+    description: string;
+    expected: string;
+    key: number;
+    onChange?: (e: IPMTestChangedEvent) => void;
+    onDelete?: (e: IPMTestDeleteEvent) => void;
     result: IPMTestResult | null;
-    test: PMAssertion;
 };
 
 interface IPMTestDisplayState {
@@ -17,16 +28,25 @@ interface IPMTestDisplayState {
 };
 
 export class PMTestDisplay extends React.Component<IPMTestDisplayProps, IPMTestDisplayState> {
+    private oldActual: string;
+    private oldExpected: string;
+    private oldDescription: string;
     private converter: showdown.Converter = new showdown.Converter();
     constructor(props:IPMTestDisplayProps, state:IPMTestDisplayState) {
         super(props, state);
-        const { test } = this.props;
         this.state = {
-            actual: test.getActualExpression(),
-            description: test.getDescription(),
+            actual: this.props.actual,
+            description: this.props.description,
             editing: false,
-            expected: test.getExpectedExpression()
+            expected: this.props.expected
         };
+    };
+
+    public componentDidUpdate(prevProps: IPMTestDisplayProps):void {
+        const { actual, description, expected } = this.props;
+        if(actual !== prevProps.actual) { this.setState({ actual }); }
+        if(description !== prevProps.description) { this.setState({ description }); }
+        if(expected !== prevProps.expected) { this.setState({ expected }); }
     };
 
     public render():React.ReactNode {
@@ -61,36 +81,47 @@ export class PMTestDisplay extends React.Component<IPMTestDisplayProps, IPMTestD
             return <div className={'test' + passed ? 'passed' : 'failed'}>
                 {ranMessage} <span dangerouslySetInnerHTML={this.getMessageHTML()} />
                 <button style={{ display: this.props.canEdit ? '' : 'none' }} className="btn btn-default btn-sm" onClick={this.beginEditing}>Edit</button>
+                <button style={{ display: this.props.canEdit ? '' : 'none' }} className="btn btn-default btn-sm" onClick={this.deleteTest}>Delete</button>
             </div>;
         }
     };
     private getMessageHTML(): {__html: string} {
-        return { __html: this.converter.makeHtml(this.props.test.getDescription()) };
+        return { __html: this.converter.makeHtml(this.state.description) };
+    }
+    private deleteTest = (): void => {
+        if(this.props.onDelete) {
+            this.props.onDelete({});
+        }
     }
     private beginEditing = (): void => {
+        this.oldActual = this.state.actual;
+        this.oldExpected = this.state.expected;
+        this.oldDescription = this.state.description;
         this.setState({ editing: true });
     }
     private doneEditing = (): void => {
-        const { test } = this.props;
+        if(this.props.onChange) {
+            this.props.onChange({
+                actual: this.state.actual,
+                description: this.state.description,
+                expected: this.state.expected,
+            })
+        }
         this.setState({ editing: false });
-        test.setDescription(this.state.description);
-        test.setActualExpression(this.state.actual);
-        test.setExpectedExpression(this.state.expected);
-        this.setState({
-            actual: test.getActualExpression(),
-            description: test.getDescription(),
-            editing: false,
-            expected: test.getExpectedExpression(),
-        });
+        delete this.oldActual;
+        delete this.oldDescription;
+        delete this.oldExpected;
     }
     private cancelEditing = (): void => {
-        const { test } = this.props;
         this.setState({
-            actual: test.getActualExpression(),
-            description: test.getDescription(),
+            actual: this.oldActual,
+            description: this.oldDescription,
             editing: false,
-            expected: test.getExpectedExpression(),
+            expected: this.oldExpected
         });
+        delete this.oldActual;
+        delete this.oldDescription;
+        delete this.oldExpected;
     }
     private onActualChanged = (e): void => {
         this.setState({ actual: e.target.value });
