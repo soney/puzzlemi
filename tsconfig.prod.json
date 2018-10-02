@@ -1,3 +1,11 @@
 {
-  "extends": "./tsconfig.json"
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": "/pm_web"
+    },
+    "basePath": "touchui",
+    "exclude": [
+        "node_modules",
+        "test/**/*"
+    ]
 }
