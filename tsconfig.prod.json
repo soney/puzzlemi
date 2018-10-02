@@ -3,7 +3,7 @@
     "compilerOptions": {
         "baseUrl": "/pm_web"
     },
-    "basePath": "touchui",
+    "basePath": "pm_web",
     "exclude": [
         "node_modules",
         "test/**/*"

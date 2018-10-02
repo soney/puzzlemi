@@ -18,7 +18,7 @@
   "bugs": {
     "url": "https://github.com/soney/puzzlemi/issues"
   },
-  "homepage": "https://github.com/soney/puzzlemi#readme",
+  "homepage": "/pm_web",
   "dependencies": {
     "@types/codemirror": "0.0.61",
     "@types/showdown": "^1.7.5",
