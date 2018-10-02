@@ -1,4 +1,8 @@
-import * as Sk from 'skulpt';
+// tslint:disable:ordered-imports
+// import * as Sk from 'skulpt';
+import '../skulpt/skulpt.min.js';
+import '../skulpt/skulpt-stdlib.js';
+declare var Sk;
 import { PMAssertEqual, PMAssertion } from './PMTest';
 
 interface ISkVal<E> {

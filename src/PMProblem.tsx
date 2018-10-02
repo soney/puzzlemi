@@ -1,8 +1,12 @@
+// tslint:disable:ordered-imports
 import * as CodeMirror from 'codemirror';
 import * as React from "react";
 import * as showdown from 'showdown';
-import * as Sk from 'skulpt';
 import { IPMTestSuiteResults, PMTestSuite } from './pyTests/PMTestSuite';
+import './skulpt/skulpt.min.js';
+import './skulpt/skulpt-stdlib.js';
+
+declare var Sk;
 
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/python/python';
@@ -27,7 +31,8 @@ interface IPMProblemState {
     problemDescription: string,
     testResults: IPMTestSuiteResults,
     runBefore: string,
-    runAfter: string
+    runAfter: string,
+    files: {[fname: string]: string}
 };
 
 export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState> {
@@ -37,7 +42,7 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
             mode: 'python'
         },
         rerunDelay: 1000,
-        value: `x = 1`
+        value: `f = open('hello.txt', 'w')\nf.write('hello world')`
     };
     private textareaNode: HTMLTextAreaElement;
     private codeMirror: CodeMirror;
@@ -51,6 +56,7 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
         super(props, state);
         this.state = {
             canRun: true,
+            files: {},
             hasError: false,
             output: '',
             problemDescription: ' do something with `x` and `y` and this code! **hello**!',
@@ -59,9 +65,17 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
             testResults: this.tests.getTestResults()
         };
 
-        Sk.pre = 'output';
-        Sk.python3 = true;
-        Sk.configure({ output: this.outf, read: builtinRead }); 
+        Sk.configure({
+            filewriter: this.writef,
+            inputfunTakesPrompt: true,
+            jsonpSites : ['https://itunes.apple.com'],
+            output: this.outf,
+            python3: true,
+            read: builtinRead
+        });
+        // Sk.pre = 'output';
+        // Sk.python3 = true;
+        // Sk.configure({ output: this.outf, read: builtinRead }); 
         // (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
     };
 
@@ -75,6 +89,11 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
             const { passed, message } = result;
             return <div key={i} className={'test' + passed ? 'passed' : 'failed'}>
                 {(passed ? 'Passed: ' : 'Failed: ') + message}
+            </div>;
+        });
+        const filesout: React.ReactNode[] = this.state.files.map((contents, fname) => {
+            return <div key={fname} className={'test' + passed ? 'passed' : 'failed'}>
+                hi
             </div>;
         });
         return <div className="container">
@@ -96,6 +115,7 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
                 </div>
                 <div className="col">
                     <div className='codeOutput'> {this.state.output} </div>
+                    <div className='files'> {filesout} </div>
                 </div>
             </div>
             <div className="row">
@@ -114,6 +134,10 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
         this.outputs.push(outValue);
         this.setState({ output: this.outputs.join('') });
     };
+    private writef = (bytes: string, name: string, pos: number): void => {
+        this.state.files[name] = bytes;
+        this.setState({ files: this.state.files });
+    };
 
     private saveAndRun = (): void => {
         document['currentDiv'] = () => this.testsDiv;
@@ -127,6 +151,7 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
             return Sk.importMainWithBody("<stdin>", false, `${code}\n${testsStr}`, true);
         });
         myPromise.then((mod) => {
+            console.log(mod);
             // console.log('success');
         }, (err) => {
             const errString = err.toString();

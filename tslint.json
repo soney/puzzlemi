@@ -11,6 +11,8 @@
     "rules": {
         "no-console": false,
         "no-debugger": false,
+        "no-empty-interface": false,
+        "no-empty": false,
         "no-string-literal": false,
         "max-classes-per-file": false
     }
