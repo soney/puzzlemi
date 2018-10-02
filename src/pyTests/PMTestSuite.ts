@@ -3,7 +3,7 @@
 import '../skulpt/skulpt.min.js';
 import '../skulpt/skulpt-stdlib.js';
 declare var Sk;
-import { PMAssertEqual, PMAssertion } from './PMTest';
+import { PMAssertion } from './PMTest';
 
 interface ISkVal<E> {
     v: E
@@ -30,9 +30,9 @@ export class PMTestSuite {
     private testResults: IPMTestResult[] = [];
     private assertions: PMAssertion[] = [];
     private oldAppendTestResult: any;
-    public constructor() {
-        this.assertions.push(new PMAssertEqual('x', '1', '"x is 1"'));
-        this.assertions.push(new PMAssertEqual('x', '2', '"x is 2"'));
+    public constructor() { }
+    public addTest(assertion: PMAssertion): void {
+        this.assertions.push(assertion);
     }
     public onBeforeRunningTests(): void {
         this.testResults = [];
@@ -45,6 +45,18 @@ export class PMTestSuite {
     }
     public getTestResults(): IPMTestSuiteResults {
         return { passedAll: this.testResults.every((r) => r.passed), results: this.testResults };
+    }
+    public getTests(): PMAssertion[] {
+        return this.assertions;
+    }
+    public getLatestResult(assertion: PMAssertion): IPMTestResult | null {
+        const assertionIndex = this.assertions.indexOf(assertion);
+        if(assertionIndex >= 0) {
+            if(this.testResults.length > assertionIndex) {
+                return this.testResults[assertionIndex];
+            }
+        }
+        return null;
     }
     public getString(): string {
         const spaces = '        ';
@@ -78,8 +90,10 @@ PMTestCase().main()
 `;
     }
     private appendTestResult = (result: ISkVal<any>, actual: ISkVal<any>, expected: ISkVal<any>, param: ISkVal<string>): void => {
-        const passed = Sk.ffi.remapToJs(result);
-        const message = Sk.ffi.remapToJs(param);
+        const res = Sk.ffi.remapToJs(result);
+        const message: string = Sk.ffi.remapToJs(param);
+        const passed: boolean = res === 'Error' ? false : !!res;
+
         this.testResults.push({ passed, message });
     }
 }
