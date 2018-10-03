@@ -2,7 +2,10 @@
 import * as React from 'react';
 import { SDBClient, SDBDoc } from 'sdb-ts';
 import './App.css';
-import { IPMDescriptionChangeEvent, IPMTestAddedEvent, PMProblem } from './PMProblem';
+import { IPMCodeChangeEvent } from './PMCode';
+import { IPMFileContentsChangedEvent, IPMFileDeleteEvent, IPMFileNameChangedEvent } from './PMFile';
+import { IPMDescriptionChangeEvent, IPMFileAddedEvent,  IPMTestAddedEvent, PMProblem } from './PMProblem';
+import { IPMTestChangedEvent, IPMTestDeleteEvent } from './PMTestDisplay';
 
 export interface ITest {
     actual: string;
@@ -21,8 +24,8 @@ export interface IFileList {
 
 export interface IProblem {
     afterCode: string;
-    code: string;
     description: string;
+    givenCode: string;
     tests: TestList;
     files: IFileList;
 };
@@ -40,12 +43,15 @@ export interface IPuzzleSet {
     problems: IProblem[]
 }
 
+let mainApp: App;
 export class App extends React.Component<IPMApplicationProps, IPMApplicationState> {
-    private ws: WebSocket = new WebSocket(`ws://localhost:8000`);
+    // private ws: WebSocket = new WebSocket(`ws://localhost:8000`);
+    private ws: WebSocket = new WebSocket(`ws://${window.location.host}`);
     private sdbClient: SDBClient = new SDBClient(this.ws);
     private sdbDoc: SDBDoc<IPuzzleSet>;
     public constructor(props:IPMApplicationProps, state:IPMApplicationState) {
         super(props, state);
+        mainApp = this;
         this.state = {
             isAdmin: !!this.props.isAdmin,
             problems: []
@@ -63,30 +69,8 @@ export class App extends React.Component<IPMApplicationProps, IPMApplicationStat
                     const { p } = op;
                     const relPath = SDBDoc.relative(['problems'], p);
                     if(relPath) {
-                        if(relPath.length === 1) {
-                            // const index: number = relPath[0] as number;
-                            // const { ld, li } = op;
-
-                            const data = this.sdbDoc.getData();
-                            // console.log(data);
-                            // if(li) {
-                            //     this.state.problems.splice(index, 0, li);
-                            //     this.setState({ problems: data.problems });
-                            // } else if(ld) {
-                            //     this.state.problems.splice(index, 1);
-                            //     this.setState({ problems: data.problems });
-                            // }
-                            this.setState({ problems: data.problems });
-                            // console.log(data.problems);
-                        } else if(relPath.length === 2) {
-                            // const [index, field] = relPath;
-                            // if(field === 'description') {
-
-                            // }
-                            const data = this.sdbDoc.getData();
-                            this.setState({ problems: data.problems });
-                        }
-                        console.log(relPath);
+                        const data = this.sdbDoc.getData();
+                        this.setState({ problems: data.problems });
                     }
                 });
             }
@@ -95,31 +79,79 @@ export class App extends React.Component<IPMApplicationProps, IPMApplicationStat
     public render(): React.ReactNode {
         const problemDisplays = this.state.problems.map((p, i) => {
             return <div key={i}>
-                <button className="btn btn-default" onClick={this.deleteProblem.bind(this, i)}>Delete</button>
                 <PMProblem
                     afterCode={p.afterCode}
-                    code={p.code}
+                    givenCode={p.givenCode}
                     files={p.files}
                     description={p.description}
                     tests={p.tests}
+                    isAdmin={this.state.isAdmin}
                     onDescriptionChange={this.onDescriptionChange.bind(this, i)}
                     onTestAdded={this.onTestAdded.bind(this, i)}
-                    isAdmin={this.state.isAdmin}
+                    onTestChange={this.onTestChange.bind(this, i)}
+                    onTestDeleted={this.onTestDeleted.bind(this, i)}
+                    onGivenCodeChange={this.onGivenCodeChange.bind(this, i)}
+                    onAfterCodeChange={this.onAfterCodeChange.bind(this, i)}
+                    onFileAdded={this.onFileAdded.bind(this, i)}
+                    onFileNameChange={this.onFileNameChange.bind(this, i)}
+                    onFileContentsChange={this.onFileContentsChange.bind(this, i)}
+                    onFileDelete={this.onFileDelete.bind(this, i)}
+                    onDelete={this.deleteProblem.bind(this, i)}
                 />
             </div>;
         });
         return <div>
             {problemDisplays}
-            {this.state.isAdmin && <button className="btn btn-default btn-block" onClick={this.addProblem}>+ Problem</button> }
+            {
+                this.state.isAdmin &&
+                <div className="container">
+                    <button className="btn btn-outline-success btn-sm btn-block" onClick={this.addProblem}>+ Problem</button>
+                </div>
+            }
         </div>;
     }
     private onDescriptionChange = (i: number, event: IPMDescriptionChangeEvent): void => {
         const { description } = event;
         this.sdbDoc.submitObjectReplaceOp(['problems', i, 'description'], description);
     }
-    private onTestAdded = (i: number, event: IPMTestAddedEvent): void => {
-        const { test, index } = event;
+    private onTestAdded = (i: number, index: number, event: IPMTestAddedEvent): void => {
+        const { test } = event;
         this.sdbDoc.submitListInsertOp(['problems', i, 'tests', index], test);
+    }
+    private onTestChange = (i: number, index: number, event: IPMTestChangedEvent): void => {
+        const { actual, description, expected } = event;
+        this.sdbDoc.submitListReplaceOp(['problems', i, 'tests', index], { actual, description, expected });
+    }
+    private onTestDeleted = (i: number, index: number, event: IPMTestDeleteEvent): void => {
+        this.sdbDoc.submitListDeleteOp(['problems', i, 'tests', index]);
+    }
+    private onGivenCodeChange = (i: number, event: IPMCodeChangeEvent): void => {
+        const { value } = event;
+        this.sdbDoc.submitObjectReplaceOp(['problems', i, 'givenCode'], value);
+    }
+    private onAfterCodeChange = (i: number, event: IPMCodeChangeEvent): void => {
+        const { value } = event;
+        this.sdbDoc.submitObjectReplaceOp(['problems', i, 'afterCode'], value);
+    }
+    private onFileAdded = (i: number, event: IPMFileAddedEvent): void => {
+        const { file, filename } = event;
+        this.sdbDoc.submitObjectInsertOp(['problems', i, 'files', filename], file);
+    }
+    private onFileNameChange = (i: number, event: IPMFileNameChangedEvent): void => {
+        const { oldName, name } = event;
+        const oldP = ['problems', i, 'files', oldName];
+        const newP = ['problems', i, 'files', name];
+        const prevValue = this.sdbDoc.traverse(oldP);
+        this.sdbDoc.submitObjectDeleteOp(oldP);
+        this.sdbDoc.submitObjectInsertOp(newP, prevValue);
+    }
+    private onFileContentsChange = (i: number, event: IPMFileContentsChangedEvent): void => {
+        const { name, contents } = event;
+        this.sdbDoc.submitObjectReplaceOp(['problems', i, 'files', name, 'contents'], contents);
+    }
+    private onFileDelete = (i: number, event: IPMFileDeleteEvent): void => {
+        const { name } = event;
+        this.sdbDoc.submitObjectDeleteOp(['problems', i, 'files', name]);
     }
     private addProblem = (): void => {
         this.sdbDoc.submitListPushOp(['problems'], {
@@ -138,3 +170,7 @@ export class App extends React.Component<IPMApplicationProps, IPMApplicationStat
         // this.setState({ problems: this.state.problems });
     };
 }
+
+window['su'] = () => {
+    mainApp.setState({ isAdmin: true});
+};

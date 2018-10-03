@@ -1,28 +1,61 @@
-.App {
-  text-align: center;
+.problem {
+    margin-top: 35px;
+    margin-bottom: 35px;
+    border: 1px solid #EEE;
+    padding-top: 20px;
+    padding-bototm: 20px;
+}
+.problem.passedAll {
+    background-color: #f6fdf7;
+    border: 1px solid #c3e6cb;
+}
+.CodeMirror {
+    border: 1px solid #EEE;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+.codeOutput {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: auto;
+    max-height: 500px;
+    text-indent: 0px;
+    padding: 10px;
 }
 
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
+.codeOutput.no-error {
+    border: 1px solid #EEE;
 }
 
-.App-title {
-  font-size: 1.5em;
+.test p {
+    margin: 0px;
 }
 
-.App-intro {
-  font-size: large;
+.file {
+    margin-top: 15px;
+    margin-bottom: 15px;
 }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.file .fileInfo, .file .fileData{
+    font-size: 0.8em;
+    font-family: 'Courier New', Courier, monospace;
+}
+.file .fileInfo {
+    font-weight: bold;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+.file .fileData {
+    white-space: pre-line;
+    word-wrap: break-word;
+    overflow: auto;
+    max-height: 300px;
+    border: 1px solid #EEE;
+    padding: 10px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+.fileData textarea {
+    width: 100%;
 }

@@ -17,12 +17,14 @@ export interface IPMDescriptionChangeEvent {
     description: string;
 }
 export interface IPMTestAddedEvent {
-    index: number;
     test: ITest;
 }
 export interface IPMFileAddedEvent {
     filename: string;
     file: IFile;
+}
+export interface IPMProblemDeleteEvent {
+
 }
 export interface IPMTest {
     index: number;
@@ -31,34 +33,38 @@ export interface IPMTest {
 
 interface IPMProblemProps {
     afterCode: string;
-    code: string;
+    givenCode: string;
     description: string;
     isAdmin: boolean;
     rerunDelay?: number;
     tests: TestList;
     files: IFileList;
     onDescriptionChange?: (event: IPMDescriptionChangeEvent) => void;
-    onTestAdded?: (event: IPMTestAddedEvent) => void;
-    onTestChange?: (event: IPMTestChangedEvent) => void;
-    onTestDeleted?: (event: IPMTestDeleteEvent) => void;
+    onTestAdded?: (i: number, event: IPMTestAddedEvent) => void;
+    onTestChange?: (i: number, event: IPMTestChangedEvent) => void;
+    onTestDeleted?: (i: number, event: IPMTestDeleteEvent) => void;
+    onGivenCodeChange?: (event: IPMCodeChangeEvent) => void;
     onCodeChange?: (event: IPMCodeChangeEvent) => void;
     onAfterCodeChange?: (event: IPMCodeChangeEvent) => void;
     onFileAdded?: (event: IPMFileAddedEvent) => void;
     onFileNameChange?: (event: IPMFileNameChangedEvent) => void;
     onFileContentsChange?: (event: IPMFileContentsChangedEvent) => void;
     onFileDelete?: (event: IPMFileDeleteEvent) => void;
+    onDelete?: (event: IPMProblemDeleteEvent) => void;
 };
 
 interface IPMProblemState {
+    afterCode: string;
     code: string;
-    codeAfter: string;
+    givenCode: string;
     hasError: boolean;
     output: string;
-    problemDescription: string;
+    description: string;
     canRun: boolean;
     isAdmin: boolean;
     tests: TestList;
     files: IFileList;
+    passedAll: boolean;
 };
 
 export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState> {
@@ -74,24 +80,23 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
     constructor(props:IPMProblemProps, state:IPMProblemState) {
         super(props, state);
         this.state = {
+            afterCode: '',
             canRun: true,
-            code: this.props.code,
-            codeAfter: '',
+            code: this.props.givenCode,
+            description: this.props.description,
             files: this.props.files,
+            givenCode: this.props.givenCode,
             hasError: false,
             isAdmin: !!this.props.isAdmin,
             output: '',
-            problemDescription: this.props.description,
+            passedAll: false,
             tests: this.props.tests
         };
 
         Sk.configure({
-            filewriter: this.writef,
             inputfunTakesPrompt: true,
             jsonpSites : ['https://itunes.apple.com'],
-            output: this.outf,
             python3: true,
-            read: this.readf
         });
         // Sk.pre = 'output';
         // Sk.python3 = true;
@@ -100,12 +105,15 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
     };
 
     public componentDidUpdate(prevProps: IPMProblemProps):void {
-        const { description, tests } = this.props;
-        if(description !== prevProps.description) {
-            this.setState({ problemDescription: description as string });
-        }
-        if(tests !== prevProps.tests) {
-            this.setState({ tests });
+        const newState = {};
+        ['afterCode', 'givenCode', 'description', 'tests', 'files', 'isAdmin'].forEach((prop: string) => {
+            if(this.props[prop] !== prevProps[prop]) {
+                newState[prop] = this.props[prop];
+            }
+        });
+        if(Object.keys(newState).length > 0) {
+            newState['passedAll'] = false;
+            this.setState(newState);
         }
     };
 
@@ -119,63 +127,78 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
             const { contents, createdByWrite } = this.state.files[fname];
             return <PMFile onContentsChange={this.onFileContentsChange} onNameChange={this.onFileNameChange} onDelete={this.onFileDelete} key={fname} canEdit={this.state.isAdmin || createdByWrite} filename={fname} contents={contents} />;
         });
-        return <div className="container">
-            <div className="row">
-                <PMProblemDescription canEdit={this.state.isAdmin} description={this.state.problemDescription} onChange={this.onDescriptionChange} />
-            </div>
-            <div className="row">
-                <div className="col">
-                    <button disabled={!this.state.canRun} className='btn btn-success' onClick={this.saveAndRun}>Save &amp; Run</button>
-                </div>
-            </div>
-            <div className="row">
-                <div className="col">
-                    <PMCode onChange={this.onCodeChange} value={this.state.code} />
-                    <div style={{ display: this.state.isAdmin ? '' : 'none' }}>
-                        <PMCode onChange={this.onAfterCodeChange} value={this.state.codeAfter} />
+        const hasFiles = Object.keys(this.state.files).length > 0;
+        return <div className={'problem container' + (this.state.passedAll ? ' passedAll' : '')}>
+            {
+                this.state.isAdmin &&
+                <div className="row">
+                    <div className="col">
+                        <button className="btn btn-block btn-sm btn-outline-danger" onClick={this.deleteProblem}>Delete Problem</button>
                     </div>
                 </div>
+            }
+
+            <div className="row">
+                <PMProblemDescription canEdit={this.state.isAdmin} description={this.state.description} onChange={this.onDescriptionChange} />
+            </div>
+            <div className="row">
                 <div className="col">
-                    <div className='codeOutput'> {this.state.output} </div>
+                    { this.state.isAdmin && <PMCode onChange={this.onGivenCodeChange} value={this.state.givenCode} /> }
+                    { this.state.isAdmin && <PMCode onChange={this.onAfterCodeChange} value={this.state.afterCode} /> }
+                    { !this.state.isAdmin && <PMCode onChange={this.onCodeChange} value={this.state.givenCode} /> }
+                    {!this.state.isAdmin && <button disabled={!this.state.canRun} className='btn btn-outline-success btn-sm btn-block' onClick={this.saveAndRun}>Run</button> }
+                </div>
+                <div className="col">
+                    <div className={'codeOutput' + (this.state.hasError ? ' alert alert-danger' : ' no-error')}>{this.state.output}</div>
+                    { hasFiles && <hr /> }
                     <div className='files'>
+                        {hasFiles && <h4>Files:</h4>}
                         {filesout}
-                        {this.state.isAdmin && <button className="btn btn-default btn-block" onClick={this.addFile}>+ File</button> }
+                        {this.state.isAdmin && <button className="btn btn-outline-success btn-sm btn-block" onClick={this.addFile}>+ File</button> }
                     </div>
                 </div>
             </div>
+            <hr />
             <div className="row">
                 <div className="col">
+                    <h4>Tests:</h4>
                     {tests}
-                    {this.state.isAdmin && <button className="btn btn-default btn-block" onClick={this.addTest}>+ Test</button> }
+                    {this.state.isAdmin && <button className="btn btn-outline-success btn-sm btn-block" onClick={this.addTest}>+ Test</button> }
                 </div>
             </div>
         </div>
     };
 
     private onTestChange = (i: number, e: IPMTestChangedEvent): void => {
-        const {actual, description, expected}  = e;
-        this.state.tests[i].actual = actual;
-        this.state.tests[i].description = description;
-        this.state.tests[i].expected = expected;
-        this.setState({ tests: this.state.tests });
+        // const {actual, description, expected}  = e;
+        // this.state.tests[i].actual = actual;
+        // this.state.tests[i].description = description;
+        // this.state.tests[i].expected = expected;
+        // this.setState({ tests: this.state.tests });
         if(this.props.onTestChange) {
-            this.props.onTestChange(e);
+            this.props.onTestChange(i, e);
         }
     };
 
     private onTestDelete = (i: number, e: IPMTestDeleteEvent): void => {
-        this.state.tests.splice(i, 1);
-        this.setState({ tests: this.state.tests });
+        // this.state.tests.splice(i, 1);
+        // this.setState({ tests: this.state.tests });
         if(this.props.onTestDeleted) {
-            this.props.onTestDeleted(e);
+            this.props.onTestDeleted(i, e);
         }
     };
 
     private onDescriptionChange = (e: IPMProblemDescriptionChangedEvent): void => {
         const { value } = e;
-        this.setState({ problemDescription: value });
+        // this.setState({ problemDescription: value });
         if(this.props.onDescriptionChange) {
             this.props.onDescriptionChange({ description: value });
+        }
+    }
+    private onGivenCodeChange = (e: IPMCodeChangeEvent): void => {
+        // this.setState({ code: e.value });
+        if(this.props.onGivenCodeChange) {
+            this.props.onGivenCodeChange(e);
         }
     }
     private onCodeChange = (e: IPMCodeChangeEvent): void => {
@@ -185,31 +208,46 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
         }
     }
     private onAfterCodeChange = (e: IPMCodeChangeEvent): void => {
-        this.setState({ codeAfter: e.value });
+        // this.setState({ codeAfter: e.value });
         if(this.props.onAfterCodeChange) {
             this.props.onAfterCodeChange(e);
         }
     }
     private onFileContentsChange = (e: IPMFileContentsChangedEvent): void => {
-        const { name, contents } = e;
-        this.state.files[name].contents = contents;
-        this.setState({ files: this.state.files });
-        if(this.props.onFileContentsChange) {
-            this.props.onFileContentsChange(e);
+        if(this.state.isAdmin) {
+            if(this.props.onFileContentsChange) {
+                this.props.onFileContentsChange(e);
+            }
+        } else {
+            const { name, contents } = e;
+            this.state.files[name].contents = contents;
+            this.setState({ files: this.state.files });
         }
     }
     private onFileNameChange = (e: IPMFileNameChangedEvent): void => {
-        const {oldName, name} = e;
-        if(!this.state.files.hasOwnProperty(name)) {
-            this.state.files[name] = this.state.files[oldName];
-            delete this.state.files[oldName];
+        if(this.state.isAdmin) {
+            if(this.props.onFileNameChange) {
+                this.props.onFileNameChange(e);
+            }
+        } else {
+            const {oldName, name} = e;
+            if(!this.state.files.hasOwnProperty(name)) {
+                this.state.files[name] = this.state.files[oldName];
+                delete this.state.files[oldName];
+            }
+            this.setState({ files: this.state.files });
         }
-        this.setState({ files: this.state.files });
     }
     private onFileDelete = (e: IPMFileDeleteEvent): void => {
-        const {name} = e;
-        delete this.state.files[name];
-        this.setState({ files: this.state.files });
+        if(this.state.isAdmin) {
+            if(this.props.onFileDelete) {
+                this.props.onFileDelete(e);
+            }
+        } else {
+            const {name} = e;
+            delete this.state.files[name];
+            this.setState({ files: this.state.files });
+        }
     }
 
     private outf = (outValue: string): void => {
@@ -238,21 +276,27 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
         this.startRerunTimer();
         this.outputs = [];
         this.setState({ hasError: true, output: '' });
-        const code = this.state.code;
-        const afterCode = this.state.codeAfter;
-        const assertions: PMAssertion[] = this.state.tests.map((t) => new PMAssertEqual(t.actual, t.expected, t.description));
+        const { code, afterCode, tests } = this.state;
+        const assertions: PMAssertion[] = tests.map((t) => new PMAssertEqual(t.actual, t.expected, t.description));
         this.testSuite.setAssertions(assertions);
         const testsStr = this.testSuite.getString();
         this.testSuite.onBeforeRunningTests();
+        Sk.configure({
+            filewriter: this.writef,
+            output: this.outf,
+            read: this.readf
+        });
         const myPromise = Sk.misceval.asyncToPromise(() => {
             return Sk.importMainWithBody("<stdin>", false, `${code}\n${afterCode}\n${testsStr}`, true);
         });
         myPromise.then((result) => {
+            const { passedAll } = this.testSuite.getTestResults();
+            this.setState({ hasError: false, passedAll });
             console.log('success', result);
         }, (err) => {
             const errString = err.toString();
             this.outputs.push(errString);
-            this.setState({ hasError: true, output: this.outputs.join('') });
+            this.setState({ passedAll: false, hasError: true, output: this.outputs.join('') });
             console.error(err);
         }).finally(() => {
             this.testSuite.onAfterRanTests();
@@ -279,8 +323,8 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
             i++;
         }
         const file = {contents: '', createdByWrite: false};
-        this.state.files[filename] = file;
-        this.setState({ files: this.state.files });
+        // this.state.files[filename] = file;
+        // this.setState({ files: this.state.files });
         if(this.props.onFileAdded) {
             this.props.onFileAdded({ file, filename });
         }
@@ -291,10 +335,16 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
             description: '*no description*',
             expected: 'True'
         };
-        this.state.tests.push(test);
-        this.setState({ tests: this.state.tests });
+        // this.state.tests.push(test);
+        // this.setState({ tests: this.state.tests });
         if(this.props.onTestAdded) {
-            this.props.onTestAdded({ test, index: this.state.tests.length-1 });
+            const index = this.state.tests.length;
+            this.props.onTestAdded(index, { test });
+        }
+    }
+    private deleteProblem = (): void => {
+        if(this.props.onDelete) {
+            this.props.onDelete({});
         }
     }
 };

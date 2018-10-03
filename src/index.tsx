@@ -6,7 +6,7 @@ import './index.css';
 import registerServiceWorker from './registerServiceWorker';
 
 ReactDOM.render(
-    <App isAdmin={true} />,
+    <App isAdmin={false} />,
     document.getElementById('root') as HTMLElement
 );
 

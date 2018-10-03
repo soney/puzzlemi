@@ -51,20 +51,32 @@ export class PMFile extends React.Component<IPMFileProps, IPMFileState> {
 
     public render():React.ReactNode {
         if(this.state.editing) {
-            return <div>
-                <button className="btn btn-default btn-sm" onClick={this.cancelEditing}>Cancel</button>
-                <button className="btn btn-default btn-sm" onClick={this.doneEditing}>Done</button>
-                <input type="text" autoComplete="off" value={this.state.name} onChange={this.onNameChange} />
-                <textarea value={this.state.data} onChange={this.onDataChange}  />
+            return <div className="file">
+                <div className="fileInfo">
+                    <input type="text" autoComplete="off" value={this.state.name} onChange={this.onNameChange} />
+                </div>
+                <div className="btn-group" role="group" aria-label="Basic example">
+                    <button className="btn btn-outline-primary btn-sm" onClick={this.doneEditing}>Done</button>
+                    <button className="btn btn-outline-secondary btn-sm" onClick={this.cancelEditing}>Cancel</button>
+                </div>
+                <div className="fileData">
+                    <textarea value={this.state.data} onChange={this.onDataChange}  />
+                </div>
             </div>
         } else {
-            return <div>
+            return <div className="file">
+                <div className="fileInfo">
+                    {this.state.name}
+                </div>
                 {this.props.canEdit && 
-                    <button className="btn btn-default btn-xs" onClick={this.beginEditing} style={{ display: this.props.canEdit ? '' : 'none' }}>Edit</button>}
-                {this.props.canEdit && 
-                    <button className="btn btn-default btn-xs" onClick={this.deleteFile} style={{ display: this.props.canEdit ? '' : 'none' }}>Delete</button>}
-                <strong>{this.state.name}:</strong>
-                {this.state.data}
+                    <div className="btn-group" role="group" aria-label="Basic example">
+                        <button className="btn btn-outline-secondary btn-sm" onClick={this.beginEditing} style={{ display: this.props.canEdit ? '' : 'none' }}>Edit</button>
+                        <button className="btn btn-outline-danger btn-sm" onClick={this.deleteFile} style={{ display: this.props.canEdit ? '' : 'none' }}>Delete</button>
+                    </div>
+                 }
+                <div className="fileData">
+                    {this.state.data}
+                </div>
             </div>;
         }
     };

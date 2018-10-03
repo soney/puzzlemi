@@ -57,7 +57,7 @@ export class PMTestDisplay extends React.Component<IPMTestDisplayProps, IPMTestD
                         <th scope="col">Actual</th>
                         <th scope="col">Expected</th>
                         <th scope="col">Description</th>
-                        <th scope="col" colSpan={2} />
+                        <th scope="col" />
                     </tr>
                 </thead>
                 <tbody>
@@ -65,8 +65,12 @@ export class PMTestDisplay extends React.Component<IPMTestDisplayProps, IPMTestD
                         <td><input value={this.state.actual} placeholder="Actual" onChange={this.onActualChanged} type="text" /></td>
                         <td><input value={this.state.expected} placeholder="Expected" onChange={this.onExpectedChanged} type="text" /></td>
                         <td><input value={this.state.description} placeholder="Description" onChange={this.onDescriptionChanged} type="text" /></td>
-                        <td><button className="btn btn-default btn-sm" onClick={this.cancelEditing}>Cancel</button></td>
-                        <td><button className="btn btn-default btn-sm" onClick={this.doneEditing}>Done</button></td>
+                        <td>
+                            <div className="btn-group" role="group" aria-label="Basic example">
+                                <button className="btn btn-outline-primary btn-sm" onClick={this.doneEditing}>Done</button>
+                                <button className="btn btn-outline-secondary btn-sm" onClick={this.cancelEditing}>Cancel</button>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -77,11 +81,26 @@ export class PMTestDisplay extends React.Component<IPMTestDisplayProps, IPMTestD
                 const result = this.props.result as IPMTestResult;
                 passed = result.passed;
             }
-            const ranMessage = ran ? ( passed ? 'Passed: ' : 'Failed: ' ) : '';
-            return <div className={'test' + passed ? 'passed' : 'failed'}>
-                {ranMessage} <span dangerouslySetInnerHTML={this.getMessageHTML()} />
-                <button style={{ display: this.props.canEdit ? '' : 'none' }} className="btn btn-default btn-sm" onClick={this.beginEditing}>Edit</button>
-                <button style={{ display: this.props.canEdit ? '' : 'none' }} className="btn btn-default btn-sm" onClick={this.deleteTest}>Delete</button>
+            const ranMessage = ran ? ( passed ? 'Passed' : 'Failed' ) : '';
+            const extraClass = ran ? ( passed ? 'alert-success' : 'alert-danger') : 'alert-secondary';
+            return <div className={'container test alert ' + extraClass}>
+                <div className="row">
+                    <div className="col">
+                        <span dangerouslySetInnerHTML={this.getMessageHTML()} />
+                    </div>
+                    <div className="col">
+                        {ranMessage}
+                    </div>
+                    {
+                        this.props.canEdit && 
+                        <div className="col">
+                            <div className="btn-group" role="group" aria-label="Basic example">
+                                <button className="btn btn-outline-secondary btn-sm" onClick={this.beginEditing}>Edit</button>
+                                <button className="btn btn-outline-danger btn-sm" onClick={this.deleteTest}>Delete</button>
+                            </div>
+                        </div>
+                    }
+                </div>
             </div>;
         }
     };

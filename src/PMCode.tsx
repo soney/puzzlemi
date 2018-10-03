@@ -38,12 +38,24 @@ export class PMCode extends React.Component<IPMCodeProps, IPMCodeState> {
         };
     };
 
+    public componentDidUpdate(prevProps: IPMCodeProps):void {
+        const { value } = this.props;
+        if(value !== prevProps.value) {
+            this.setState({ code: value as string });
+            if(value !== this.codeMirror.getValue()) {
+                this.codeMirror.setValue(value as string);
+            }
+        }
+    };
+
     public componentDidMount():void {
         this.codeMirror = CodeMirror.fromTextArea(this.codeNode, this.props.options);
         this.codeMirror.setValue(this.state.code);
-        this.codeMirror.on('change', () => {
-            if(this.props.onChange) {
-                this.props.onChange({ value: this.codeMirror.getValue() });
+        this.codeMirror.on('change', (instance: CodeMirror.Editor, change: CodeMirror.EditorChangeLinkedList) => {
+            if(change.origin !== 'setValue') {
+                if(this.props.onChange) {
+                    this.props.onChange({ value: this.codeMirror.getValue() });
+                }
             }
         });
     };

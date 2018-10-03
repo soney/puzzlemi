@@ -38,15 +38,23 @@ export class PMProblemDescription extends React.Component<IPMProblemDescriptionP
 
     public render():React.ReactNode {
         if(this.state.editing) {
-            return <div>
-                <button className="btn btn-default btn-sm" onClick={this.cancelEditing}>Cancel</button>
-                <button className="btn btn-default btn-sm" onClick={this.doneEditing}>Done</button>
-                <PMCode value={this.state.contents} options={{lineNumbers: false, mode: 'markdown'}} onChange={this.updateContents} />
+            return <div className="problemDescription col">
+                <div className="col">
+                    <div className="btn-group" role="group" aria-label="Basic example">
+                        <button className="btn btn-outline-primary btn-sm" onClick={this.doneEditing}>Done</button>
+                        <button className="btn btn-outline-secondary btn-sm" onClick={this.cancelEditing}>Cancel</button>
+                    </div>
+                </div>
+                <div className="col">
+                    <PMCode value={this.state.contents} options={{lineNumbers: false, mode: 'markdown'}} onChange={this.updateContents} />
+                </div>
             </div>
         } else {
-            return <div>
-                <button className="btn btn-default btn-sm" style={{ display: this.props.canEdit ? '' : 'none' }} onClick={this.beginEditing}>Edit</button>
-                <div className="col problemDescription" dangerouslySetInnerHTML={this.getProblemDescriptionHTML()} />
+            return <div className="problemDescription col">
+                <div className="col" dangerouslySetInnerHTML={this.getProblemDescriptionHTML()} />
+                <div className="col">
+                    <button className="btn btn-outline-secondary btn-sm" style={{ display: this.props.canEdit ? '' : 'none' }} onClick={this.beginEditing}>Edit</button>
+                </div>
             </div>;
         }
     };
