@@ -1,5 +1,6 @@
 // tslint:disable:ordered-imports
 import * as React from "react";
+import { IFileList, ITest, TestList, IFile } from './App';
 import { PMAssertion, PMAssertEqual } from './pyTests/PMTest';
 import { PMTestSuite } from './pyTests/PMTestSuite';
 import { PMProblemDescription, IPMProblemDescriptionChangedEvent } from './PMProblemDescription';
@@ -12,12 +13,40 @@ import { PMTestDisplay, IPMTestChangedEvent, IPMTestDeleteEvent } from './PMTest
 import { IPMFileContentsChangedEvent, IPMFileNameChangedEvent, PMFile, IPMFileDeleteEvent } from './PMFile';
 import { PMCode, IPMCodeChangeEvent } from './PMCode';
 
+export interface IPMDescriptionChangeEvent {
+    description: string;
+}
+export interface IPMTestAddedEvent {
+    index: number;
+    test: ITest;
+}
+export interface IPMFileAddedEvent {
+    filename: string;
+    file: IFile;
+}
+export interface IPMTest {
+    index: number;
+    test: ITest;
+}
+
 interface IPMProblemProps {
-    afterCode?: string;
-    code?: string;
-    description?: string;
-    isAdmin?: boolean;
+    afterCode: string;
+    code: string;
+    description: string;
+    isAdmin: boolean;
     rerunDelay?: number;
+    tests: TestList;
+    files: IFileList;
+    onDescriptionChange?: (event: IPMDescriptionChangeEvent) => void;
+    onTestAdded?: (event: IPMTestAddedEvent) => void;
+    onTestChange?: (event: IPMTestChangedEvent) => void;
+    onTestDeleted?: (event: IPMTestDeleteEvent) => void;
+    onCodeChange?: (event: IPMCodeChangeEvent) => void;
+    onAfterCodeChange?: (event: IPMCodeChangeEvent) => void;
+    onFileAdded?: (event: IPMFileAddedEvent) => void;
+    onFileNameChange?: (event: IPMFileNameChangedEvent) => void;
+    onFileContentsChange?: (event: IPMFileContentsChangedEvent) => void;
+    onFileDelete?: (event: IPMFileDeleteEvent) => void;
 };
 
 interface IPMProblemState {
@@ -28,15 +57,13 @@ interface IPMProblemState {
     problemDescription: string;
     canRun: boolean;
     isAdmin: boolean;
-    tests: Array<{ actual: string, expected: string, description: string }>;
-    files: {[fname: string]: {contents: string, createdByWrite: boolean}};
+    tests: TestList;
+    files: IFileList;
 };
 
 export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState> {
-    public static defaultProps: IPMProblemProps = {
-        afterCode: '',
-        code: `# code here`,
-        description: '*no description*',
+    public static defaultProps = {
+        isAdmin: false,
         rerunDelay: 1000,
     };
     private outputs: string[] = [];
@@ -48,14 +75,14 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
         super(props, state);
         this.state = {
             canRun: true,
-            code: this.props.code || '',
+            code: this.props.code,
             codeAfter: '',
-            files: {},
+            files: this.props.files,
             hasError: false,
             isAdmin: !!this.props.isAdmin,
             output: '',
-            problemDescription: this.props.description || '',
-            tests: []
+            problemDescription: this.props.description,
+            tests: this.props.tests
         };
 
         Sk.configure({
@@ -70,6 +97,16 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
         // Sk.python3 = true;
         // Sk.configure({ output: this.outf, read: builtinRead }); 
         // (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
+    };
+
+    public componentDidUpdate(prevProps: IPMProblemProps):void {
+        const { description, tests } = this.props;
+        if(description !== prevProps.description) {
+            this.setState({ problemDescription: description as string });
+        }
+        if(tests !== prevProps.tests) {
+            this.setState({ tests });
+        }
     };
 
     public render():React.ReactNode {
@@ -95,7 +132,7 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
                 <div className="col">
                     <PMCode onChange={this.onCodeChange} value={this.state.code} />
                     <div style={{ display: this.state.isAdmin ? '' : 'none' }}>
-                        <PMCode onChange={this.onCodeAfterChange} value={this.state.codeAfter} />
+                        <PMCode onChange={this.onAfterCodeChange} value={this.state.codeAfter} />
                     </div>
                 </div>
                 <div className="col">
@@ -121,27 +158,45 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
         this.state.tests[i].description = description;
         this.state.tests[i].expected = expected;
         this.setState({ tests: this.state.tests });
+        if(this.props.onTestChange) {
+            this.props.onTestChange(e);
+        }
     };
 
     private onTestDelete = (i: number, e: IPMTestDeleteEvent): void => {
         this.state.tests.splice(i, 1);
         this.setState({ tests: this.state.tests });
+        if(this.props.onTestDeleted) {
+            this.props.onTestDeleted(e);
+        }
     };
 
     private onDescriptionChange = (e: IPMProblemDescriptionChangedEvent): void => {
         const { value } = e;
         this.setState({ problemDescription: value });
+        if(this.props.onDescriptionChange) {
+            this.props.onDescriptionChange({ description: value });
+        }
     }
     private onCodeChange = (e: IPMCodeChangeEvent): void => {
         this.setState({ code: e.value });
+        if(this.props.onCodeChange) {
+            this.props.onCodeChange(e);
+        }
     }
-    private onCodeAfterChange = (e: IPMCodeChangeEvent): void => {
+    private onAfterCodeChange = (e: IPMCodeChangeEvent): void => {
         this.setState({ codeAfter: e.value });
+        if(this.props.onAfterCodeChange) {
+            this.props.onAfterCodeChange(e);
+        }
     }
     private onFileContentsChange = (e: IPMFileContentsChangedEvent): void => {
         const { name, contents } = e;
         this.state.files[name].contents = contents;
         this.setState({ files: this.state.files });
+        if(this.props.onFileContentsChange) {
+            this.props.onFileContentsChange(e);
+        }
     }
     private onFileNameChange = (e: IPMFileNameChangedEvent): void => {
         const {oldName, name} = e;
@@ -217,21 +272,29 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
     }
     private addFile = (): void => {
         const originalFName = `file_${Object.keys(this.state.files).length}`;
-        let fname: string = `${originalFName}.txt`;
+        let filename: string = `${originalFName}.txt`;
         let i: number = 1;
-        while(this.state.files.hasOwnProperty(fname)) {
-            fname = `${originalFName}_${i}.txt`;
+        while(this.state.files.hasOwnProperty(filename)) {
+            filename = `${originalFName}_${i}.txt`;
             i++;
         }
-        this.state.files[fname] = {contents: '', createdByWrite: false};
+        const file = {contents: '', createdByWrite: false};
+        this.state.files[filename] = file;
         this.setState({ files: this.state.files });
+        if(this.props.onFileAdded) {
+            this.props.onFileAdded({ file, filename });
+        }
     }
     private addTest = (): void => {
-        this.state.tests.push({
+        const test: ITest = {
             actual: 'True',
             description: '*no description*',
             expected: 'True'
-        });
+        };
+        this.state.tests.push(test);
         this.setState({ tests: this.state.tests });
+        if(this.props.onTestAdded) {
+            this.props.onTestAdded({ test, index: this.state.tests.length-1 });
+        }
     }
 };

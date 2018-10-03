@@ -41,7 +41,6 @@ export class PMFile extends React.Component<IPMFileProps, IPMFileState> {
 
     public componentDidUpdate(prevProps: IPMFileProps):void {
         const { filename, contents } = this.props;
-        console.log(filename, prevProps.filename);
         if(filename !== prevProps.filename) {
             this.setState({ name: filename });
         }
