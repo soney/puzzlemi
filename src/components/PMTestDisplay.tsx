@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as showdown from 'showdown';
-import { IPMTestResult } from "./pyTests/PMTestSuite";
+import { IPMTestResult } from "../pyTests/PMTestSuite";
 
 export interface IPMTestDeleteEvent { }
 export interface IPMTestChangedEvent {

@@ -1,7 +1,8 @@
 // import update from 'immutability-helper';
 import * as React from 'react';
-import { SDBClient, SDBDoc } from 'sdb-ts';
-import './App.css';
+// import { SDBClient, SDBDoc } from 'sdb-ts';
+import { SDBDoc } from 'sdb-ts';
+import '../css/App.css';
 import { IPMCodeChangeEvent } from './PMCode';
 import { IPMFileContentsChangedEvent, IPMFileDeleteEvent, IPMFileNameChangedEvent } from './PMFile';
 import { IPMDescriptionChangeEvent, IPMFileAddedEvent,  IPMTestAddedEvent, PMProblem } from './PMProblem';
@@ -23,11 +24,11 @@ export interface IFileList {
 };
 
 export interface IProblem {
-    afterCode: string;
-    description: string;
-    givenCode: string;
-    tests: TestList;
-    files: IFileList;
+    afterCode: string; // The code to run after the student's code
+    description: string; // Problem description
+    givenCode: string; // The code entered by the student
+    tests: TestList; // The list of test to run on the code
+    files: IFileList; // The list of files used by the problem
 };
 
 interface IPMApplicationProps {
@@ -45,9 +46,6 @@ export interface IPuzzleSet {
 
 let mainApp: App;
 export class App extends React.Component<IPMApplicationProps, IPMApplicationState> {
-    // private ws: WebSocket = new WebSocket(`ws://localhost:8000`);
-    private ws: WebSocket = new WebSocket(`ws://${window.location.host}`);
-    private sdbClient: SDBClient = new SDBClient(this.ws);
     private sdbDoc: SDBDoc<IPuzzleSet>;
     public constructor(props:IPMApplicationProps, state:IPMApplicationState) {
         super(props, state);
@@ -56,25 +54,7 @@ export class App extends React.Component<IPMApplicationProps, IPMApplicationStat
             isAdmin: !!this.props.isAdmin,
             problems: []
         };
-        this.sdbDoc = this.sdbClient.get('puzzles', 'p');
-        this.sdbDoc.createIfEmpty({
-            problems: []
-        });
-        this.sdbDoc.subscribe((type: string, ops: any[]) => {
-            if(type === null) {
-                const data = this.sdbDoc.getData();
-                this.setState({ problems: data.problems });
-            } else if (type === 'op') {
-                ops.forEach((op) => {
-                    const { p } = op;
-                    const relPath = SDBDoc.relative(['problems'], p);
-                    if(relPath) {
-                        const data = this.sdbDoc.getData();
-                        this.setState({ problems: data.problems });
-                    }
-                });
-            }
-        });
+        // this.sdbDoc = this.sdbClient.get('puzzles', 'p');
     };
     public render(): React.ReactNode {
         const problemDisplays = this.state.problems.map((p, i) => {
@@ -106,6 +86,7 @@ export class App extends React.Component<IPMApplicationProps, IPMApplicationStat
                 this.state.isAdmin &&
                 <div className="container">
                     <button className="btn btn-outline-success btn-sm btn-block" onClick={this.addProblem}>+ Problem</button>
+                    {/* <button className="btn btn-outline-success btn-sm btn-block" onClick={dispatch(addProblem())}>+ Problem</button> */}
                 </div>
             }
         </div>;

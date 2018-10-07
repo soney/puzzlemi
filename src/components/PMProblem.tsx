@@ -1,11 +1,11 @@
 // tslint:disable:ordered-imports
 import * as React from "react";
 import { IFileList, ITest, TestList, IFile } from './App';
-import { PMAssertion, PMAssertEqual } from './pyTests/PMTest';
-import { PMTestSuite } from './pyTests/PMTestSuite';
-import { PMProblemDescription, IPMProblemDescriptionChangedEvent } from './PMProblemDescription';
-import './skulpt/skulpt.min.js';
-import './skulpt/skulpt-stdlib.js';
+import { PMAssertion, PMAssertEqual } from '../pyTests/PMTest';
+import { PMTestSuite } from '../pyTests/PMTestSuite';
+import { PMProblemDescription, IPMProblemDescriptionChangedEvent } from '../components/PMProblemDescription';
+import '../js/skulpt/skulpt.min.js';
+import '../js/skulpt/skulpt-stdlib.js';
 
 declare var Sk;
 
@@ -74,7 +74,6 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
     };
     private outputs: string[] = [];
     private rerunTimeout: number;
-    private testsDiv: HTMLDivElement;
     private testSuite: PMTestSuite = new PMTestSuite();
 
     constructor(props:IPMProblemProps, state:IPMProblemState) {
@@ -146,7 +145,7 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
                     { this.state.isAdmin && <PMCode onChange={this.onGivenCodeChange} value={this.state.givenCode} /> }
                     { this.state.isAdmin && <PMCode onChange={this.onAfterCodeChange} value={this.state.afterCode} /> }
                     { !this.state.isAdmin && <PMCode onChange={this.onCodeChange} value={this.state.givenCode} /> }
-                    {!this.state.isAdmin && <button disabled={!this.state.canRun} className='btn btn-outline-success btn-sm btn-block' onClick={this.saveAndRun}>Run</button> }
+                    { !this.state.isAdmin && <button disabled={!this.state.canRun} className='btn btn-outline-success btn-sm btn-block' onClick={this.saveAndRun}>Run</button> }
                 </div>
                 <div className="col">
                     <div className={'codeOutput' + (this.state.hasError ? ' alert alert-danger' : ' no-error')}>{this.state.output}</div>
@@ -272,7 +271,6 @@ export class PMProblem extends React.Component<IPMProblemProps, IPMProblemState>
     };
 
     private saveAndRun = (): void => {
-        document['currentDiv'] = () => this.testsDiv;
         this.startRerunTimer();
         this.outputs = [];
         this.setState({ hasError: true, output: '' });
