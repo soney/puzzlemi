@@ -26,12 +26,12 @@ interface ICodeEditorState {
 export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorState> {
     public static defaultProps: ICodeEditorProps = {
         options: {
+            height: null,
             lineNumbers: true,
-            mode: 'python',
             lineWrapping: true,
+            mode: 'python',
             viewportMargin: 50,
             width: null,
-            height: null,
         },
         value: ''
     };

@@ -50,8 +50,8 @@ export const user = (state: IUser = defaultUser, action: any) => {
                     $set: {
                         code: problem.givenCode,
                         errors: [],
-                        modified: false,
                         files: [],
+                        modified: false,
                         output: '',
                         passedAll: false,
                         testResults: {}
@@ -102,8 +102,8 @@ export const user = (state: IUser = defaultUser, action: any) => {
             solutions: {
                 [id]: {
                     errors: { $set: [] },
+                    passedAll: { $set: false },
                     testResults: { $set: {} },
-                    passedAll: { $set: false }
                 }
             }
         });
@@ -163,8 +163,8 @@ export const user = (state: IUser = defaultUser, action: any) => {
         return update(state, {
             solutions: {
                 [id]: {
-                    testResults: { $set: testResults },
-                    passedAll: { $set: passedAll }
+                    passedAll: { $set: passedAll },
+                    testResults:{ $set: testResults },
                 }
             }
         });

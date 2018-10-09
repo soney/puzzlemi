@@ -19,7 +19,7 @@ const Tests = ({ index, tests, isAdmin, doc, dispatch }) => {
                         <th>Actual</th>
                         <th>Expected</th>
                         <th>Description</th>
-                        <th></th>
+                        <th />
                     </tr>
                 </thead>
                 <tbody>

@@ -14,7 +14,7 @@ export const descriptionChanged = (index: number, description: string) => ({
     description, index, type: EventTypes.DESCRIPTION_CHANGED,
 });
 export const givenCodeChanged = (index: number, id: string, code: string) => ({
-    code, index, id, type: EventTypes.GIVEN_CODE_CHANGED,
+    code, id, index, type: EventTypes.GIVEN_CODE_CHANGED,
 });
 export const afterCodeChanged = (index: number, code: string) => ({
     code, index, type: EventTypes.DESCRIPTION_CHANGED,
@@ -23,22 +23,22 @@ export const problemDeleted = (index: number) => ({
     index, type: EventTypes.PROBLEM_DELETED,
 });
 export const testAdded = (id: string, index: number, testIndex: number, test) => ({
-    id, index, testIndex, test, type: EventTypes.TEST_ADDED,
+    id, index, test, testIndex, type: EventTypes.TEST_ADDED,
 });
 export const testDeleted = (id: string, index: number, testIndex: number) => ({
     id, index, testIndex, type: EventTypes.TEST_DELETED,
 });
 export const fileAdded = (index: number, fileIndex: number, file) => ({
-    index, fileIndex, file, type: EventTypes.FILE_ADDED,
+    file, fileIndex, index, type: EventTypes.FILE_ADDED,
 });
 export const fileDeleted = (index: number, fileIndex: number) => ({
-    index, fileIndex, type: EventTypes.FILE_DELETED,
+    fileIndex, index, type: EventTypes.FILE_DELETED,
 });
 export const filePartChanged = (index: number, fileIndex: number, part: 'name'|'contents', value) => ({
-    index, fileIndex, part, value, type: EventTypes.FILE_PART_CHANGED,
+    fileIndex, index, part, type: EventTypes.FILE_PART_CHANGED, value
 });
 export const testPartChanged = (id: string, index: number, testIndex: number, part: 'actual'|'expected'|'description', value) => ({
-    id, index, testIndex, part, value, type: EventTypes.TEST_PART_CHANGED,
+    id, index, part, testIndex, type: EventTypes.TEST_PART_CHANGED, value
 });
 export const setDoc = (doc: SDBDoc<IPuzzleSet>) => ({
     doc, type: EventTypes.SET_DOC,
@@ -54,7 +54,7 @@ export function deleteUserFile(index: number, name: string) {
         const problemId = problem.id;
 
         dispatch({
-            problemId: problemId, name, type: EventTypes.DELETE_USER_FILE
+            name, problemId, type: EventTypes.DELETE_USER_FILE
         });
     };
 }
@@ -65,7 +65,7 @@ export function setCode(index: number, code: string) {
         const { id } = problem;
 
         dispatch({
-            id, code, modified: true, type: EventTypes.CODE_CHANGED
+            code, id, modified: true, type: EventTypes.CODE_CHANGED
         });
     };
 }
@@ -75,7 +75,7 @@ export function resetCode(index: number) {
         const problem = problems[index];
         const { id, givenCode } = problem;
         dispatch({
-            id, code: givenCode, modified: false, type: EventTypes.CODE_CHANGED,
+            code: givenCode, id, modified: false, type: EventTypes.CODE_CHANGED,
         });
     };
 }
@@ -106,10 +106,10 @@ export function addTest(index: number) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
         const newTest = {
-            id: uuid(),
             actual: 'True',
+            description: '*no description*',
             expected: 'True',
-            description: '*no description*'
+            id: uuid(),
         };
         return doc.submitListPushOp(['problems', index, 'tests'], newTest);
     };
@@ -126,9 +126,9 @@ export function addFile(index: number) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
         const newFile = {
+            contents: 'file contents',
             id: uuid(),
             name: 'file.txt',
-            contents: 'file contents'
         };
         return doc.submitListPushOp(['problems', index, 'files'], newFile);
     };
@@ -171,7 +171,6 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                                 const newCode = doc.traverse([...problemP, item]);
                                 dispatch(afterCodeChanged(index, newCode));
                             } else if(item === 'tests') {
-                                const { li, ld } = op;
                                 const testIndex = relPath[2] as number;
                                 if(li) {
                                     dispatch(testAdded(problem.id, index, testIndex, li));
@@ -179,7 +178,6 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                                     dispatch(testDeleted(problem.id, index, testIndex));
                                 }
                             } else if(item === 'files') {
-                                const { li, ld } = op;
                                 const fileIndex = relPath[2] as number;
                                 if(li) {
                                     dispatch(fileAdded(index, fileIndex, li));

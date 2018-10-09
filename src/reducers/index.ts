@@ -5,6 +5,6 @@ import { doc } from './sharedb';
 ​
 export default combineReducers({
     doc,
-    user,
     problems,
+    user,
 });

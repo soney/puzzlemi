@@ -56,8 +56,8 @@ export function runCode(index: number) {
         }
         const writef = (contents: string, fname: string, pos: number): void => {
             dispatch({
-                id,
                 contents,
+                id,
                 name: fname,
                 type: EventTypes.FILE_WRITTEN
             })
@@ -83,22 +83,20 @@ export function runCode(index: number) {
         });
         myPromise.catch((err) => {
             dispatch({
-                id,
                 errors: [err.toString()],
+                id,
                 type: EventTypes.ERROR_CHANGED
             });
         }).finally(() => {
             testSuite.onAfterRanTests();
             const testSuiteResults = testSuite.getTestResults();
             const { passedAll, results } = testSuiteResults;
-            const { problems } = getState();
-            const problem = problems[index];
-            const { tests } = problem;
+            const problemTests = getState().problems[index].tests;
             const testResults = { };
-            results.forEach((result, index) => {
-                const test = tests[index];
-                const { id } = test;
-                testResults[id] = result;
+            results.forEach((result, i) => {
+                const test = problemTests[i];
+                const testId = test.id;
+                testResults[testId] = result;
             });
             dispatch({
                 hasError: true,
