@@ -1,6 +1,10 @@
-import { combineReducers } from 'redux'
-import { shareDb } from './shareDb'
+import { combineReducers } from 'redux';
+import { problems } from './problems';
+import { isAdmin } from './isAdmin';
+import { doc } from './sharedb';
 ​
 export default combineReducers({
-  shareDb,
-})
+    doc,
+    isAdmin,
+    problems,
+});

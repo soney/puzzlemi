@@ -1,38 +1,33 @@
 // import update from 'immutability-helper';
 import * as React from 'react';
 // import { SDBClient, SDBDoc } from 'sdb-ts';
-import { SDBDoc } from 'sdb-ts';
-import '../css/App.css';
-import { IPMCodeChangeEvent } from './PMCode';
-import { IPMFileContentsChangedEvent, IPMFileDeleteEvent, IPMFileNameChangedEvent } from './PMFile';
-import { IPMDescriptionChangeEvent, IPMFileAddedEvent,  IPMTestAddedEvent, PMProblem } from './PMProblem';
-import { IPMTestChangedEvent, IPMTestDeleteEvent } from './PMTestDisplay';
-
-export interface ITest {
-    actual: string;
-    expected: string;
-    description: string;
-}
-export interface IFile {
-    contents: string;
-    createdByWrite: boolean;
-}
-
-export type TestList = ITest[];
-export interface IFileList {
-    [fname: string]: IFile
-};
-
-export interface IProblem {
-    afterCode: string; // The code to run after the student's code
-    description: string; // Problem description
-    givenCode: string; // The code entered by the student
-    tests: TestList; // The list of test to run on the code
-    files: IFileList; // The list of files used by the problem
-};
+import '../css/App.scss';
+import * as reactRedux from 'react-redux';
+// import { addProblem } from '../actions';
+import { store } from '..';
+import { SDBClient, SDBDoc } from 'sdb-ts';
+import { problemAdded, puzzlesFetched, problemDeleted, addProblem, setDoc, setIsAdmin, descriptionChanged, givenCodeChanged, afterCodeChanged, testAdded, testDeleted, testPartChanged, fileAdded, fileDeleted, filePartChanged } from '../actions';
+import Problems from './Problems';
+import { ThunkDispatch } from 'redux-thunk';
+// import { Dispatch } from 'redux';
 
 interface IPMApplicationProps {
     isAdmin?: boolean;
+    addProblem?: any;
+    dispatch: ThunkDispatch<any, any, any>;
+};
+
+export interface IPuzzleSet {
+    problems: IProblem[]
+}
+
+export interface IProblem {
+    afterCode: string;
+    description: string;
+    givenCode: string;
+    files: any;
+    id: string;
+    tests: any;
 };
 
 interface IPMApplicationState {
@@ -40,118 +35,108 @@ interface IPMApplicationState {
     problems: IProblem[];
 };
 
-export interface IPuzzleSet {
-    problems: IProblem[]
-}
-
-let mainApp: App;
-export class App extends React.Component<IPMApplicationProps, IPMApplicationState> {
+class PMApplication extends React.Component<IPMApplicationProps, IPMApplicationState> {
+    // private ws: WebSocket = new WebSocket(`ws://${window.location.host}`);
+    private ws: WebSocket = new WebSocket(`ws://localhost:8000`);
+    private sdbClient: SDBClient = new SDBClient(this.ws);
     private sdbDoc: SDBDoc<IPuzzleSet>;
     public constructor(props:IPMApplicationProps, state:IPMApplicationState) {
         super(props, state);
-        mainApp = this;
         this.state = {
             isAdmin: !!this.props.isAdmin,
             problems: []
         };
-        // this.sdbDoc = this.sdbClient.get('puzzles', 'p');
+        window['su'] = () => {
+            this.setState({ isAdmin: true });
+            this.props.dispatch(setIsAdmin(true));
+        };
+        this.props.dispatch(setIsAdmin(!!this.props.isAdmin));
+        this.sdbDoc = this.sdbClient.get('puzzles', 'p');
+        this.props.dispatch(setDoc(this.sdbDoc));
+        const emptyDoc = { problems: [] };
+        this.sdbDoc.createIfEmpty(emptyDoc).then(() => {
+            this.sdbDoc.subscribe((type: string, ops: any[]) => {
+                if(type === null) {
+                    store.dispatch(puzzlesFetched(this.sdbDoc.getData()));
+                } else if (type === 'op') {
+                    ops.forEach((op) => {
+                        const { p, li, ld } = op;
+                        const relPath = SDBDoc.relative(['problems'], p);
+                        if(relPath) {
+                            if(relPath.length === 1) {
+                                const index = relPath[0] as number;
+                                if(ld) { store.dispatch(problemDeleted(index)); }
+                                if(li) { store.dispatch(problemAdded(index, li)); }
+                            } else if(relPath.length === 3) {
+                                const index = relPath[0] as number;
+                                const item = relPath[1];
+                                const problemP = ['problems', index];
+                                if(item === 'description') {
+                                    const newDescription = this.sdbDoc.traverse([...problemP, item]);
+                                    store.dispatch(descriptionChanged(index, newDescription));
+                                } else if(item === 'givenCode') {
+                                    const newCode = this.sdbDoc.traverse([...problemP, item]);
+                                    store.dispatch(givenCodeChanged(index, newCode));
+                                } else if(item === 'afterCode') {
+                                    const newCode = this.sdbDoc.traverse([...problemP, item]);
+                                    store.dispatch(afterCodeChanged(index, newCode));
+                                } else if(item === 'tests') {
+                                    const { li, ld } = op;
+                                    const testIndex = relPath[2] as number;
+                                    if(li) {
+                                        store.dispatch(testAdded(index, testIndex, li));
+                                    } else if(ld) {
+                                        store.dispatch(testDeleted(index, testIndex));
+                                    }
+                                } else if(item === 'files') {
+                                    const { li, ld } = op;
+                                    const fileIndex = relPath[2] as number;
+                                    if(li) {
+                                        store.dispatch(fileAdded(index, fileIndex, li));
+                                    } else if(ld) {
+                                        store.dispatch(fileDeleted(index, fileIndex));
+                                    }
+                                }
+                            } else if(relPath.length === 5) {
+                                const index = relPath[0] as number;
+                                const item = relPath[1];
+                                if(item === 'tests') {
+                                    const testIndex = relPath[2] as number;
+                                    const testP = ['problems', index, item, testIndex];
+                                    const testPart = relPath[3] as 'actual'|'expected'|'description';
+                                    const value = this.sdbDoc.traverse([...testP, testPart]);
+
+                                    store.dispatch(testPartChanged(index, testIndex, testPart, value));
+                                } else if(item === 'files') {
+                                    const fileIndex = relPath[2] as number;
+                                    const fileP = ['problems', index, item, fileIndex];
+                                    const filePart = relPath[3] as 'name'|'contents';
+                                    const value = this.sdbDoc.traverse([...fileP, filePart]);
+
+                                    store.dispatch(filePartChanged(index, fileIndex, filePart, value));
+                                }
+                            }
+                        }
+                        console.log(op);
+                    });
+                }
+            });
+        });
     };
     public render(): React.ReactNode {
-        const problemDisplays = this.state.problems.map((p, i) => {
-            return <div key={i}>
-                <PMProblem
-                    afterCode={p.afterCode}
-                    givenCode={p.givenCode}
-                    files={p.files}
-                    description={p.description}
-                    tests={p.tests}
-                    isAdmin={this.state.isAdmin}
-                    onDescriptionChange={this.onDescriptionChange.bind(this, i)}
-                    onTestAdded={this.onTestAdded.bind(this, i)}
-                    onTestChange={this.onTestChange.bind(this, i)}
-                    onTestDeleted={this.onTestDeleted.bind(this, i)}
-                    onGivenCodeChange={this.onGivenCodeChange.bind(this, i)}
-                    onAfterCodeChange={this.onAfterCodeChange.bind(this, i)}
-                    onFileAdded={this.onFileAdded.bind(this, i)}
-                    onFileNameChange={this.onFileNameChange.bind(this, i)}
-                    onFileContentsChange={this.onFileContentsChange.bind(this, i)}
-                    onFileDelete={this.onFileDelete.bind(this, i)}
-                    onDelete={this.deleteProblem.bind(this, i)}
-                />
-            </div>;
-        });
         return <div>
-            {problemDisplays}
+            <Problems sdbDoc={this.sdbDoc} />
             {
                 this.state.isAdmin &&
                 <div className="container">
                     <button className="btn btn-outline-success btn-sm btn-block" onClick={this.addProblem}>+ Problem</button>
-                    {/* <button className="btn btn-outline-success btn-sm btn-block" onClick={dispatch(addProblem())}>+ Problem</button> */}
                 </div>
             }
         </div>;
     }
-    private onDescriptionChange = (i: number, event: IPMDescriptionChangeEvent): void => {
-        const { description } = event;
-        this.sdbDoc.submitObjectReplaceOp(['problems', i, 'description'], description);
-    }
-    private onTestAdded = (i: number, index: number, event: IPMTestAddedEvent): void => {
-        const { test } = event;
-        this.sdbDoc.submitListInsertOp(['problems', i, 'tests', index], test);
-    }
-    private onTestChange = (i: number, index: number, event: IPMTestChangedEvent): void => {
-        const { actual, description, expected } = event;
-        this.sdbDoc.submitListReplaceOp(['problems', i, 'tests', index], { actual, description, expected });
-    }
-    private onTestDeleted = (i: number, index: number, event: IPMTestDeleteEvent): void => {
-        this.sdbDoc.submitListDeleteOp(['problems', i, 'tests', index]);
-    }
-    private onGivenCodeChange = (i: number, event: IPMCodeChangeEvent): void => {
-        const { value } = event;
-        this.sdbDoc.submitObjectReplaceOp(['problems', i, 'givenCode'], value);
-    }
-    private onAfterCodeChange = (i: number, event: IPMCodeChangeEvent): void => {
-        const { value } = event;
-        this.sdbDoc.submitObjectReplaceOp(['problems', i, 'afterCode'], value);
-    }
-    private onFileAdded = (i: number, event: IPMFileAddedEvent): void => {
-        const { file, filename } = event;
-        this.sdbDoc.submitObjectInsertOp(['problems', i, 'files', filename], file);
-    }
-    private onFileNameChange = (i: number, event: IPMFileNameChangedEvent): void => {
-        const { oldName, name } = event;
-        const oldP = ['problems', i, 'files', oldName];
-        const newP = ['problems', i, 'files', name];
-        const prevValue = this.sdbDoc.traverse(oldP);
-        this.sdbDoc.submitObjectDeleteOp(oldP);
-        this.sdbDoc.submitObjectInsertOp(newP, prevValue);
-    }
-    private onFileContentsChange = (i: number, event: IPMFileContentsChangedEvent): void => {
-        const { name, contents } = event;
-        this.sdbDoc.submitObjectReplaceOp(['problems', i, 'files', name, 'contents'], contents);
-    }
-    private onFileDelete = (i: number, event: IPMFileDeleteEvent): void => {
-        const { name } = event;
-        this.sdbDoc.submitObjectDeleteOp(['problems', i, 'files', name]);
-    }
     private addProblem = (): void => {
-        this.sdbDoc.submitListPushOp(['problems'], {
-            afterCode: '',
-            code: `# code here`,
-            description: '*no description*',
-            files: {},
-            tests: [],
-        });
-        // this.state.problems.push({});
-        // this.setState({ problems: this.state.problems });
+        this.props.dispatch(addProblem());
     }
-    private deleteProblem = (index: number): void => {
-        this.sdbDoc.submitListDeleteOp(['problems', index]);
-        // this.state.problems.splice(index, 1);
-        // this.setState({ problems: this.state.problems });
-    };
 }
 
-window['su'] = () => {
-    mainApp.setState({ isAdmin: true});
-};
+export const App = reactRedux.connect()(PMApplication);

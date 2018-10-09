@@ -4,9 +4,9 @@
   "description": "PuzzleMI",
   "main": "index.js",
   "scripts": {
-    "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
-    "test": "react-scripts-ts test --env=jsdom",
+    "start": "react-app-rewired start --scripts-version react-scripts-ts",
+    "build": "react-app-rewired build --scripts-version react-scripts-ts",
+    "test": "react-app-rewired test --env=jsdom --scripts-version react-scripts-ts --env=jsdom",
     "eject": "react-scripts-ts eject"
   },
   "repository": {
@@ -32,9 +32,10 @@
     "react-redux": "^5.0.7",
     "react-scripts-ts": "2.17.0",
     "redux": "^4.0.0",
+    "redux-logger": "^3.0.6",
+    "redux-thunk": "^2.3.0",
     "sdb-ts": "^0.2.5",
-    "showdown": "^1.8.6",
-    "skulpt": "^0.11.1"
+    "showdown": "^1.8.6"
   },
   "devDependencies": {
     "@types/jest": "^23.3.2",
@@ -42,6 +43,12 @@
     "@types/react": "^16.4.14",
     "@types/react-dom": "^16.0.8",
     "@types/sharedb": "^1.0.1",
+    "css-loader": "^1.0.0",
+    "node-sass": "^4.9.3",
+    "react-app-rewire-scss": "^1.0.2",
+    "react-app-rewired": "^1.6.2",
+    "sass-loader": "^7.1.0",
+    "style-loader": "^0.23.0",
     "typescript": "^3.1.1"
   }
 }
