@@ -5,7 +5,7 @@ import { CodeEditor } from './CodeEditor';
 import update from 'immutability-helper';
 import { descriptionChanged, deleteTest } from '../actions';
 
-const Test = ({ dispatch, index, testIndex, test, isAdmin, doc }) => {
+const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc }) => {
     const doDeleteTest = () => {
         dispatch(deleteTest(index, testIndex));
     };
@@ -16,13 +16,13 @@ const Test = ({ dispatch, index, testIndex, test, isAdmin, doc }) => {
     if(isAdmin) {
         return <tr>
             <td>
-                <CodeEditor shareDBSubDoc={actualSubDoc} options={{lineNumbers: false, mode: 'python', lineWrapping: true}} />
+                <CodeEditor shareDBSubDoc={actualSubDoc} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}} />
             </td>
             <td>
-                <CodeEditor shareDBSubDoc={expectedSubDoc} options={{lineNumbers: false, mode: 'python', lineWrapping: true}} />
+                <CodeEditor shareDBSubDoc={expectedSubDoc} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}} />
             </td>
             <td>
-                <CodeEditor shareDBSubDoc={descriptionSubDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true}} />
+                <CodeEditor shareDBSubDoc={descriptionSubDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 30}} />
             </td>
             <td>
                 <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}>Delete</button>
@@ -30,17 +30,26 @@ const Test = ({ dispatch, index, testIndex, test, isAdmin, doc }) => {
         </tr>;
     } else {
         const converter = new showdown.Converter;
-        const problemDescription = { __html: converter.makeHtml(test.description) };
-        return <tr>
-            <td colSpan={4} dangerouslySetInnerHTML={problemDescription} />
+        const testDescription = { __html: converter.makeHtml(test.description) };
+        const passedStatusClass = testResult ? ( testResult.passed ? 'alert-success' : 'alert-danger') : 'alert-secondary';
+        const passFailMessage = testResult ? ( testResult.passed ? 'Passed' : 'Failed') : '';
+        return <tr className={['test', passedStatusClass].join(' ')}>
+            <td dangerouslySetInnerHTML={testDescription} />
+            <td>
+                {passFailMessage}
+            </td>
         </tr>;
     }
 }
 function mapStateToProps(state, ownProps) {
     const { index, testIndex } = ownProps;
-    const { isAdmin, problems, doc } = state;
-    const test = problems[index].tests[testIndex];
+    const { user, problems, doc } = state;
+    const { isAdmin } = user;
+    const problem = problems[index];
+    const test = problem.tests[testIndex];
+    const userSolution = user.solutions[problem.id];
+    const testResult = userSolution.testResults[test.id]; 
 
-    return update(ownProps, { isAdmin: {$set: isAdmin}, test: {$set: test}, doc: {$set: doc} });
+    return update(ownProps, { testResult: {$set: testResult}, isAdmin: {$set: isAdmin}, test: {$set: test}, doc: {$set: doc} });
 }
 export default connect(mapStateToProps)(Test); 

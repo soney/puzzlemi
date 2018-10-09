@@ -3,11 +3,15 @@ import { connect } from "react-redux";
 import * as showdown from 'showdown';
 import { CodeEditor } from './CodeEditor';
 import update from 'immutability-helper';
-import { descriptionChanged, deleteTest, deleteFile } from '../actions';
+import { descriptionChanged, deleteTest, deleteFile, deleteUserFile } from '../actions';
 
-const File = ({ dispatch, index, fileIndex, file, isAdmin, doc }) => {
+const File = ({ dispatch, index, fileIndex, file, isAdmin, doc, isUserFile }) => {
     const doDeleteFile = () => {
-        dispatch(deleteFile(index, fileIndex));
+        if(isUserFile) {
+            dispatch(deleteUserFile(index, file.name));
+        } else {
+            dispatch(deleteFile(index, fileIndex));
+        }
     };
     const p = ['problems', index, 'files', fileIndex];
     const nameSubDoc = doc.subDoc([...p, 'name']);
@@ -21,7 +25,10 @@ const File = ({ dispatch, index, fileIndex, file, isAdmin, doc }) => {
     } else {
         return <div className='file'>
             <div className='fileInfo'>
-                {file.name}
+                <span className='filename'>{file.name}</span>
+                { isUserFile &&
+                    <button className="btn btn-outline-danger btn-sm" onClick={doDeleteFile}>Delete</button>
+                }
             </div>
             <div className='fileData'>
                 {file.contents}
@@ -30,9 +37,18 @@ const File = ({ dispatch, index, fileIndex, file, isAdmin, doc }) => {
     }
 }
 function mapStateToProps(state, ownProps) {
-    const { index, fileIndex } = ownProps;
-    const { isAdmin, problems, doc } = state;
-    const file = problems[index].files[fileIndex];
+    const { index, fileIndex, isUserFile } = ownProps;
+    const { user, problems, doc } = state;
+    const { isAdmin, solutions } = user;
+    const problem = problems[index]
+
+    let file;
+    if(isUserFile) {
+        const solution = solutions[problem.id];
+        file = solution.files[fileIndex]
+    } else {
+        file = problem.files[fileIndex]
+    }
 
     return update(ownProps, { isAdmin: {$set: isAdmin}, file: {$set: file}, doc: {$set: doc} });
 }

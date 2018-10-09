@@ -29,7 +29,9 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
             lineNumbers: true,
             mode: 'python',
             lineWrapping: true,
-            viewportMargin: 50
+            viewportMargin: 50,
+            width: null,
+            height: null,
         },
         value: ''
     };
@@ -57,6 +59,7 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
     public componentDidMount():void {
         this.codeMirror = CodeMirror.fromTextArea(this.codeNode, this.props.options);
         this.codeMirror.setValue(this.state.code);
+        this.codeMirror.setSize(this.props.options.width, this.props.options.height);
 
         if(this.props.shareDBSubDoc) {
             this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, this.props.shareDBSubDoc);

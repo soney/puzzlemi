@@ -10,30 +10,48 @@ const Tests = ({ index, tests, isAdmin, doc, dispatch }) => {
     const doAddTest = () => {
         dispatch(addTest(index));
     }
-    return <div>
-        <table className="table">
-            <thead>
-                <tr>
-                    <th>Actual</th>
-                    <th>Expected</th>
-                    <th>Description</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {tests && tests.length
-                ? tests.map((test, i) => <Test key={test.id+`${i}`} index={index} testIndex={i} />)
-                : <tr><td colSpan={4} className='no-tests'>(no tests)</td></tr>
-                }
-            </tbody>
-        </table>
-        { isAdmin &&
-            <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button>
+    if (isAdmin) {
+        return <div className='tests'>
+            <h4>Tests:</h4>
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>Actual</th>
+                        <th>Expected</th>
+                        <th>Description</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {tests && tests.length
+                    ? tests.map((test, i) => <Test key={test.id+`${i}`} index={index} testIndex={i} />)
+                    : <tr><td colSpan={4} className='no-tests'>(no tests)</td></tr>
+                    }
+                    <tr>
+                        <td colSpan={4}>
+                            <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>;
+    } else {
+        if(tests && tests.length) {
+            return <div className='tests'>
+                <table className="table">
+                    <tbody>
+                        { tests.map((test, i) => <Test key={test.id+`${i}`} index={index} testIndex={i} />) }
+                    </tbody>
+                </table>
+            </div>;
+        } else {
+            return <div className='tests' />
         }
-    </div>;
+    }
 }
 function mapStateToProps(state, ownProps) {
-    const { isAdmin, problems, doc } = state;
+    const { user, problems, doc } = state;
+    const { isAdmin } = user;
     const problem = problems[ownProps.index];
     const { tests } = problem;
 

@@ -44,7 +44,7 @@ export class PMTestSuite {
         delete this.oldAppendTestResult;
     }
     public getTestResults(): IPMTestSuiteResults {
-        return { passedAll: this.testResults.every((r) => r.passed), results: this.testResults };
+        return { passedAll: this.testResults.length === this.assertions.length && this.testResults.every((r) => r.passed), results: this.testResults };
     }
     public getTests(): PMAssertion[] {
         return this.assertions;

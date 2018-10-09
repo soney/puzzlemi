@@ -1,20 +1,31 @@
 import * as React from 'react';
 import { connect } from "react-redux";
-import { deleteProblem } from '../actions/index';
+import { deleteProblem, resetCode, setCode } from '../actions/index';
+import { runCode } from '../actions/userCode';
 import ProblemDescription from './ProblemDescription';
 import update from 'immutability-helper';
 import { CodeEditor } from './CodeEditor';
 import Tests from './Tests';
 import Files from './Files';
 
-const Problem = ({ index, dispatch, doc, isAdmin }) => {
+const Problem = ({ code, errors, index, output, dispatch, doc, passedAll, isAdmin }) => {
     const delProblem = () => {
         return dispatch(deleteProblem(index));
+    };
+    const doRunCode = () => {
+        return dispatch(runCode(index));
+    };
+    const doResetCode = () => {
+        return dispatch(resetCode(index));
+    };
+    const doSetCode = (ev) => {
+        const { value } = ev;
+        return dispatch(setCode(index, value));
     };
     const p = ['problems', index];
     const givenCodeSubDoc = doc.subDoc([...p, 'givenCode']);
     const afterCodeSubDoc = doc.subDoc([...p, 'afterCode']);
-    return <li className={'problem container'}>
+    return <li className={'problem container' + (passedAll ? ' passedAll' : '')}>
         { isAdmin &&
             <div className="row">
                 <div className="col">
@@ -27,46 +38,44 @@ const Problem = ({ index, dispatch, doc, isAdmin }) => {
                 <ProblemDescription index={index} />
             </div>
         </div>
-        {
-            isAdmin &&
-            <div className="row">
+        <div className="row">
+            {   isAdmin &&
                 <div className="col">
                     <h4>Given Code:</h4>
                     <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
-                </div>
-            </div>
-        }
-        {   isAdmin &&
-            <div className="row">
-                <div className="col">
                     <h4>Run After:</h4>
                     <CodeEditor shareDBSubDoc={afterCodeSubDoc} />
                 </div>
-            </div>
-        }
-        <div className="row">
+            }
+            {   !isAdmin &&
+                <div className="col">
+                    <CodeEditor value={code} onChange={doSetCode} />
+                    <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
+                </div>
+            }
             <div className="col">
                 {   !isAdmin &&
-                    <CodeEditor value='' />
+                    <div className={'codeOutput' + (errors.length > 0 ? ' alert alert-danger' : ' no-error')}>
+                        {output}
+                        {errors.join('\n')}
+                    </div>
                 }
-                {   !isAdmin &&
-                    <button disabled={false} className='btn btn-outline-success btn-sm btn-block'>Run</button>
-                }
-            </div>
-            <div className="col">
                 <Files index={index} />
             </div>
         </div>
         <div className="row">
             <div className="col">
-                <h4>Tests:</h4>
                 <Tests index={index} />
             </div>
         </div>
     </li>;
 }
 function mapStateToProps(state, ownProps) {
-    const { isAdmin, doc } = state;
-    return update(ownProps, { isAdmin: { $set: isAdmin }, doc: { $set: doc }});
+    const { index } = ownProps;
+    const { user, doc, problems } = state;
+    const { id } = problems[index];
+    const { isAdmin } = user;
+    const { code, output, passedAll, errors } = user.solutions[id];
+    return update(ownProps, { passedAll: { $set: passedAll },  errors: { $set: errors }, output: { $set: output }, isAdmin: { $set: isAdmin }, code: { $set: code }, doc: { $set: doc }});
 }
 export default connect(mapStateToProps)(Problem);
