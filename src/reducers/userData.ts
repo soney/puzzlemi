@@ -11,6 +11,13 @@ export const userData = (state: SDBDoc<IPuzzleSet>|null = null, action: any) => 
         } else {
             return {};
         }
+    } else if(action.type === EventTypes.PROBLEM_VISIBILITY_CHANGED) {
+        const { problemID, visible } = action;
+        return update(state, {
+            [problemID]: {
+                visible: { $set: visible }
+            }
+        });
     } else if(action.type === EventTypes.PROBLEM_COMPLETION_INFO_FETCHED) {
         const { completionInfo, problemID } = action;
         return update(state, {

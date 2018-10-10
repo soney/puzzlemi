@@ -118,7 +118,8 @@ export function runCode(index: number) {
                     }
                 } else {
                     doc.submitObjectInsertOp(['userData', id], {
-                        completed: [userID]
+                        completed: [userID],
+                        hidden: false
                     });
                 }
             }

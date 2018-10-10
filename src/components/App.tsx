@@ -8,14 +8,15 @@ import { setIsAdmin } from '../actions/user_actions';
 import update from 'immutability-helper';
 
 export interface IPuzzleSet {
-    problems: IProblem[],
+    problems: IProblem[];
     userData: {
-        [problemID: string]: IProblemUserInfo
-    }
+        [problemID: string]: IProblemUserInfo;
+    };
 }
 
 export interface IProblemUserInfo {
-    completed: string[]
+    completed: string[];
+    hidden: boolean;
 }
 
 export interface IProblem {

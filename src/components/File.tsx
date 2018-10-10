@@ -18,16 +18,18 @@ const File = ({ dispatch, index, fileIndex, file, isAdmin, doc, isUserFile }) =>
     const contentsSubDoc = doc.subDoc([...p, 'contents']);
     if(isAdmin) {
         return <div>
-            <button className="btn btn-outline-danger btn-sm" onClick={doDeleteFile}>Delete</button>
-            <CodeEditor shareDBSubDoc={nameSubDoc} options={{lineNumbers: false, mode: 'text', lineWrapping: true}} />
-            <CodeEditor shareDBSubDoc={contentsSubDoc} options={{lineNumbers: false, mode: 'text', lineWrapping: true}} />
+            <div className='clearfix'>
+                <button className="btn btn-outline-danger btn-sm float-right" onClick={doDeleteFile}>Delete</button>
+            </div>
+            <CodeEditor shareDBSubDoc={nameSubDoc} options={{lineNumbers: false, mode: 'text', lineWrapping: true, height: 30}} />
+            <CodeEditor shareDBSubDoc={contentsSubDoc} options={{lineNumbers: false, mode: 'text', lineWrapping: true, height: 120}} />
         </div>;
     } else {
         return <div className='file'>
-            <div className='fileInfo'>
+            <div className='fileInfo clearfix'>
                 <code className='filename'>{file.name}</code>
                 { isUserFile &&
-                    <button className="btn btn-outline-danger btn-sm" onClick={doDeleteFile}>Delete</button>
+                    <button className="btn btn-outline-danger btn-sm float-right" onClick={doDeleteFile}>Delete</button>
                 }
             </div>
             <pre className='fileData'>

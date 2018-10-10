@@ -106,6 +106,13 @@ export function deleteFile(index: number, fileIndex: number) {
     };
 }
 
+export function setProblemVisibility(id: string, visible: boolean) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        return doc.submitObjectReplaceOp(['userData', id, 'visible'], visible);
+    };
+}
+
 
 export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
     return (dispatch: Dispatch, getState) => {
@@ -185,6 +192,13 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                                 type: EventTypes.USER_COMPLETED_PROBLEM,
                                 userID,
                             });
+                        } else if(userDataRelPath.length === 2 && userDataRelPath[1] === 'visible') {
+                            const visible = op.oi as boolean;
+                            dispatch({
+                                problemID,
+                                type: EventTypes.PROBLEM_VISIBILITY_CHANGED,
+                                visible,
+                            });
                         } else if(userDataRelPath.length === 1) {
                             const completionInfo = op.oi;
                             dispatch({
@@ -196,7 +210,7 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                     } else if(p.length === 0) { // full replacement
                         dispatch(puzzlesFetched(doc.getData()));
                     }
-                    // console.log(op);
+                    console.log(op);
                 });
             }
         });
