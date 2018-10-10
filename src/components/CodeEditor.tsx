@@ -27,6 +27,7 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
     public static defaultProps: ICodeEditorProps = {
         options: {
             height: null,
+            indentUnit: 4,
             lineNumbers: true,
             lineWrapping: true,
             mode: 'python',
@@ -60,6 +61,12 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         this.codeMirror = CodeMirror.fromTextArea(this.codeNode, this.props.options);
         this.codeMirror.setValue(this.state.code);
         this.codeMirror.setSize(this.props.options.width, this.props.options.height);
+        this.codeMirror.setOption('extraKeys', {
+            Tab: (cm) => {
+                const spaces = Array(cm.getOption('indentUnit') + 1).join(' ');
+                cm.replaceSelection(spaces);
+            }
+        });
 
         if(this.props.shareDBSubDoc) {
             this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, this.props.shareDBSubDoc);
