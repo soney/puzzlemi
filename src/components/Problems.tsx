@@ -27,7 +27,7 @@ function mapStateToProps(state, givenProps) {
     const { isAdmin } = user;
     const filteredProblems = isAdmin ? problems : problems.filter((p) => {
         const { id } = p;
-        return userData[id].visible;
+        return userData && userData[id] && userData[id].visible;
     });
     return update(givenProps, { problems: { $set: filteredProblems}, isAdmin: { $set: isAdmin } });
 }

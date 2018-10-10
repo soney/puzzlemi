@@ -1,9 +1,8 @@
-import { IPuzzleSet } from '../components/App';
-import { SDBDoc } from 'sdb-ts';
+import { IProblemUserInfo } from '../components/App';
 import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
 
-export const userData = (state: SDBDoc<IPuzzleSet>|null = null, action: any) => {
+export const userData = (state: {[problemID: string]: IProblemUserInfo} = {}, action: any) => {
     if(action.type === EventTypes.PUZZLES_FETCHED) {
         const { puzzles } = action;
         if(puzzles) {
@@ -13,9 +12,8 @@ export const userData = (state: SDBDoc<IPuzzleSet>|null = null, action: any) => 
         }
     } else if(action.type === EventTypes.PROBLEM_VISIBILITY_CHANGED) {
         const { problemID, visible } = action;
-        return update(state, {
-            [problemID]: {
-                visible: { $set: visible }
+        return update(state, { $merge: {
+                [problemID]: { visible, completed: [] }
             }
         });
     } else if(action.type === EventTypes.PROBLEM_COMPLETION_INFO_FETCHED) {

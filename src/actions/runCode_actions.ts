@@ -119,7 +119,7 @@ export function runCode(index: number) {
                 } else {
                     doc.submitObjectInsertOp(['userData', id], {
                         completed: [userID],
-                        hidden: false
+                        visible: true
                     });
                 }
             }

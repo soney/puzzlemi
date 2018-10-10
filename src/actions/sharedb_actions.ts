@@ -56,7 +56,11 @@ export function addProblem() {
             tests: [],
         };
 
-        return doc.submitListPushOp(['problems'], newProblem);
+        doc.submitObjectInsertOp(['userData', newProblem.id], {
+            completed: [],
+            visible: true
+        });
+        doc.submitListPushOp(['problems'], newProblem);
     };
 }
 
@@ -109,7 +113,15 @@ export function deleteFile(index: number, fileIndex: number) {
 export function setProblemVisibility(id: string, visible: boolean) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
-        return doc.submitObjectReplaceOp(['userData', id, 'visible'], visible);
+        const { userData } = doc.getData();
+        if(userData[id]) {
+            doc.submitObjectReplaceOp(['userData', id, 'visible'], visible);
+        } else {
+            doc.submitObjectInsertOp(['userData', id], {
+                completed: [],
+                visible
+            });
+        }
     };
 }
 
@@ -210,7 +222,7 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                     } else if(p.length === 0) { // full replacement
                         dispatch(puzzlesFetched(doc.getData()));
                     }
-                    console.log(op);
+                    // console.log(op);
                 });
             }
         });

@@ -103,10 +103,10 @@ function mapStateToProps(state, ownProps) {
     const { id } = problems[index];
     const { isAdmin } = user;
     const { code, output, passedAll, errors } = user.solutions[id];
-    const visible = userData[id].visible;
+    const visible = userData[id] && userData[id].visible;
     const completed: string[] = userData[id] ? userData[id].completed : [];
-    const numCompleted = completed.length;
-    const myCompletionIndex = completed.indexOf(user.id);
+    const numCompleted = completed ? completed.length : 0;
+    const myCompletionIndex = completed ? completed.indexOf(user.id) : -1;
     return update(ownProps, { id: {$set: id}, visible: {$set: visible}, numCompleted: {$set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex}, passedAll: { $set: passedAll },  errors: { $set: errors }, output: { $set: output }, isAdmin: { $set: isAdmin }, code: { $set: code }, doc: { $set: doc }});
 }
 export default connect(mapStateToProps)(Problem);
