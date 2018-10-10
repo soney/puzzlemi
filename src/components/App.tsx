@@ -53,6 +53,9 @@ const PMApplication = ({ isAdmin, dispatch }) => {
     };
     return <div>
         <Problems />
+        <div className='contact'>
+            Contact: <a href='http://from.so/' target='_blank'>Steve Oney</a> (University of Michigan)
+        </div>
     </div>;
 };
 

@@ -108,3 +108,17 @@
     }
 }
 
+
+.contact {
+    margin-top: 20px;
+    text-align: center;
+    color: #AAA;
+    a {
+        &:hover {
+            text-decoration: underline;
+            color: #999;
+        }
+        text-decoration: none;
+        color: #AAA;
+    }
+}
