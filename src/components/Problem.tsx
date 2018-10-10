@@ -9,7 +9,7 @@ import { deleteProblem } from '../actions/sharedb_actions';
 import { runCode } from '../actions/runCode_actions';
 import { setCode } from '../actions/user_actions';
 
-const Problem = ({ code, errors, index, output, dispatch, doc, passedAll, isAdmin }) => {
+const Problem = ({ code, errors, index, output, dispatch, doc, passedAll, isAdmin, numCompleted, myCompletionIndex }) => {
     const doDeleteProblem = () => {
         return dispatch(deleteProblem(index));
     };
@@ -20,6 +20,7 @@ const Problem = ({ code, errors, index, output, dispatch, doc, passedAll, isAdmi
         const { value } = ev;
         return dispatch(setCode(index, value));
     };
+    const iHaveCompleted = myCompletionIndex >= 0;
     const p = ['problems', index];
     const givenCodeSubDoc = doc.subDoc([...p, 'givenCode']);
     const afterCodeSubDoc = doc.subDoc([...p, 'afterCode']);
@@ -66,14 +67,25 @@ const Problem = ({ code, errors, index, output, dispatch, doc, passedAll, isAdmi
                 <Tests index={index} />
             </div>
         </div>
+        <div className="row completion-info">
+            <div className="col">
+                {iHaveCompleted &&
+                    <span> You are #{myCompletionIndex+1} of </span>
+                }
+                {numCompleted} {numCompleted === 1 ? 'user' : 'users'}{iHaveCompleted && <span> that</span>} finished this problem.
+            </div>
+        </div>
     </li>;
 }
 function mapStateToProps(state, ownProps) {
     const { index } = ownProps;
-    const { user, doc, problems } = state;
+    const { user, doc, problems, userData } = state;
     const { id } = problems[index];
     const { isAdmin } = user;
     const { code, output, passedAll, errors } = user.solutions[id];
-    return update(ownProps, { passedAll: { $set: passedAll },  errors: { $set: errors }, output: { $set: output }, isAdmin: { $set: isAdmin }, code: { $set: code }, doc: { $set: doc }});
+    const completed: string[] = userData[id] ? userData[id].completed : [];
+    const numCompleted = completed.length;
+    const myCompletionIndex = completed.indexOf(user.id);
+    return update(ownProps, { numCompleted: {$set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex}, passedAll: { $set: passedAll },  errors: { $set: errors }, output: { $set: output }, isAdmin: { $set: isAdmin }, code: { $set: code }, doc: { $set: doc }});
 }
 export default connect(mapStateToProps)(Problem);

@@ -5,9 +5,17 @@ import { SDBClient, SDBDoc } from 'sdb-ts';
 import Problems from './Problems';
 import { setDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
 import { setIsAdmin } from '../actions/user_actions';
+import update from 'immutability-helper';
 
 export interface IPuzzleSet {
-    problems: IProblem[]
+    problems: IProblem[],
+    userData: {
+        [problemID: string]: IProblemUserInfo
+    }
+}
+
+export interface IProblemUserInfo {
+    completed: string[]
 }
 
 export interface IProblem {
@@ -19,7 +27,7 @@ export interface IProblem {
     tests: any;
 };
 
-const emptyDoc = { problems: [] };
+const emptyDoc = { problems: [], userData: {} };
 const PMApplication = ({ isAdmin, dispatch }) => {
     const DEBUG_MODE = window.location.host === 'localhost:3000';
     const wsLocation = DEBUG_MODE ? `ws://localhost:8000` : `ws://${window.location.host}`;
@@ -29,6 +37,7 @@ const PMApplication = ({ isAdmin, dispatch }) => {
     const sdbClient: SDBClient = new SDBClient(ws);
     const sdbDoc: SDBDoc<IPuzzleSet> = sdbClient.get('puzzles', puzzleName);
     dispatch(setDoc(sdbDoc));
+    dispatch(setIsAdmin(isAdmin));
     sdbDoc.createIfEmpty(emptyDoc).then(() => {
         dispatch(beginListeningOnDoc(sdbDoc));
     });
@@ -36,7 +45,7 @@ const PMApplication = ({ isAdmin, dispatch }) => {
         dispatch(setIsAdmin(true));
     };
     window['toJSON'] = () => {
-        console.log(JSON.stringify(sdbDoc.getData()));
+        console.log(JSON.stringify(update(sdbDoc.getData(), { userData: { $set: {} }})));
     };
     window['fromJSON'] = (str: string) => {
         const newData: IPuzzleSet = JSON.parse(str);

@@ -10,12 +10,14 @@ import registerServiceWorker from './registerServiceWorker';
 import thunkMiddleware from 'redux-thunk';
 import { createLogger } from 'redux-logger';
 
-const loggerMiddleware = createLogger();
+const ENABLE_LOGGER = false;
+const middleware = [thunkMiddleware];
+if(ENABLE_LOGGER) {
+    const loggerMiddleware = createLogger();
+    middleware.push(loggerMiddleware);
+}
 
-export const store = createStore(rootReducer, applyMiddleware(
-    thunkMiddleware,
-    loggerMiddleware
-));
+export const store = createStore(rootReducer, applyMiddleware(...middleware));
 
 render(
     <Provider store={store}>

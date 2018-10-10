@@ -115,15 +115,16 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
             } else if (type === 'op') {
                 ops.forEach((op) => {
                     const { p, li, ld } = op;
-                    const relPath = SDBDoc.relative(['problems'], p);
-                    if(relPath) {
-                        if(relPath.length === 1) {
-                            const index = relPath[0] as number;
+                    const problemRelPath = SDBDoc.relative(['problems'], p);
+                    const userDataRelPath = SDBDoc.relative(['userData'], p);
+                    if(problemRelPath) {
+                        if(problemRelPath.length === 1) {
+                            const index = problemRelPath[0] as number;
                             if(ld) { dispatch(problemDeleted(index)); }
                             if(li) { dispatch(problemAdded(index, li)); }
-                        } else if(relPath.length === 3) {
-                            const index = relPath[0] as number;
-                            const item = relPath[1];
+                        } else if(problemRelPath.length === 3) {
+                            const index = problemRelPath[0] as number;
+                            const item = problemRelPath[1];
                             const problemP = ['problems', index];
                             const problem = doc.traverse(problemP);
                             if(item === 'description') {
@@ -137,41 +138,61 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                                 const newCode = doc.traverse([...problemP, item]);
                                 dispatch(afterCodeChanged(index, newCode));
                             } else if(item === 'tests') {
-                                const testIndex = relPath[2] as number;
+                                const testIndex = problemRelPath[2] as number;
                                 if(li) {
                                     dispatch(testAdded(problem.id, index, testIndex, li));
                                 } else if(ld) {
                                     dispatch(testDeleted(problem.id, index, testIndex));
                                 }
                             } else if(item === 'files') {
-                                const fileIndex = relPath[2] as number;
+                                const fileIndex = problemRelPath[2] as number;
                                 if(li) {
                                     dispatch(fileAdded(index, fileIndex, li));
                                 } else if(ld) {
                                     dispatch(fileDeleted(index, fileIndex));
                                 }
                             }
-                        } else if(relPath.length === 5) {
-                            const index = relPath[0] as number;
-                            const item = relPath[1];
+                        } else if(problemRelPath.length === 5) {
+                            const index = problemRelPath[0] as number;
+                            const item = problemRelPath[1];
 
                             const problemP = ['problems', index];
                             const problem = doc.traverse(problemP);
                             if(item === 'tests') {
-                                const testIndex = relPath[2] as number;
+                                const testIndex = problemRelPath[2] as number;
                                 const testP = ['problems', index, item, testIndex];
-                                const testPart = relPath[3] as 'actual'|'expected'|'description';
+                                const testPart = problemRelPath[3] as 'actual'|'expected'|'description';
                                 const value = doc.traverse([...testP, testPart]);
 
                                 dispatch(testPartChanged(problem.id, index, testIndex, testPart, value));
                             } else if(item === 'files') {
-                                const fileIndex = relPath[2] as number;
+                                const fileIndex = problemRelPath[2] as number;
                                 const fileP = ['problems', index, item, fileIndex];
-                                const filePart = relPath[3] as 'name'|'contents';
+                                const filePart = problemRelPath[3] as 'name'|'contents';
                                 const value = doc.traverse([...fileP, filePart]);
 
                                 dispatch(filePartChanged(index, fileIndex, filePart, value));
                             }
+                        }
+                    } else if(userDataRelPath && userDataRelPath.length >= 1) {
+                        const problemID = userDataRelPath[0];
+                        console.log(userDataRelPath);
+                        if(userDataRelPath.length === 3 && userDataRelPath[1] === 'completed') {
+                            const userID = li;
+                            const index = userDataRelPath[2];
+                            dispatch({
+                                index,
+                                problemID,
+                                type: EventTypes.USER_COMPLETED_PROBLEM,
+                                userID,
+                            });
+                        } else if(userDataRelPath.length === 1) {
+                            const completionInfo = op.oi;
+                            dispatch({
+                                completionInfo,
+                                problemID,
+                                type: EventTypes.PROBLEM_COMPLETION_INFO_FETCHED,
+                            });
                         }
                     } else if(p.length === 0) { // full replacement
                         dispatch(puzzlesFetched(doc.getData()));

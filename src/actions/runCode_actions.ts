@@ -4,6 +4,8 @@ import '../js/skulpt/skulpt-stdlib.js';
 import { PMAssertion, PMAssertEqual } from "../pyTests/PMTest";
 import { PMTestSuite } from "../pyTests/PMTestSuite";
 import EventTypes from "./EventTypes";
+import { SDBDoc } from "sdb-ts";
+import { IPuzzleSet } from "../components/App.js";
 
 declare var Sk;
 
@@ -105,6 +107,21 @@ export function runCode(index: number) {
                 testResults,
                 type: EventTypes.DONE_RUNNING_CODE
             });
+            if(passedAll) {
+                const currentState = getState();
+                const userID = currentState.user.id;
+                const doc: SDBDoc<IPuzzleSet> = currentState.doc;
+                const { userData } = doc.getData();
+                if(userData[id]) {
+                    if(userData[id].completed.indexOf(userID) < 0) {
+                        doc.submitListPushOp(['userData', id, 'completed'], userID);
+                    }
+                } else {
+                    doc.submitObjectInsertOp(['userData', id], {
+                        completed: [userID]
+                    });
+                }
+            }
         });
     };
 }
