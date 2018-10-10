@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { connect } from "react-redux";
-import * as showdown from 'showdown';
 import { CodeEditor } from './CodeEditor';
 import update from 'immutability-helper';
-import { descriptionChanged, deleteTest, deleteFile, deleteUserFile } from '../actions';
+import { deleteUserFile } from '../actions/user_actions';
+import { deleteFile } from '../actions/sharedb_actions';
 
 const File = ({ dispatch, index, fileIndex, file, isAdmin, doc, isUserFile }) => {
     const doDeleteFile = () => {
@@ -25,14 +25,14 @@ const File = ({ dispatch, index, fileIndex, file, isAdmin, doc, isUserFile }) =>
     } else {
         return <div className='file'>
             <div className='fileInfo'>
-                <span className='filename'>{file.name}</span>
+                <code className='filename'>{file.name}</code>
                 { isUserFile &&
                     <button className="btn btn-outline-danger btn-sm" onClick={doDeleteFile}>Delete</button>
                 }
             </div>
-            <div className='fileData'>
+            <pre className='fileData'>
                 {file.contents}
-            </div>
+            </pre>
         </div>;
     }
 }

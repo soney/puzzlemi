@@ -1,4 +1,4 @@
-import { SDBSubDoc, SDBClient } from "sdb-ts";
+import { SDBSubDoc, } from "sdb-ts";
 
 class ShareDBCodeMirrorBinding {
     private editorDoc: CodeMirror.Doc;

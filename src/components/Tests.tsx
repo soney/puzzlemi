@@ -1,10 +1,8 @@
 import * as React from 'react';
 import { connect } from "react-redux";
-import * as showdown from 'showdown';
-import { CodeEditor } from './CodeEditor';
 import update from 'immutability-helper';
-import { descriptionChanged, addTest } from '../actions';
 import Test from './Test';
+import { addTest } from '../actions/sharedb_actions';
 
 const Tests = ({ index, tests, isAdmin, doc, dispatch }) => {
     const doAddTest = () => {

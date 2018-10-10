@@ -3,7 +3,6 @@ import { connect } from "react-redux";
 import * as showdown from 'showdown';
 import { CodeEditor } from './CodeEditor';
 import update from 'immutability-helper';
-import { descriptionChanged } from '../actions';
 
 const ProblemDescription = ({ index, problem, isAdmin, doc }) => {
     if(isAdmin) {

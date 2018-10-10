@@ -1,6 +1,6 @@
 import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
-import uuid from 'src/utils/uuid';
+import uuid from '../utils/uuid';
 
 export interface IUser {
     isAdmin: boolean;
@@ -97,7 +97,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
             }
         });
     } else if(action.type === EventTypes.BEGIN_RUN_CODE) {
-        const { id, errors } = action;
+        const { id } = action;
         return update(state, {
             solutions: {
                 [id]: {
@@ -123,7 +123,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
             return state;
         }
     } else if(action.type === EventTypes.FILE_WRITTEN) {
-        const { id, name, contents, errors } = action;
+        const { id, name, contents } = action;
         const files = state.solutions[id].files;
         const fIndex = files.findIndex((f) => f.name === name);
         if(fIndex < 0) {
@@ -159,7 +159,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
             }
         });
     } else if(action.type === EventTypes.DONE_RUNNING_CODE) {
-        const { id, hasError, passedAll, testResults } = action;
+        const { id, passedAll, testResults } = action;
         return update(state, {
             solutions: {
                 [id]: {

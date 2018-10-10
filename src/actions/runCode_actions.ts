@@ -3,7 +3,7 @@ import '../js/skulpt/skulpt.min.js';
 import '../js/skulpt/skulpt-stdlib.js';
 import { PMAssertion, PMAssertEqual } from "../pyTests/PMTest";
 import { PMTestSuite } from "../pyTests/PMTestSuite";
-import { EventTypes } from "./index";
+import EventTypes from "./EventTypes";
 
 declare var Sk;
 
@@ -21,7 +21,7 @@ export function runCode(index: number) {
         const { code } = solution;
 
         let output: string = '';
-        const outputs = [];
+        const outputs: string[] = [];
         const outf = (outValue: string): void => {
             outputs.push(outValue);
             output = outputs.join('');

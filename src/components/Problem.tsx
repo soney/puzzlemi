@@ -1,22 +1,20 @@
 import * as React from 'react';
 import { connect } from "react-redux";
-import { deleteProblem, resetCode, setCode } from '../actions/index';
-import { runCode } from '../actions/userCode';
 import ProblemDescription from './ProblemDescription';
 import update from 'immutability-helper';
 import { CodeEditor } from './CodeEditor';
 import Tests from './Tests';
 import Files from './Files';
+import { deleteProblem } from '../actions/sharedb_actions';
+import { runCode } from '../actions/runCode_actions';
+import { setCode } from '../actions/user_actions';
 
 const Problem = ({ code, errors, index, output, dispatch, doc, passedAll, isAdmin }) => {
-    const delProblem = () => {
+    const doDeleteProblem = () => {
         return dispatch(deleteProblem(index));
     };
     const doRunCode = () => {
         return dispatch(runCode(index));
-    };
-    const doResetCode = () => {
-        return dispatch(resetCode(index));
     };
     const doSetCode = (ev) => {
         const { value } = ev;
@@ -29,7 +27,7 @@ const Problem = ({ code, errors, index, output, dispatch, doc, passedAll, isAdmi
         { isAdmin &&
             <div className="row">
                 <div className="col">
-                    <button className="btn btn-block btn-sm btn-outline-danger" onClick={delProblem}>Delete Problem</button>
+                    <button className="btn btn-block btn-sm btn-outline-danger" onClick={doDeleteProblem}>Delete Problem</button>
                 </div>
             </div>
         }
@@ -55,10 +53,10 @@ const Problem = ({ code, errors, index, output, dispatch, doc, passedAll, isAdmi
             }
             <div className="col">
                 {   !isAdmin &&
-                    <div className={'codeOutput' + (errors.length > 0 ? ' alert alert-danger' : ' no-error')}>
+                    <pre className={'codeOutput' + (errors.length > 0 ? ' alert alert-danger' : ' no-error')}>
                         {output}
                         {errors.join('\n')}
-                    </div>
+                    </pre>
                 }
                 <Files index={index} />
             </div>

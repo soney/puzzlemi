@@ -173,6 +173,8 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                                 dispatch(filePartChanged(index, fileIndex, filePart, value));
                             }
                         }
+                    } else if(p.length === 0) { // full replacement
+                        dispatch(puzzlesFetched(doc.getData()));
                     }
                     // console.log(op);
                 });

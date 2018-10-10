@@ -1,10 +1,8 @@
 import * as React from 'react';
 import { connect } from "react-redux";
-import * as showdown from 'showdown';
-import { CodeEditor } from './CodeEditor';
 import update from 'immutability-helper';
-import { descriptionChanged, addTest, addFile } from '../actions';
 import File from './File';
+import { addFile } from '../actions/sharedb_actions';
 
 const Files = ({ index, files, isAdmin, doc, dispatch, userFiles }) => {
     const doAddFile = () => {

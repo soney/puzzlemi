@@ -21,16 +21,26 @@ export interface IProblem {
 
 const emptyDoc = { problems: [] };
 const PMApplication = ({ isAdmin, dispatch }) => {
-    // private ws: WebSocket = new WebSocket(`ws://${window.location.host}`);
-    const ws: WebSocket = new WebSocket(`ws://localhost:8000`);
+    const DEBUG_MODE = window.location.host === 'localhost:3000';
+    const wsLocation = DEBUG_MODE ? `ws://localhost:8000` : `ws://${window.location.host}`;
+    const puzzleName = DEBUG_MODE ? 'p' : window.location.pathname.slice(1);
+
+    const ws: WebSocket = new WebSocket(wsLocation);
     const sdbClient: SDBClient = new SDBClient(ws);
-    const sdbDoc: SDBDoc<IPuzzleSet> = sdbClient.get('puzzles', 'p');
+    const sdbDoc: SDBDoc<IPuzzleSet> = sdbClient.get('puzzles', puzzleName);
     dispatch(setDoc(sdbDoc));
     sdbDoc.createIfEmpty(emptyDoc).then(() => {
         dispatch(beginListeningOnDoc(sdbDoc));
     });
     window['su'] = () => {
         dispatch(setIsAdmin(true));
+    };
+    window['toJSON'] = () => {
+        console.log(JSON.stringify(sdbDoc.getData()));
+    };
+    window['fromJSON'] = (str: string) => {
+        const newData: IPuzzleSet = JSON.parse(str);
+        sdbDoc.submitObjectReplaceOp([], newData);
     };
     return <div>
         <Problems />
