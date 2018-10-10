@@ -176,7 +176,6 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                         }
                     } else if(userDataRelPath && userDataRelPath.length >= 1) {
                         const problemID = userDataRelPath[0];
-                        console.log(userDataRelPath);
                         if(userDataRelPath.length === 3 && userDataRelPath[1] === 'completed') {
                             const userID = li;
                             const index = userDataRelPath[2];
