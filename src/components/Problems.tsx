@@ -1,18 +1,17 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import Problem from './Problem';
-import { addProblem } from 'src/actions';
 import update from 'immutability-helper';
+import { addProblem } from '../actions/sharedb_actions';
 
-const Problems = ({ isAdmin, sdbDoc, dispatch, problems }) => {
-
+const Problems = ({ isAdmin, dispatch, problems }) => {
     const doAddProblem = (): void => {
         dispatch(addProblem());
     }
     return <ul className='problems'>
         {problems && problems.length
         ? problems.map((problem, index) => {
-            return <Problem key={problem.id + `${index}`} index={index} sdbDoc={sdbDoc} problem={problem} />;
+            return <Problem key={problem.id + `${index}`} index={index} problem={problem} />;
             })
         : <li className='container no-problems'>(no problems yet)</li>}
         {

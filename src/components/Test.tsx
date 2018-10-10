@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import * as showdown from 'showdown';
 import { CodeEditor } from './CodeEditor';
 import update from 'immutability-helper';
-import { descriptionChanged, deleteTest } from '../actions';
+import { deleteTest } from '../actions/sharedb_actions';
 
 const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc }) => {
     const doDeleteTest = () => {

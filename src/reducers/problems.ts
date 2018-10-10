@@ -1,4 +1,4 @@
-import { EventTypes } from '../actions'
+import EventTypes from '../actions/EventTypes';
 import { IProblem } from '../components/App';
 import update from 'immutability-helper';
 

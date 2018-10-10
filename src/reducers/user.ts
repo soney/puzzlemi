@@ -1,4 +1,4 @@
-import { EventTypes } from '../actions'
+import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
 import uuid from 'src/utils/uuid';
 
