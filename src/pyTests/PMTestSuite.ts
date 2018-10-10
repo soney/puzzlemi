@@ -1,7 +1,7 @@
 // tslint:disable:ordered-imports
 // import * as Sk from 'skulpt';
-import '../skulpt/skulpt.min.js';
-import '../skulpt/skulpt-stdlib.js';
+import '../js/skulpt/skulpt.min.js';
+import '../js/skulpt/skulpt-stdlib.js';
 declare var Sk;
 import { PMAssertion } from './PMTest';
 
@@ -44,7 +44,7 @@ export class PMTestSuite {
         delete this.oldAppendTestResult;
     }
     public getTestResults(): IPMTestSuiteResults {
-        return { passedAll: this.testResults.every((r) => r.passed), results: this.testResults };
+        return { passedAll: this.testResults.length === this.assertions.length && this.testResults.every((r) => r.passed), results: this.testResults };
     }
     public getTests(): PMAssertion[] {
         return this.assertions;

@@ -10,12 +10,12 @@
         "jsx": "react",
         "moduleResolution": "node",
         "rootDir": "src",
-        "forceConsistentCasingInFileNames": true,
+        "forceConsistentCasingInFileNames": false,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noImplicitAny": false,
         "strictNullChecks": true,
-        "suppressImplicitAnyIndexErrors": true,
+        "suppressImplicitAnyIndexErrors": false,
         "noUnusedLocals": true
     },
     "exclude": [
