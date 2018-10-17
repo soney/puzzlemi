@@ -1,4 +1,5 @@
 import EventTypes from '../actions/EventTypes';
+import store from 'storejs';
 import update from 'immutability-helper';
 import uuid from '../utils/uuid';
 
@@ -23,11 +24,15 @@ export interface IUser {
         }
     }}
 }
-const defaultUser: IUser = {
+const defaultUser: IUser = store.get('user') || {
     id: uuid(),
     isAdmin: false,
     solutions: {}
 };
+
+function updateStore(u: IUser): void {
+    store.set('user', u);
+}
 
 export const user = (state: IUser = defaultUser, action: any) => {
     if(action.type === EventTypes.PUZZLES_FETCHED) {
@@ -36,7 +41,9 @@ export const user = (state: IUser = defaultUser, action: any) => {
         const solutions = {};
         problems.forEach((problem) => {
             const { id, givenCode } = problem;
-            solutions[id] = { code: givenCode, errors: [], modified: false, files: [], output: '', passedAll: false, testResults: {} };
+            if(!state.solutions && !state.solutions[id]) {
+                solutions[id] = { code: givenCode, errors: [], modified: false, files: [], output: '', passedAll: false, testResults: {} };
+            }
         })
         return update(state, {
             solutions: { $merge: solutions }
@@ -60,7 +67,9 @@ export const user = (state: IUser = defaultUser, action: any) => {
             }
         });
     } else if(action.type === EventTypes.SET_IS_ADMIN) {
-        return update(state, { isAdmin: { $set: action.isAdmin }});
+        const newState = update(state, { isAdmin: { $set: action.isAdmin }});
+        updateStore(newState);
+        return newState;
     } else if(action.type === EventTypes.GIVEN_CODE_CHANGED) {
         const { id, code } = action;
         const solution = state.solutions[id];
@@ -87,7 +96,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
         });
     } else if(action.type === EventTypes.CODE_CHANGED) {
         const { id, code, modified } = action;
-        return update(state, {
+        const newState = update(state, {
             solutions: {
                 [id]: {
                     code: { $set: code },
@@ -96,6 +105,8 @@ export const user = (state: IUser = defaultUser, action: any) => {
                 }
             }
         });
+        updateStore(newState);
+        return newState;
     } else if(action.type === EventTypes.BEGIN_RUN_CODE) {
         const { id } = action;
         return update(state, {
