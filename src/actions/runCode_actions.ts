@@ -21,17 +21,21 @@ export function runCode(index: number) {
         const { id, afterCode, tests } = problem;
         const solution = user.solutions[id];
         const { code } = solution;
+        const testSuite = new PMTestSuite();
 
         let output: string = '';
+
         const outputs: string[] = [];
         const outf = (outValue: string): void => {
-            outputs.push(outValue);
-            output = outputs.join('');
-            dispatch({
-                id,
-                output,
-                type: EventTypes.OUTPUT_CHANGED
-            });
+            if(!testSuite.currentlyRunning()) {
+                outputs.push(outValue);
+                output = outputs.join('');
+                dispatch({
+                    id,
+                    output,
+                    type: EventTypes.OUTPUT_CHANGED
+                });
+            }
         };
 
         const readf = (fname: string): string => {
@@ -71,9 +75,8 @@ export function runCode(index: number) {
             type: EventTypes.BEGIN_RUN_CODE
         });
         const assertions: PMAssertion[] = tests.map((t) => new PMAssertEqual(t.actual, t.expected, t.description));
-        const testSuite = new PMTestSuite();
+        testSuite.setBeforeTests(afterCode);
         testSuite.setAssertions(assertions);
-        const testsStr = testSuite.getString();
         testSuite.onBeforeRunningTests();
         Sk.configure({
             filewriter: writef,
@@ -81,11 +84,37 @@ export function runCode(index: number) {
             read: readf
         });
         const myPromise = Sk.misceval.asyncToPromise(() => {
-            return Sk.importMainWithBody("<stdin>", false, `${code}\n${afterCode}\n${testsStr}`, true);
+            return Sk.importMainWithBody("<stdin>", false, `${code}\n${testSuite.getString()}`, true);
         });
         myPromise.catch((err) => {
+            const pretextLines = 0;
+            const progLines = code.match(/\n/g).length + 1;
+
+            let errorBefore: boolean = false;
+            let errorAfter: boolean = false;
+            if (err.traceback.length >= 1) {
+                const errorLine = err.traceback[0].lineno;
+                if (errorLine <= pretextLines) {
+                    errorBefore = true;
+                } else if(errorLine > (progLines + pretextLines)) {
+                    errorAfter = true;
+                } else {
+                    if (pretextLines > 0) {
+                        err.traceback[0].lineno = err.traceback[0].lineno - pretextLines + 1;
+                    } 
+                }
+            }
+            let errString: string;
+            if(errorBefore) {
+                errString = `Error before your code ran:\n${err.toString()}`;
+            } else if(errorAfter) {
+                errString = `Error while running our tests:\n${err.toString()}`;
+            } else {
+                errString = err.toString();
+            }
+
             dispatch({
-                errors: [err.toString()],
+                errors: [errString],
                 id,
                 type: EventTypes.ERROR_CHANGED
             });

@@ -35,6 +35,9 @@ const PMApplication = ({ isAdmin, dispatch }) => {
     const puzzleName = DEBUG_MODE ? 'p' : window.location.pathname.slice(1);
 
     const ws: WebSocket = new WebSocket(wsLocation);
+    ws.addEventListener('close', (ev: CloseEvent) => {
+        console.log(ev);
+    });
     const sdbClient: SDBClient = new SDBClient(ws);
     const sdbDoc: SDBDoc<IPuzzleSet> = sdbClient.get('puzzles', puzzleName);
     dispatch(setDoc(sdbDoc));

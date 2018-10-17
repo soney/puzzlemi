@@ -27,20 +27,41 @@ export interface IPMTestSuiteResults {
 }
 
 export class PMTestSuite {
+    private static NONE = {};
     private testResults: IPMTestResult[] = [];
     private assertions: PMAssertion[] = [];
     private oldAppendTestResult: any;
+    private oldDisableOutput: any;
+    private beforeTests: string = '';
+    private isRunningTests: boolean = false;
     public constructor() { }
+    public setBeforeTests(bt: string): void {
+        this.beforeTests = bt;
+    }
     public addTest(assertion: PMAssertion): void {
         this.assertions.push(assertion);
     }
     public onBeforeRunningTests(): void {
         this.testResults = [];
-        this.oldAppendTestResult = window['appendTestResult'];
+        this.oldAppendTestResult = window.hasOwnProperty('appendTestResult') ? window['appendTestResult'] : PMTestSuite.NONE;
         window['appendTestResult'] = this.appendTestResult;
+        this.oldDisableOutput = window.hasOwnProperty('disableOutput') ? window['disableOutput'] : PMTestSuite.NONE;
+        window['disableOutput'] = this.disableOutput;
     }
     public onAfterRanTests(): void {
-        window['appendTestResult'] = this.oldAppendTestResult;
+        this.isRunningTests = false;
+        if(this.oldDisableOutput === PMTestSuite.NONE) {
+            delete window['disableOutput'];
+        } else {
+            window['disableOutput'] = this.oldDisableOutput;
+        }
+        delete this.oldDisableOutput;
+
+        if(this.oldAppendTestResult === PMTestSuite.NONE) {
+            delete window['appendTestResult'];
+        } else {
+            window['appendTestResult'] = this.oldAppendTestResult;
+        }
         delete this.oldAppendTestResult;
     }
     public getTestResults(): IPMTestSuiteResults {
@@ -61,12 +82,17 @@ export class PMTestSuite {
         }
         return null;
     }
+    public currentlyRunning(): boolean {
+        return this.isRunningTests;
+    }
     public getString(): string {
         const spaces = '        ';
         const assertionStrings = this.assertions.map((a) => a.getAssertionString());
         const indentedAssertionStrings = assertionStrings.map((s) => spaces + s);
         return `import puzzlemi
 from unittest import TestCase
+
+${this.beforeTests}
 
 class PMTestCase(TestCase):
     def __init__(self):
@@ -89,8 +115,13 @@ ${indentedAssertionStrings.join('\n')}
                 self.appendResult('Error', None, None, e)
                 self.numFailed += 1
 
+puzzlemi.doFNCall('disableOutput', True)
 PMTestCase().main()
+puzzlemi.doFNCall('disableOutput', False)
 `;
+    }
+    private disableOutput = (en: ISkVal<any>): void => {
+        this.isRunningTests = Sk.ffi.remapToJs(en);
     }
     private appendTestResult = (result: ISkVal<any>, actual: ISkVal<any>, expected: ISkVal<any>, param: ISkVal<string>): void => {
         const res = Sk.ffi.remapToJs(result);
