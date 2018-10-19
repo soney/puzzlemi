@@ -41,7 +41,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
         const solutions = {};
         problems.forEach((problem) => {
             const { id, givenCode } = problem;
-            if(!state.solutions && !state.solutions[id]) {
+            if(!state.solutions || !state.solutions[id]) {
                 solutions[id] = { code: givenCode, errors: [], modified: false, files: [], output: '', passedAll: false, testResults: {} };
             }
         })

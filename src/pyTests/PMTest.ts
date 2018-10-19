@@ -4,7 +4,6 @@ export interface ISerializedAssertion {
     data: any
 }
 
-
 export abstract class PMAssertion {
     public static deserialize(sa: ISerializedAssertion): PMAssertion | null {
         const { type, data, description } = sa;
