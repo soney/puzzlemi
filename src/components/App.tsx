@@ -1,7 +1,7 @@
 import * as React from 'react';
 import '../css/App.scss';
 import * as reactRedux from 'react-redux';
-import { SDBClient, SDBDoc } from 'sdb-ts';
+import { ReconnectingWebsocket, SDBClient, SDBDoc } from 'sdb-ts';
 import Problems from './Problems';
 import { setDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
 import { setIsAdmin } from '../actions/user_actions';
@@ -34,8 +34,8 @@ const PMApplication = ({ isAdmin, dispatch }) => {
     const wsLocation = DEBUG_MODE ? `ws://localhost:8000` : `ws://${window.location.host}`;
     const puzzleName = DEBUG_MODE ? 'p' : window.location.pathname.slice(1);
 
-    const ws: WebSocket = new WebSocket(wsLocation);
-    ws.addEventListener('close', (ev: CloseEvent) => {
+    const ws: ReconnectingWebsocket = new ReconnectingWebsocket(wsLocation);
+    ws.addListener('close', (ev: CloseEvent) => {
         console.log(ev);
     });
     const sdbClient: SDBClient = new SDBClient(ws);
