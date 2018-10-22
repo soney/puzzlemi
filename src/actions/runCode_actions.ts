@@ -14,6 +14,21 @@ Sk.configure({
     jsonpSites : ['https://itunes.apple.com'],
     python3: true,
 });
+const jsonExternalLibInfo = {
+    dependencies : [
+        `${window.location.origin}/json.sk-master/stringify.js`,
+    ],
+    path : `${window.location.origin}/json.sk-master/__init__.js`,
+};
+
+if (Sk.externalLibraries) {
+    Sk.externalLibraries.json = jsonExternalLibInfo;
+} else {
+    Sk.externalLibraries = {
+        json: jsonExternalLibInfo
+    };
+}
+
 export function runCode(index: number) {
     return (dispatch: Dispatch, getState) => {
         const { user, problems } = getState();
@@ -124,8 +139,7 @@ export function runCode(index: number) {
         myPromise.then(onFinally, (err) => {
             const pretextLines = 0;
             const matches = code.match(/\n/g);
-            const progLines = matches ? (matches.length + 1) : 0;
-            console.log(progLines);
+            const progLines = matches ? (matches.length + 1) : 1;
 
             let errorBefore: boolean = false;
             let errorAfter: boolean = false;
