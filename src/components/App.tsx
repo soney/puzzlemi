@@ -31,7 +31,7 @@ export interface IProblem {
 const emptyDoc = { problems: [], userData: {} };
 const PMApplication = ({ isAdmin, dispatch }) => {
     const DEBUG_MODE = window.location.host === 'localhost:3000';
-    const wsLocation = DEBUG_MODE ? `ws://localhost:8000` : `ws://${window.location.host}`;
+    const wsLocation = DEBUG_MODE ? `ws://localhost:8000` : `wss://${window.location.host}`;
     const puzzleName = DEBUG_MODE ? 'p' : window.location.pathname.slice(1);
 
     const ws: ReconnectingWebsocket = new ReconnectingWebsocket(wsLocation);
