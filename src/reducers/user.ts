@@ -171,7 +171,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
         });
     } else if(action.type === EventTypes.DONE_RUNNING_CODE) {
         const { id, passedAll, testResults } = action;
-        return update(state, {
+        const newState = update(state, {
             solutions: {
                 [id]: {
                     passedAll: { $set: passedAll },
@@ -179,6 +179,8 @@ export const user = (state: IUser = defaultUser, action: any) => {
                 }
             }
         });
+        updateStore(newState);
+        return newState;
     } else if(action.type === EventTypes.TEST_ADDED || action.type === EventTypes.TEST_PART_CHANGED || action.type === EventTypes.TEST_DELETED) {
         const { id } = action;
         return update(state, {
