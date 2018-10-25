@@ -113,6 +113,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
             solutions: {
                 [id]: {
                     errors: { $set: [] },
+                    output: { $set: '' },
                     passedAll: { $set: false },
                     testResults: { $set: {} },
                 }
