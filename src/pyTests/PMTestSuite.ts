@@ -34,7 +34,7 @@ export class PMTestSuite {
     private oldDisableOutput: any;
     private beforeTests: string = '';
     private isRunningTests: boolean = false;
-    public constructor() { }
+
     public setBeforeTests(bt: string): void {
         this.beforeTests = bt;
     }

@@ -31,7 +31,7 @@ export interface IProblem {
 const emptyDoc = { problems: [], userData: {} };
 const PMApplication = ({ isAdmin, dispatch }) => {
     const DEBUG_MODE = window.location.host === 'localhost:3000';
-    const wsLocation = DEBUG_MODE ? `ws://localhost:8000` : `wss://${window.location.host}`;
+    const wsLocation = DEBUG_MODE ? `ws://localhost:8000` : `${window.location.protocol === 'http:' ? 'ws' : 'wss'}://${window.location.host}`;
     const puzzleName = DEBUG_MODE ? 'p' : window.location.pathname.slice(1);
 
     const ws: ReconnectingWebsocket = new ReconnectingWebsocket(wsLocation);
@@ -58,7 +58,7 @@ const PMApplication = ({ isAdmin, dispatch }) => {
     return <div>
         <Problems />
         <div className='contact'>
-            Contact: <a href='http://from.so/' target='_blank'>Steve Oney</a> (University of Michigan)
+            Contact: <a href='http://from.so/' target='_blank' rel='noopener noreferrer'>Steve Oney</a> (University of Michigan)
         </div>
     </div>;
 };

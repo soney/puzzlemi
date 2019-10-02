@@ -15,7 +15,7 @@ const ProblemDescription = ({ index, problem, isAdmin, doc }) => {
             </div>
         </div>;
     } else {
-        const converter = new showdown.Converter;
+        const converter = new showdown.Converter();
         const problemDescription = { __html: converter.makeHtml(problem.description) };
         return <div className="row">
             <div className="col">

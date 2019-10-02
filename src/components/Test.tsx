@@ -29,7 +29,7 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc }) =>
             </td>
         </tr>;
     } else {
-        const converter = new showdown.Converter;
+        const converter = new showdown.Converter();
         const testDescription = { __html: converter.makeHtml(test.description) };
         const passedStatusClass = testResult ? ( testResult.passed ? 'alert-success' : 'alert-danger') : 'alert-secondary';
         const passFailMessage = testResult ? ( testResult.passed ? 'Passed' : 'Failed') : '';
