@@ -20,10 +20,9 @@ if(ENABLE_LOGGER) {
 export const store = createStore(rootReducer, applyMiddleware(...middleware));
 
 render(
-    <div>hi!</div>,
-    // <Provider store={store}>
-    //     <App isAdmin={false} />
-    // </Provider>,
+    <Provider store={store}>
+        <App isAdmin={false} />
+    </Provider>,
     document.getElementById('root')
 )
 registerServiceWorker(); 

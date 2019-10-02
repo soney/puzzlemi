@@ -3,6 +3,7 @@ import { SDBDoc } from 'sdb-ts';
 import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
 import EventTypes from './EventTypes';
+import { ListInsertOp, ListDeleteOp, ObjectInsertOp } from 'sharedb';
 
 export const puzzlesFetched = (puzzles: IPuzzleSet) => ({
     puzzles, type: EventTypes.PUZZLES_FETCHED,
@@ -128,12 +129,15 @@ export function setProblemVisibility(id: string, visible: boolean) {
 
 export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
     return (dispatch: Dispatch, getState) => {
-        doc.subscribe((type: string, ops: any[]) => {
+        doc.subscribe((type, ops) => {
             if(type === null) {
                 dispatch(puzzlesFetched(doc.getData()));
             } else if (type === 'op') {
-                ops.forEach((op) => {
-                    const { p, li, ld } = op;
+                ops!.forEach((op) => {
+                    const { p } = op;
+                    const { li } = op as ListInsertOp;
+                    const { ld } = op as ListDeleteOp;
+
                     const problemRelPath = SDBDoc.relative(['problems'], p);
                     const userDataRelPath = SDBDoc.relative(['userData'], p);
                     if(problemRelPath) {
@@ -205,16 +209,16 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                                 userID,
                             });
                         } else if(userDataRelPath.length === 2 && userDataRelPath[1] === 'visible') {
-                            const visible = op.oi as boolean;
+                            const { oi } = op as ObjectInsertOp;
                             dispatch({
                                 problemID,
                                 type: EventTypes.PROBLEM_VISIBILITY_CHANGED,
-                                visible,
+                                visible: oi as boolean,
                             });
                         } else if(userDataRelPath.length === 1) {
-                            const completionInfo = op.oi;
+                            const { oi } = op as ObjectInsertOp;
                             dispatch({
-                                completionInfo,
+                                completionInfo: oi,
                                 problemID,
                                 type: EventTypes.PROBLEM_COMPLETION_INFO_FETCHED,
                             });

@@ -36,9 +36,9 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         },
         value: ''
     };
-    private codeMirror: CodeMirror.EditorFromTextArea;
-    private codeNode: HTMLTextAreaElement;
-    private codemirrorBinding: ShareDBCodeMirrorBinding;
+    private codeMirror!: CodeMirror.EditorFromTextArea;
+    private codeNode!: HTMLTextAreaElement;
+    private codemirrorBinding!: ShareDBCodeMirrorBinding;
 
     constructor(props:ICodeEditorProps, state:ICodeEditorState) {
         super(props, state);
@@ -63,8 +63,8 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         this.codeMirror.setSize(this.props.options.width, this.props.options.height);
         this.codeMirror.setOption('extraKeys', {
             Tab: (cm) => {
-                const spaces = Array(cm.getOption('indentUnit') + 1).join(' ');
-                cm.replaceSelection(spaces);
+                const spaces = Array(cm.getOption('indentUnit')! + 1).join(' ');
+                cm.getDoc().replaceSelection(spaces);
             }
         });
 
