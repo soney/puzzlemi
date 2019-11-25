@@ -25,6 +25,7 @@ export interface IProblem {
     givenCode: string;
     files: any;
     id: string;
+    variables: any;
     tests: any;
 };
 
@@ -42,6 +43,7 @@ const PMApplication = ({ isAdmin, dispatch }) => {
     const sdbDoc: SDBDoc<IPuzzleSet> = sdbClient.get('puzzles', puzzleName);
     dispatch(setDoc(sdbDoc));
     dispatch(setIsAdmin(isAdmin));
+    // dispatch(setName(name!=null?name:'null'));
     sdbDoc.createIfEmpty(emptyDoc).then(() => {
         dispatch(beginListeningOnDoc(sdbDoc));
     });

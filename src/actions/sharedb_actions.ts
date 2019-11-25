@@ -29,6 +29,9 @@ export const testAdded = (id: string, index: number, testIndex: number, test) =>
 export const testDeleted = (id: string, index: number, testIndex: number) => ({
     id, index, testIndex, type: EventTypes.TEST_DELETED,
 });
+export const testPartChanged = (id: string, index: number, testIndex: number, part: 'actual'|'expected'|'description'|'verified', value) => ({
+    id, index, part, testIndex, type: EventTypes.TEST_PART_CHANGED, value
+});
 export const fileAdded = (index: number, fileIndex: number, file) => ({
     file, fileIndex, index, type: EventTypes.FILE_ADDED,
 });
@@ -38,9 +41,15 @@ export const fileDeleted = (index: number, fileIndex: number) => ({
 export const filePartChanged = (index: number, fileIndex: number, part: 'name'|'contents', value) => ({
     fileIndex, index, part, type: EventTypes.FILE_PART_CHANGED, value
 });
-export const testPartChanged = (id: string, index: number, testIndex: number, part: 'actual'|'expected'|'description', value) => ({
-    id, index, part, testIndex, type: EventTypes.TEST_PART_CHANGED, value
-});
+export const variableAdded = (index: number, variableIndex: number, variable) => ({
+    index, variable, variableIndex, type: EventTypes.VARIABLE_ADDED
+})
+export const variableDeleted = (index:number, variableIndex: number) => ({
+    variableIndex, index, type: EventTypes.VARIABLE_DELETED
+})
+export const variablePartChanged = (index:number, variableIndex:number, part: 'type'|'name'|'description', value) => ({
+    variableIndex, index, part, type: EventTypes.VARIABLE_PART_CHANGED, value
+})
 export const setDoc = (doc: SDBDoc<IPuzzleSet>) => ({
     doc, type: EventTypes.SET_DOC,
 });
@@ -54,6 +63,7 @@ export function addProblem() {
             files: [],
             givenCode: `# code here`,
             id: uuid(),
+            variables: [],
             tests: [],
         };
 
@@ -72,16 +82,40 @@ export function deleteProblem(index: number) {
     };
 }
 
-export function addTest(index: number) {
+export function addTest(index: number, name:string, isAdmin: boolean) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
+        const p = ['problems', index, 'variables'];
+        const variables = doc.traverse(p);
+        let input = [] as any[];
+        let output =[] as any[];
+        variables.forEach(variable=> {
+            if(variable.type==="input") input.push({name: variable.name, value: ''});
+            if(variable.type==="output") output.push({name:variable.name, value: ''});
+        })
         const newTest = {
-            actual: 'True',
+            title: '*title*',
             description: '*no description*',
-            expected: 'True',
+            author: name,
+            verified: isAdmin,
             id: uuid(),
+            rate: 100,
+            input,
+            output
         };
         return doc.submitListPushOp(['problems', index, 'tests'], newTest);
+    };
+}
+
+export function addTestVariable(index: number, isAdmin: boolean) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        const newVariable = {
+            type: 'input',
+            name: '',
+            description: '*no description*'
+        };
+        return doc.submitListPushOp(['problems', index, 'variables'], newVariable);
     };
 }
 
@@ -90,6 +124,30 @@ export function deleteTest(index: number, testIndex: number) {
         const { doc } = getState();
         return doc.submitListDeleteOp(['problems', index, 'tests', testIndex]);
     };
+}
+
+export function deleteTestVariable(index: number, variableIndex: number) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        return doc.submitListDeleteOp(['problems', index, 'variables', variableIndex]);
+    }
+}
+
+export function changeTestStatus(index: number, testIndex: number, verified:boolean) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        // const { tests } = problems[index];
+        // const  test = tests[testIndex];
+        // const verified = !test.verified;
+        return doc.submitObjectReplaceOp(['problems', index, 'tests', testIndex, 'verified'], verified);
+    };
+}
+
+export function updateVariableType(index: number, variableIndex: number, type: string) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        return doc.submitObjectReplaceOp(['problems', index, 'variables', variableIndex, 'type'], type);
+    }
 }
 
 export function addFile(index: number) {
@@ -174,6 +232,24 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                                 } else if(ld) {
                                     dispatch(fileDeleted(index, fileIndex));
                                 }
+                            } else if(item === 'variables') {
+                                const variableIndex = problemRelPath[2] as number;
+                                if(li) {
+                                    dispatch(variableAdded(index, variableIndex, li));
+                                } else if (ld) {
+                                    dispatch(variableDeleted(index, variableIndex));
+                                }
+                            }
+                        } else if(problemRelPath.length === 4) {
+                            const index = problemRelPath[0] as number;
+                            const item = problemRelPath[1];
+                            const problemP = ['problems', index];
+                            const problem = doc.traverse(problemP);
+                            if(item === 'tests') {
+                                const testIndex = problemRelPath[2] as number;
+                                const testPart = problemRelPath[3] as 'actual'|'expected'|'description'|'verified';
+                                const { oi } = op as ObjectInsertOp;
+                                dispatch(testPartChanged(problem.id, index, testIndex, testPart, oi));    
                             }
                         } else if(problemRelPath.length === 5) {
                             const index = problemRelPath[0] as number;
@@ -184,17 +260,21 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             if(item === 'tests') {
                                 const testIndex = problemRelPath[2] as number;
                                 const testP = ['problems', index, item, testIndex];
-                                const testPart = problemRelPath[3] as 'actual'|'expected'|'description';
+                                const testPart = problemRelPath[3] as 'actual'|'expected'|'description'|'verified';
                                 const value = doc.traverse([...testP, testPart]);
-
-                                dispatch(testPartChanged(problem.id, index, testIndex, testPart, value));
+                                dispatch(testPartChanged(problem.id, index, testIndex, testPart, value));    
                             } else if(item === 'files') {
                                 const fileIndex = problemRelPath[2] as number;
                                 const fileP = ['problems', index, item, fileIndex];
                                 const filePart = problemRelPath[3] as 'name'|'contents';
                                 const value = doc.traverse([...fileP, filePart]);
-
                                 dispatch(filePartChanged(index, fileIndex, filePart, value));
+                            } else if(item === 'variables') {
+                                const variableIndex = problemRelPath[2] as number;
+                                const variableP = ['problems', index, item, variableIndex];
+                                const variablePart = problemRelPath[3] as 'type'|'name'|'description';
+                                const value = doc.traverse([...variableP, variablePart])
+                                dispatch(variablePartChanged(index, variableIndex, variablePart, value))
                             }
                         }
                     } else if(userDataRelPath && userDataRelPath.length >= 1) {
@@ -226,7 +306,6 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                     } else if(p.length === 0) { // full replacement
                         dispatch(puzzlesFetched(doc.getData()));
                     }
-                    // console.log(op);
                 });
             }
         });

@@ -5,6 +5,10 @@ export const setIsAdmin = (isAdmin: boolean) => ({
     isAdmin, type: EventTypes.SET_IS_ADMIN,
 });
 
+// export const setName = (name: string) => ({
+//     name, type:EventTypes.SET_NAME,
+// });
+
 export function deleteUserFile(index: number, name: string) {
     return (dispatch: Dispatch, getState) => {
         const { problems } = getState();

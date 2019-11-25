@@ -4,6 +4,7 @@ import ProblemDescription from './ProblemDescription';
 import update from 'immutability-helper';
 import { CodeEditor } from './CodeEditor';
 import Tests from './Tests';
+import TestTemplate from './TestTemplate';
 import Files from './Files';
 import { deleteProblem, setProblemVisibility } from '../actions/sharedb_actions';
 import { runCode } from '../actions/runCode_actions';
@@ -80,6 +81,11 @@ const Problem = ({ id, visible, code, errors, index, output, dispatch, doc, pass
                     </pre>
                 }
                 <Files index={index} />
+            </div>
+        </div>
+        <div className="row">
+            <div className="col">
+                <TestTemplate index={index} />
             </div>
         </div>
         <div className="row">

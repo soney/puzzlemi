@@ -4,14 +4,14 @@ import Problem from './Problem';
 import update from 'immutability-helper';
 import { addProblem } from '../actions/sharedb_actions';
 
-const Problems = ({ isAdmin, dispatch, problems }) => {
+const Problems = ({ name, isAdmin, dispatch, problems }) => {
     const doAddProblem = (): void => {
         dispatch(addProblem());
     }
     return <ul className='problems'>
         {problems && problems.length
         ? problems.map((problem, index) => {
-            return <Problem key={problem.id + `${index}`} index={index} problem={problem} />;
+            return <Problem key={problem.id + `${index}`} index={index} problem={problem} name={name}/>;
             })
         : <li className='container no-problems'>(no problems yet)</li>}
         {

@@ -14,6 +14,7 @@ enum EventTypes {
     PUZZLES_FETCHED='puzzles fetched',
     SET_DOC='set doc',
     SET_IS_ADMIN='set is admin',
+    // SET_NAME='set name',
     CODE_CHANGED='code changed',
     RESET_CODE='reset code',
     OUTPUT_CHANGED='output changed',
@@ -26,6 +27,9 @@ enum EventTypes {
     DELETE_USER_FILE='delete user file',
     USER_COMPLETED_PROBLEM='user completed problem',
     PROBLEM_COMPLETION_INFO_FETCHED='problem completion info fetched',
-    PROBLEM_VISIBILITY_CHANGED='problem visibility changed'
+    PROBLEM_VISIBILITY_CHANGED='problem visibility changed',
+    VARIABLE_ADDED = 'add variable',
+    VARIABLE_DELETED = 'delete variable',
+    VARIABLE_PART_CHANGED = 'variable part changed'
 };
 export default EventTypes;

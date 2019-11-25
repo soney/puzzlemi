@@ -62,6 +62,21 @@ export const problems = (state: IProblem[] = [], action: any) => {
                 tests: {$splice: [[testIndex, 1]]}
             }
         });
+    } else if(action.type === EventTypes.VARIABLE_ADDED) {
+        const { index, variable, variableIndex } = action;
+        return update(state, {
+            [index]: {
+                variables: {$splice:[[variableIndex, 0, variable]]}
+            }
+        });
+    } else if(action.type === EventTypes.VARIABLE_DELETED) {
+        const { index, variableIndex } = action;
+        return update(state, {
+            [index]: {
+                variables: {$splice:[[variableIndex, 1]]}
+            }
+        })
+
     } else if(action.type === EventTypes.FILE_ADDED) {
         const { index, file, fileIndex } = action;
         return update(state, {

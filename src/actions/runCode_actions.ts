@@ -39,6 +39,14 @@ export function runCode(index: number) {
         const testSuite = new PMTestSuite();
 
         let output: string = '';
+        let test = tests[0] as any;
+        let beforeCode = "";
+        test.input.forEach(variable=>{
+            const state:string = variable.name + "=" + variable.value + ";\n";
+            beforeCode = beforeCode.concat(state);
+        })
+        const fullCode = beforeCode.concat(code);
+ 
 
         const outputs: string[] = [];
         const outf = (outValue: string): void => {
@@ -89,7 +97,7 @@ export function runCode(index: number) {
             id,
             type: EventTypes.BEGIN_RUN_CODE
         });
-        const assertions: PMAssertion[] = tests.map((t) => new PMAssertEqual(t.actual, t.expected, t.description));
+        const assertions: PMAssertion[] = test.output.map((t) => new PMAssertEqual(t.name, t.value, ''));
         testSuite.setBeforeTests(afterCode);
         testSuite.setAssertions(assertions);
         testSuite.onBeforeRunningTests();
@@ -99,7 +107,7 @@ export function runCode(index: number) {
             read: readf
         });
         const myPromise = Sk.misceval.asyncToPromise(() => {
-            return Sk.importMainWithBody("<stdin>", false, `${code}\n${testSuite.getString()}`, true);
+            return Sk.importMainWithBody("<stdin>", false, `${fullCode}\n${testSuite.getString()}`, true);
         });
         const onFinally = () => {
             testSuite.onAfterRanTests();
@@ -138,7 +146,7 @@ export function runCode(index: number) {
         };
         myPromise.then(onFinally, (err) => {
             const pretextLines = 0;
-            const matches = code.match(/\n/g);
+            const matches = fullCode.match(/\n/g);
             const progLines = matches ? (matches.length + 1) : 1;
 
             let errorBefore: boolean = false;

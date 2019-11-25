@@ -33,6 +33,7 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
             mode: 'python',
             viewportMargin: 50,
             width: null,
+            onChangeCallback: null,
         },
         value: ''
     };
@@ -78,6 +79,7 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
                     this.props.onChange({ value: this.codeMirror.getValue() });
                 }
             }
+            if(this.props.options.onChangeCallback) this.props.options.onChangeCallback();
         });
     };
     public componentWillUnmount(): void {

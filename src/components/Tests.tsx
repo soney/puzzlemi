@@ -4,55 +4,67 @@ import update from 'immutability-helper';
 import Test from './Test';
 import { addTest } from '../actions/sharedb_actions';
 
-const Tests = ({ index, tests, isAdmin, doc, dispatch }) => {
+const Tests = ({ index, inputTests, verifiedTests, isAdmin, doc, dispatch, uid }) => {
     const doAddTest = () => {
-        dispatch(addTest(index));
+        dispatch(addTest(index, uid, isAdmin));
     }
-    if (isAdmin) {
-        return <div className='tests'>
-            <h4>Tests:</h4>
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>Actual</th>
-                        <th>Expected</th>
-                        <th>Description</th>
-                        <th />
-                    </tr>
-                </thead>
-                <tbody>
-                    {tests && tests.length
-                    ? tests.map((test, i) => <Test key={test.id+`${i}`} index={index} testIndex={i} />)
-                    : <tr><td colSpan={4} className='no-tests'>(no tests)</td></tr>
-                    }
-                    <tr>
-                        <td colSpan={4}>
-                            <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>;
-    } else {
-        if(tests && tests.length) {
-            return <div className='tests'>
-                <table className="table">
-                    <tbody>
-                        { tests.map((test, i) => <Test key={test.id+`${i}`} index={index} testIndex={i} />) }
-                    </tbody>
-                </table>
-            </div>;
-        } else {
-            return <div className='tests' />
+    let myTests = [] as any[];
+    inputTests.forEach(({test, i})=> {
+        if(test.author === uid) myTests.push(test);
+    })
+    
+    return <div className='tests'>
+        {isAdmin &&
+        <div>
+            <h4>Tests</h4>
+            <div className="accordion" id="testlist">
+            {inputTests && inputTests.length
+            ? inputTests.map(({test, i})=> <Test key={test.id+`${i}`} index={index} testIndex={i} isInput={true} totalNum={inputTests.length}/>)
+            : <div className='no-tests'>(no tests)</div>                
+            }
+            </div>    
+            <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button>
+        </div>
         }
-    }
+        {!isAdmin &&
+        <div>
+        <h4>My Tests</h4>
+        <div className="accordion" id="testlist">
+        {myTests && myTests.length
+        ? myTests.map((test, i)=> <Test key={test.id+`${i}`} index={index} testIndex={i} isInput={true} totalNum={myTests.length}/>)
+        : <div className='no-tests'>(no tests)</div>                
+        }
+        </div>    
+        <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button>
+        </div>
+        }
+    </div>
 }
 function mapStateToProps(state, ownProps) {
     const { user, problems, doc } = state;
     const { isAdmin } = user;
     const problem = problems[ownProps.index];
     const { tests } = problem;
+    let verifiedT:any[] = [];
+    tests.forEach((test, i) => {
+        if(test.verified === true) verifiedT.push({i, test});
+    });
 
-    return update(ownProps, { isAdmin: {$set: isAdmin}, tests: {$set: tests}, doc: {$set: doc} });
+    let inputT: any[] = [];
+    if (isAdmin) {
+        tests.forEach((test, i) => {
+            inputT.push({i, test});
+        })
+    }
+    else {
+        tests.forEach((test, i) => {
+            if(test.author === user.id) inputT.push({i, test});
+        })
+    }
+    const verifiedTests = verifiedT;
+    const inputTests = inputT;
+    const uid=user.id;
+
+    return update(ownProps, { uid:{$set:uid}, isAdmin: {$set: isAdmin}, verifiedTests: {$set: verifiedTests}, inputTests:{$set: inputTests}, doc: {$set: doc} });
 }
 export default connect(mapStateToProps)(Tests); 
