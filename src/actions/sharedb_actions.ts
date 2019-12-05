@@ -3,7 +3,7 @@ import { SDBDoc } from 'sdb-ts';
 import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
 import EventTypes from './EventTypes';
-import { ListInsertOp, ListDeleteOp, ObjectInsertOp } from 'sharedb';
+import { ListInsertOp, ListDeleteOp, ObjectInsertOp, ObjectDeleteOp } from 'sharedb';
 
 export const puzzlesFetched = (puzzles: IPuzzleSet) => ({
     puzzles, type: EventTypes.PUZZLES_FETCHED,
@@ -184,6 +184,42 @@ export function setProblemVisibility(id: string, visible: boolean) {
     };
 }
 
+function parseOpType(op, doc):string{
+    const { p } = op;
+    const { li } = op as ListInsertOp;
+    const { ld } = op as ListDeleteOp;
+    const { oi } = op as ObjectInsertOp;
+    const { od } = op as ObjectDeleteOp;
+
+    
+    const problemRelPath = SDBDoc.relative(['problems'], p);
+    const userDataRelPath = SDBDoc.relative(['userData'], p);
+    
+    switch(true) {
+        case ((problemRelPath) && (problemRelPath.length === 1) && (li!==undefined)): return EventTypes.PROBLEM_ADDED;
+        case ((problemRelPath) && (problemRelPath.length === 1) && (ld!==undefined)): return EventTypes.PROBLEM_DELETED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'description')): return EventTypes.DESCRIPTION_CHANGED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'givenCode')): return EventTypes.GIVEN_CODE_CHANGED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'afterCode')): return EventTypes.AFTER_CODE_CHANGED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'variables') && (li!==undefined)): return EventTypes.VARIABLE_ADDED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'variables') && (ld!==undefined)): return EventTypes.VARIABLE_DELETED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'tests') && (li!==undefined)): return EventTypes.TEST_ADDED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'tests') && (ld!==undefined)): return EventTypes.TEST_DELETED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'files') && (li!==undefined)): return EventTypes.FILE_ADDED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'files') && (ld!==undefined)): return EventTypes.FILE_DELETED;
+        case ((problemRelPath) && (problemRelPath.length === 4) && (problemRelPath[1] === 'variables') && (problemRelPath[3] === 'type') && (oi!==undefined) && (od!== undefined)): return EventTypes.VARIABLE_PART_CHANGED;
+        case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'tests')): return EventTypes.TEST_PART_CHANGED;
+        case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'files')): return EventTypes.FILE_PART_CHANGED;
+        case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'variables')): return EventTypes.VARIABLE_PART_CHANGED;
+        case ((userDataRelPath) && (userDataRelPath.length === 1) && (oi!==undefined)): return EventTypes.PROBLEM_COMPLETION_INFO_FETCHED;
+        case ((userDataRelPath) && (userDataRelPath.length === 2) && (userDataRelPath[1] === 'visible') && (oi!==undefined)): return EventTypes.PROBLEM_VISIBILITY_CHANGED;
+        case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed') && (li!==undefined)): return EventTypes.USER_COMPLETED_PROBLEM;
+        default:
+            console.log(op);
+            return 'unknownType';
+    }   
+}
+
 
 export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
     return (dispatch: Dispatch, getState) => {
@@ -194,119 +230,227 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                 ops!.forEach((op) => {
                     const { p } = op;
                     const { li } = op as ListInsertOp;
-                    const { ld } = op as ListDeleteOp;
-
+                    const { oi } = op as ObjectInsertOp;
                     const problemRelPath = SDBDoc.relative(['problems'], p);
                     const userDataRelPath = SDBDoc.relative(['userData'], p);
-                    if(problemRelPath) {
-                        if(problemRelPath.length === 1) {
-                            const index = problemRelPath[0] as number;
-                            if(ld) { dispatch(problemDeleted(index)); }
-                            if(li) { dispatch(problemAdded(index, li)); }
-                        } else if(problemRelPath.length === 3) {
-                            const index = problemRelPath[0] as number;
-                            const item = problemRelPath[1];
-                            const problemP = ['problems', index];
-                            const problem = doc.traverse(problemP);
-                            if(item === 'description') {
-                                const newDescription = doc.traverse([...problemP, item]);
-                                dispatch(descriptionChanged(index, newDescription));
-                            } else if(item === 'givenCode') {
-                                const id = doc.traverse([...problemP, 'id']);
-                                const newCode = doc.traverse([...problemP, item]);
-                                dispatch(givenCodeChanged(index, id, newCode));
-                            } else if(item === 'afterCode') {
-                                const newCode = doc.traverse([...problemP, item]);
-                                dispatch(afterCodeChanged(index, newCode));
-                            } else if(item === 'tests') {
-                                const testIndex = problemRelPath[2] as number;
-                                if(li) {
-                                    dispatch(testAdded(problem.id, index, testIndex, li));
-                                } else if(ld) {
-                                    dispatch(testDeleted(problem.id, index, testIndex));
-                                }
-                            } else if(item === 'files') {
-                                const fileIndex = problemRelPath[2] as number;
-                                if(li) {
-                                    dispatch(fileAdded(index, fileIndex, li));
-                                } else if(ld) {
-                                    dispatch(fileDeleted(index, fileIndex));
-                                }
-                            } else if(item === 'variables') {
-                                const variableIndex = problemRelPath[2] as number;
-                                if(li) {
-                                    dispatch(variableAdded(index, variableIndex, li));
-                                } else if (ld) {
-                                    dispatch(variableDeleted(index, variableIndex));
-                                }
-                            }
-                        } else if(problemRelPath.length === 4) {
-                            const index = problemRelPath[0] as number;
-                            const item = problemRelPath[1];
-                            const problemP = ['problems', index];
-                            const problem = doc.traverse(problemP);
-                            if(item === 'tests') {
-                                const testIndex = problemRelPath[2] as number;
-                                const testPart = problemRelPath[3] as 'actual'|'expected'|'description'|'verified';
-                                const { oi } = op as ObjectInsertOp;
-                                dispatch(testPartChanged(problem.id, index, testIndex, testPart, oi));    
-                            }
-                        } else if(problemRelPath.length === 5) {
-                            const index = problemRelPath[0] as number;
-                            const item = problemRelPath[1];
 
-                            const problemP = ['problems', index];
-                            const problem = doc.traverse(problemP);
-                            if(item === 'tests') {
-                                const testIndex = problemRelPath[2] as number;
-                                const testP = ['problems', index, item, testIndex];
-                                const testPart = problemRelPath[3] as 'actual'|'expected'|'description'|'verified';
-                                const value = doc.traverse([...testP, testPart]);
-                                dispatch(testPartChanged(problem.id, index, testIndex, testPart, value));    
-                            } else if(item === 'files') {
-                                const fileIndex = problemRelPath[2] as number;
-                                const fileP = ['problems', index, item, fileIndex];
-                                const filePart = problemRelPath[3] as 'name'|'contents';
-                                const value = doc.traverse([...fileP, filePart]);
-                                dispatch(filePartChanged(index, fileIndex, filePart, value));
-                            } else if(item === 'variables') {
-                                const variableIndex = problemRelPath[2] as number;
-                                const variableP = ['problems', index, item, variableIndex];
-                                const variablePart = problemRelPath[3] as 'type'|'name'|'description';
-                                const value = doc.traverse([...variableP, variablePart])
-                                dispatch(variablePartChanged(index, variableIndex, variablePart, value))
+                    const type = parseOpType(op, doc);
+                    let index;
+                    let testIndex;
+                    let fileIndex;
+                    let variableIndex;
+                    let id;
+                    console.log('SDBOp:' + type);
+
+                    switch(type){
+                        case EventTypes.PROBLEM_ADDED:
+                            index = problemRelPath[0] as number;
+                            dispatch({ index, type, problem: li});
+                            break;
+                        case EventTypes.PROBLEM_DELETED:
+                            index = problemRelPath[0] as number;
+                            dispatch({ index, type });
+                            break;
+                        case EventTypes.DESCRIPTION_CHANGED:
+                            index = problemRelPath[0] as number;
+                            const newDescription = doc.traverse(['problems', index, 'description']);
+                            dispatch({ index, type, description: newDescription });
+                            break;
+                        case EventTypes.GIVEN_CODE_CHANGED:
+                            index = problemRelPath[0] as number;
+                            id = doc.traverse(['problems', index, 'id']);
+                            const newGivenCode = doc.traverse(['problems', index, 'givenCode']);
+                            dispatch({ index, type, code: newGivenCode, id});
+                            break;
+                        case EventTypes.AFTER_CODE_CHANGED:
+                            index = problemRelPath[0] as number;
+                            const newAfterCode = doc.traverse(['problems', index, 'afterCode']);
+                            dispatch({ index, type, code: newAfterCode});
+                            break;
+                        case EventTypes.TEST_ADDED:
+                            index = problemRelPath[0] as number;
+                            testIndex = problemRelPath[2] as number;
+                            id = doc.traverse(['problems', index, 'id']);
+                            dispatch({ index, type, id, testIndex, test: li});
+                            break;
+                        case EventTypes.TEST_DELETED:
+                            index = problemRelPath[0] as number;
+                            testIndex = problemRelPath[2] as number;
+                            id = doc.traverse(['problems', index, 'id']);
+                            dispatch({ index, type, id, testIndex});
+                            break;
+                        case EventTypes.FILE_ADDED:
+                            index = problemRelPath[0] as number;
+                            fileIndex = problemRelPath[2] as number;
+                            dispatch({ index, type, fileIndex, file: li});
+                            break;
+                        case EventTypes.FILE_DELETED:
+                            index = problemRelPath[0] as number;
+                            fileIndex = problemRelPath[2] as number;
+                            dispatch({ index, type, fileIndex});
+                            break;
+                        case EventTypes.TEST_PART_CHANGED:
+                            index = problemRelPath[0] as number;
+                            testIndex = problemRelPath[2] as number;
+                            id = doc.traverse(['problems', index, 'id']);
+                            const testPartType = problemRelPath[3] as 'actual'|'expected'|'description';
+                            const newTestPart = doc.traverse(['problems', index, 'tests', testIndex, testPartType]);
+                            dispatch({ index, type, testIndex, id, part: testPartType, value: newTestPart })
+                            break;
+                        case EventTypes.FILE_PART_CHANGED:
+                            index = problemRelPath[0] as number;
+                            fileIndex = problemRelPath[2] as number;
+                            const filePartType = problemRelPath[3] as 'name'|'contents';
+                            const newFilePart = doc.traverse(['problems', index, 'files', fileIndex, filePartType]);
+                            dispatch({ index, type, fileIndex, part: filePartType, value: newFilePart})
+                            break;
+                        case EventTypes.PROBLEM_COMPLETION_INFO_FETCHED:
+                            dispatch({ type, problemID: userDataRelPath[0], completionInfo: oi});
+                            break;
+                        case EventTypes.PROBLEM_VISIBILITY_CHANGED:
+                            dispatch({ type, problemID: userDataRelPath[0], visible: oi as boolean});
+                            break;
+                        case EventTypes.USER_COMPLETED_PROBLEM:
+                            dispatch({ type, problemID: userDataRelPath[0], index: userDataRelPath[2], userID: li});
+                            break;
+                        case EventTypes.VARIABLE_ADDED:
+                            index = problemRelPath[0] as number;
+                            variableIndex = problemRelPath[2] as number;
+                            dispatch({ index, type, variable: li, variableIndex});
+                            break;
+                        case EventTypes.VARIABLE_DELETED:
+                            index = problemRelPath[0] as number;
+                            variableIndex = problemRelPath[2] as number;
+                            dispatch({ index, type, variableIndex })
+                            break;
+                        case EventTypes.VARIABLE_PART_CHANGED:
+                            index = problemRelPath[0] as number;
+                            variableIndex = problemRelPath[2] as number;
+                            const value = doc.traverse(['problems', index, 'variables', variableIndex, problemRelPath[3]]);
+                            dispatch({ index, type, variableIndex, part: problemRelPath[3], value})
+                            break;
+                        default:
+                            if(p.length === 0) { // full replacement
+                                dispatch(puzzlesFetched(doc.getData()));
                             }
-                        }
-                    } else if(userDataRelPath && userDataRelPath.length >= 1) {
-                        const problemID = userDataRelPath[0];
-                        if(userDataRelPath.length === 3 && userDataRelPath[1] === 'completed') {
-                            const userID = li;
-                            const index = userDataRelPath[2];
-                            dispatch({
-                                index,
-                                problemID,
-                                type: EventTypes.USER_COMPLETED_PROBLEM,
-                                userID,
-                            });
-                        } else if(userDataRelPath.length === 2 && userDataRelPath[1] === 'visible') {
-                            const { oi } = op as ObjectInsertOp;
-                            dispatch({
-                                problemID,
-                                type: EventTypes.PROBLEM_VISIBILITY_CHANGED,
-                                visible: oi as boolean,
-                            });
-                        } else if(userDataRelPath.length === 1) {
-                            const { oi } = op as ObjectInsertOp;
-                            dispatch({
-                                completionInfo: oi,
-                                problemID,
-                                type: EventTypes.PROBLEM_COMPLETION_INFO_FETCHED,
-                            });
-                        }
-                    } else if(p.length === 0) { // full replacement
-                        dispatch(puzzlesFetched(doc.getData()));
                     }
                 });
+                // ops!.forEach((op) => {
+                //     const { p } = op;
+                //     const { li } = op as ListInsertOp;
+                //     const { ld } = op as ListDeleteOp;
+
+                //     const problemRelPath = SDBDoc.relative(['problems'], p);
+                //     const userDataRelPath = SDBDoc.relative(['userData'], p);
+                //     if(problemRelPath) {
+                //         if(problemRelPath.length === 1) {
+                //             const index = problemRelPath[0] as number;
+                //             if(ld) { dispatch(problemDeleted(index)); }
+                //             if(li) { dispatch(problemAdded(index, li)); }
+                //         } else if(problemRelPath.length === 3) {
+                //             const index = problemRelPath[0] as number;
+                //             const item = problemRelPath[1];
+                //             const problemP = ['problems', index];
+                //             const problem = doc.traverse(problemP);
+                //             if(item === 'description') {
+                //                 const newDescription = doc.traverse([...problemP, item]);
+                //                 dispatch(descriptionChanged(index, newDescription));
+                //             } else if(item === 'givenCode') {
+                //                 const id = doc.traverse([...problemP, 'id']);
+                //                 const newCode = doc.traverse([...problemP, item]);
+                //                 dispatch(givenCodeChanged(index, id, newCode));
+                //             } else if(item === 'afterCode') {
+                //                 const newCode = doc.traverse([...problemP, item]);
+                //                 dispatch(afterCodeChanged(index, newCode));
+                //             } else if(item === 'tests') {
+                //                 const testIndex = problemRelPath[2] as number;
+                //                 if(li) {
+                //                     dispatch(testAdded(problem.id, index, testIndex, li));
+                //                 } else if(ld) {
+                //                     dispatch(testDeleted(problem.id, index, testIndex));
+                //                 }
+                //             } else if(item === 'files') {
+                //                 const fileIndex = problemRelPath[2] as number;
+                //                 if(li) {
+                //                     dispatch(fileAdded(index, fileIndex, li));
+                //                 } else if(ld) {
+                //                     dispatch(fileDeleted(index, fileIndex));
+                //                 }
+                //             } else if(item === 'variables') {
+                //                 const variableIndex = problemRelPath[2] as number;
+                //                 if(li) {
+                //                     dispatch(variableAdded(index, variableIndex, li));
+                //                 } else if (ld) {
+                //                     dispatch(variableDeleted(index, variableIndex));
+                //                 }
+                //             }
+                //         } else if(problemRelPath.length === 4) {
+                //             const index = problemRelPath[0] as number;
+                //             const item = problemRelPath[1];
+                //             const problemP = ['problems', index];
+                //             const problem = doc.traverse(problemP);
+                //             if(item === 'tests') {
+                //                 const testIndex = problemRelPath[2] as number;
+                //                 const testPart = problemRelPath[3] as 'actual'|'expected'|'description'|'verified';
+                //                 const { oi } = op as ObjectInsertOp;
+                //                 dispatch(testPartChanged(problem.id, index, testIndex, testPart, oi));    
+                //             }
+                //         } else if(problemRelPath.length === 5) {
+                //             const index = problemRelPath[0] as number;
+                //             const item = problemRelPath[1];
+
+                //             const problemP = ['problems', index];
+                //             const problem = doc.traverse(problemP);
+                //             if(item === 'tests') {
+                //                 const testIndex = problemRelPath[2] as number;
+                //                 const testP = ['problems', index, item, testIndex];
+                //                 const testPart = problemRelPath[3] as 'actual'|'expected'|'description'|'verified';
+                //                 const value = doc.traverse([...testP, testPart]);
+                //                 dispatch(testPartChanged(problem.id, index, testIndex, testPart, value));    
+                //             } else if(item === 'files') {
+                //                 const fileIndex = problemRelPath[2] as number;
+                //                 const fileP = ['problems', index, item, fileIndex];
+                //                 const filePart = problemRelPath[3] as 'name'|'contents';
+                //                 const value = doc.traverse([...fileP, filePart]);
+                //                 dispatch(filePartChanged(index, fileIndex, filePart, value));
+                //             } else if(item === 'variables') {
+                //                 const variableIndex = problemRelPath[2] as number;
+                //                 const variableP = ['problems', index, item, variableIndex];
+                //                 const variablePart = problemRelPath[3] as 'type'|'name'|'description';
+                //                 const value = doc.traverse([...variableP, variablePart])
+                //                 dispatch(variablePartChanged(index, variableIndex, variablePart, value))
+                //             }
+                //         }
+                //     } else if(userDataRelPath && userDataRelPath.length >= 1) {
+                //         const problemID = userDataRelPath[0];
+                //         if(userDataRelPath.length === 3 && userDataRelPath[1] === 'completed') {
+                //             const userID = li;
+                //             const index = userDataRelPath[2];
+                //             dispatch({
+                //                 index,
+                //                 problemID,
+                //                 type: EventTypes.USER_COMPLETED_PROBLEM,
+                //                 userID,
+                //             });
+                //         } else if(userDataRelPath.length === 2 && userDataRelPath[1] === 'visible') {
+                //             const { oi } = op as ObjectInsertOp;
+                //             dispatch({
+                //                 problemID,
+                //                 type: EventTypes.PROBLEM_VISIBILITY_CHANGED,
+                //                 visible: oi as boolean,
+                //             });
+                //         } else if(userDataRelPath.length === 1) {
+                //             const { oi } = op as ObjectInsertOp;
+                //             dispatch({
+                //                 completionInfo: oi,
+                //                 problemID,
+                //                 type: EventTypes.PROBLEM_COMPLETION_INFO_FETCHED,
+                //             });
+                //         }
+                //     } else if(p.length === 0) { // full replacement
+                //         dispatch(puzzlesFetched(doc.getData()));
+                //     }
+                // });
             }
         });
     };

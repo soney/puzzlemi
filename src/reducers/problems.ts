@@ -75,8 +75,18 @@ export const problems = (state: IProblem[] = [], action: any) => {
             [index]: {
                 variables: {$splice:[[variableIndex, 1]]}
             }
+        });
+    } else if(action.type === EventTypes.VARIABLE_PART_CHANGED){
+        const {index, variableIndex, part, value} = action; 
+        return update(state,{
+            [index]: {
+                variables: {
+                    [variableIndex]: {
+                        [part]: {$set: value}
+                    }
+                }
+            }
         })
-
     } else if(action.type === EventTypes.FILE_ADDED) {
         const { index, file, fileIndex } = action;
         return update(state, {

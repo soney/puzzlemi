@@ -66,9 +66,9 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc, isIn
                 <div className="row">
                 <div className="col-6 test-info">
                     <h5>Title:</h5>
-                    <CodeEditor shareDBSubDoc={titleSubDoc} options={{lineNumbers: false, mode:'markdown', lineWrapping: true, height: 30}} />
+                    <CodeEditor shareDBSubDoc={titleSubDoc} value={titleSubDoc.getData()} options={{lineNumbers: false, mode:'markdown', lineWrapping: true, height: 30}} />
                     <h5>Description:</h5>
-                    <CodeEditor shareDBSubDoc={descriptionSubDoc} options={{lineNumbers: false, mode:'markdown', lineWrapping: true, height: 30}} />
+                    <CodeEditor shareDBSubDoc={descriptionSubDoc} value={descriptionSubDoc.getData()} options={{lineNumbers: false, mode:'markdown', lineWrapping: true, height: 30}} />
                 </div>
                 <div className="col-6 test-value">
                 <h5>Input Variables:</h5>
@@ -76,7 +76,7 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc, isIn
                     {test.input.map((variable, i)=><li className="list-group-item" key={i}>
                     <span>{variable.name}=</span>
                     <div className="variable-value">
-                    <CodeEditor shareDBSubDoc={inputSubDocs[i]} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}}/>
+                    <CodeEditor shareDBSubDoc={inputSubDocs[i]} value={inputSubDocs[i].getData()} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}}/>
                     </div>
                     </li>)}
                 </ul>
@@ -85,7 +85,7 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc, isIn
                     {test.output.map((variable, i)=><li className="list-group-item" key={i}>
                     <span>{variable.name}=</span>
                     <div className="variable-value">
-                    <CodeEditor shareDBSubDoc={outputSubDocs[i]} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}}/>
+                    <CodeEditor shareDBSubDoc={outputSubDocs[i]} value={outputSubDocs[i].getData()} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}}/>
                     </div>
                     </li>)}
                 </ul>
