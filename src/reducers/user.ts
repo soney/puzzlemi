@@ -3,26 +3,28 @@ import store from 'storejs';
 import update from 'immutability-helper';
 import uuid from '../utils/uuid';
 
+export interface ISolution {
+    modified: boolean,
+    code: string,
+    errors: string[],
+    files: Array<{
+        contents: string,
+        name: string
+    }>,
+    output: string,
+    passedAll: boolean,
+    testResults: {
+    [testID: string]: {
+            passed: boolean,
+            message: string
+        }
+    }
+}
+
 export interface IUser {
     isAdmin: boolean;
     id: string;
-    solutions: { [problemID: string]: {
-        modified: boolean,
-        code: string,
-        errors: string[],
-        files: Array<{
-                contents: string,
-                name: string
-            }>,
-        output: string,
-        passedAll: boolean,
-        testResults: {
-            [testID: string]: {
-                passed: boolean,
-                message: string
-            }
-        }
-    }}
+    solutions: { [problemID: string]: ISolution}
 }
 const defaultUser: IUser = store.get('user') || {
     id: uuid(),

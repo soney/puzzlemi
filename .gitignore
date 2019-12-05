@@ -75,3 +75,5 @@ typings/
 # Vagrant
 ./vagrant
 Vagrantfile
+
+build/

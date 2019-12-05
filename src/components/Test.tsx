@@ -43,12 +43,20 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc }) =>
 }
 function mapStateToProps(state, ownProps) {
     const { index, testIndex } = ownProps;
-    const { user, problems, doc } = state;
+    const { user, userData, problems, doc } = state;
     const { isAdmin } = user;
     const problem = problems[index];
+    const { id } = problem;
+    const helpSessions = userData[id] && userData[id].helpSessions;
+    const activeHelpSessions = helpSessions.filter(session=>session.status);
+    const isRequestedHelp = activeHelpSessions.filter(session=>session.tuteeID===user.id);
+    const isOfferHelp = activeHelpSessions.filter(session=>session.tutorIDs.includes(user.id));
+    const currentHelpSession = isRequestedHelp[0] || isOfferHelp[0];
+    const { testResults } = currentHelpSession? currentHelpSession.solution:user.solutions[id];
     const test = problem.tests[testIndex];
-    const userSolution = user.solutions[problem.id];
-    const testResult = userSolution.testResults[test.id]; 
+    const testResult = testResults[test.id];
+    // const userSolution = user.solutions[problem.id];
+    // const testResult = userSolution.testResults[test.id]; 
 
     return update(ownProps, { testResult: {$set: testResult}, isAdmin: {$set: isAdmin}, test: {$set: test}, doc: {$set: doc} });
 }

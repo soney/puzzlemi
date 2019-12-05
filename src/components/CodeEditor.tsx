@@ -48,9 +48,14 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
     };
 
     public componentDidUpdate(prevProps: ICodeEditorProps):void {
-        const { value } = this.props;
+        const { value, shareDBSubDoc } = this.props;
+        if(shareDBSubDoc !== prevProps.shareDBSubDoc){
+            if(prevProps.shareDBSubDoc === undefined)
+                this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
+            if(shareDBSubDoc === undefined) 
+                this.codemirrorBinding.destroy();
+        }
         if(value !== prevProps.value) {
-            this.setState({ code: value as string });
             if(value !== this.codeMirror.getValue()) {
                 this.codeMirror.setValue(value as string);
             }

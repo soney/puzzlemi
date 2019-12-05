@@ -26,6 +26,15 @@ enum EventTypes {
     DELETE_USER_FILE='delete user file',
     USER_COMPLETED_PROBLEM='user completed problem',
     PROBLEM_COMPLETION_INFO_FETCHED='problem completion info fetched',
-    PROBLEM_VISIBILITY_CHANGED='problem visibility changed'
+    PROBLEM_VISIBILITY_CHANGED='problem visibility changed',
+    ENABLE_HELP_SESSION = 'help session added',
+    JOIN_HELP_SESSION = 'join help session',
+    QUIT_HELP_SESSION = 'tutor quit session',
+    DISABLE_HELP_SESSION = 'tutee quit session',
+    SHARED_OUTPUT_CHANGED = 'shared output change',
+    SHARED_FILE_WRITTEN = 'shared file written',
+    BEGIN_RUN_SHARED_CODE = 'begin run shared code',
+    DONE_RUNNING_SHARED_CODE = 'done running shared code',
+    SHARED_ERROR_CHANGED = 'shared error changed'
 };
 export default EventTypes;

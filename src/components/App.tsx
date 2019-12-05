@@ -6,6 +6,7 @@ import Problems from './Problems';
 import { setDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
 import { setIsAdmin } from '../actions/user_actions';
 import update from 'immutability-helper';
+import { ISolution } from '../reducers/user';
 
 export interface IPuzzleSet {
     problems: IProblem[];
@@ -14,9 +15,17 @@ export interface IPuzzleSet {
     };
 }
 
+export interface IHelpSession {
+    status: boolean;
+    tuteeID: string;
+    tutorIDs: string[];
+    solution: ISolution;
+}
+
 export interface IProblemUserInfo {
     completed: string[];
     hidden: boolean;
+    helpSessions: IHelpSession[];
 }
 
 export interface IProblem {
