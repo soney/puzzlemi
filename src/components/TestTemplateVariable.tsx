@@ -15,7 +15,6 @@ const TestTemplateVariable = ({dispatch, index, variableIndex, variable, isAdmin
     };
     const p = ['problems', index, 'variables', variableIndex];
     const nameSubDoc = doc.subDoc([...p, 'name']);
-    console.log(nameSubDoc.getData())
     const descriptionSubDoc = doc.subDoc([...p, 'description']);
     return <tr>
             <td>

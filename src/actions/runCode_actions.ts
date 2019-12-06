@@ -41,10 +41,12 @@ export function runCode(index: number) {
         let output: string = '';
         let test = tests[0] as any;
         let beforeCode = "";
-        test.input.forEach(variable=>{
-            const state:string = variable.name + "=" + variable.value + ";\n";
-            beforeCode = beforeCode.concat(state);
-        })
+        if(test){
+            test.input.forEach(variable=>{
+                const state:string = variable.name + "=" + variable.value + ";\n";
+                beforeCode = beforeCode.concat(state);
+            })    
+        }
         const fullCode = beforeCode.concat(code);
  
 
@@ -97,7 +99,8 @@ export function runCode(index: number) {
             id,
             type: EventTypes.BEGIN_RUN_CODE
         });
-        const assertions: PMAssertion[] = test.output.map((t) => new PMAssertEqual(t.name, t.value, ''));
+        let assertions: PMAssertion[] =[];
+        if(test) assertions = test.output.map((t) => new PMAssertEqual(t.name, t.value, ''));
         testSuite.setBeforeTests(afterCode);
         testSuite.setAssertions(assertions);
         testSuite.onBeforeRunningTests();

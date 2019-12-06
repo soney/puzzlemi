@@ -208,6 +208,7 @@ function parseOpType(op, doc):string{
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'files') && (li!==undefined)): return EventTypes.FILE_ADDED;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'files') && (ld!==undefined)): return EventTypes.FILE_DELETED;
         case ((problemRelPath) && (problemRelPath.length === 4) && (problemRelPath[1] === 'variables') && (problemRelPath[3] === 'type') && (oi!==undefined) && (od!== undefined)): return EventTypes.VARIABLE_PART_CHANGED;
+        case ((problemRelPath) && (problemRelPath.length === 4) && (problemRelPath[1] === 'tests') && (problemRelPath[3] === 'verified')): return EventTypes.TEST_STATUS_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'tests')): return EventTypes.TEST_PART_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'files')): return EventTypes.FILE_PART_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'variables')): return EventTypes.VARIABLE_PART_CHANGED;
@@ -293,9 +294,15 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             index = problemRelPath[0] as number;
                             testIndex = problemRelPath[2] as number;
                             id = doc.traverse(['problems', index, 'id']);
-                            const testPartType = problemRelPath[3] as 'actual'|'expected'|'description';
-                            const newTestPart = doc.traverse(['problems', index, 'tests', testIndex, testPartType]);
-                            dispatch({ index, type, testIndex, id, part: testPartType, value: newTestPart })
+                            console.log(op)
+                            // const testPartType = problemRelPath[3] as 'actual'|'expected'|'description';
+                            // const newTestPart = doc.traverse(['problems', index, 'tests', testIndex, testPartType]);
+                            // dispatch({ index, type, testIndex, id, part: testPartType, value: newTestPart })
+                            break;
+                        case EventTypes.TEST_STATUS_CHANGED:
+                            index = problemRelPath[0] as number;
+                            testIndex = problemRelPath[2] as number;
+                            dispatch({ index, type, testIndex, value: oi});
                             break;
                         case EventTypes.FILE_PART_CHANGED:
                             index = problemRelPath[0] as number;

@@ -55,6 +55,18 @@ export const problems = (state: IProblem[] = [], action: any) => {
                 }
             }
         });
+    } else if(action.type === EventTypes.TEST_STATUS_CHANGED){
+        const { index, testIndex, value } = action;
+        return update(state, {
+            [index]: {
+                tests: {
+                    [testIndex]: {
+                        verified: { $set: value }
+                    }
+                }
+            }
+        })
+
     } else if(action.type === EventTypes.TEST_DELETED) {
         const { index, testIndex } = action;
         return update(state, {

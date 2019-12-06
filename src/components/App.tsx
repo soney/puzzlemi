@@ -19,6 +19,17 @@ export interface IProblemUserInfo {
     hidden: boolean;
 }
 
+export interface ITest {
+    title: string,
+    description: string,
+    author: string,
+    verified: boolean,
+    id: string,
+    rate: number,
+    input: any,
+    output: any
+}
+
 export interface IProblem {
     afterCode: string;
     description: string;
@@ -26,7 +37,7 @@ export interface IProblem {
     files: any;
     id: string;
     variables: any;
-    tests: any;
+    tests: ITest[];
 };
 
 const emptyDoc = { problems: [], userData: {} };
