@@ -5,9 +5,10 @@ import update from 'immutability-helper';
 import { CodeEditor } from './CodeEditor';
 import Tests from './Tests';
 import TestTemplate from './TestTemplate';
+import TestResults from './TestResults';
 import Files from './Files';
 import { deleteProblem, setProblemVisibility } from '../actions/sharedb_actions';
-import { runCode } from '../actions/runCode_actions';
+import { runUnitTests, runCode } from '../actions/runCode_actions';
 import { setCode } from '../actions/user_actions';
 
 const Problem = ({ id, visible, code, errors, index, output, dispatch, doc, passedAll, isAdmin, numCompleted, myCompletionIndex }) => {
@@ -17,6 +18,9 @@ const Problem = ({ id, visible, code, errors, index, output, dispatch, doc, pass
     const doRunCode = () => {
         return dispatch(runCode(index));
     };
+    const doRunTests = () => {
+        return dispatch(runUnitTests(index));
+    }
     const doSetCode = (ev) => {
         const { value } = ev;
         return dispatch(setCode(index, value));
@@ -32,7 +36,6 @@ const Problem = ({ id, visible, code, errors, index, output, dispatch, doc, pass
     // const doUpdateProblemVisiblity = (ev) => {
     //     console.log(ev);
     // };
-
     const iHaveCompleted = myCompletionIndex >= 0;
     const p = ['problems', index];
     const givenCodeSubDoc = doc.subDoc([...p, 'givenCode']);
@@ -71,14 +74,20 @@ const Problem = ({ id, visible, code, errors, index, output, dispatch, doc, pass
                 <div className="col">
                     <CodeEditor value={code} onChange={doSetCode} />
                     <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
+                    <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunTests}>Run All Tests</button>
                 </div>
             }
             <div className="col">
                 {   !isAdmin &&
-                    <pre className={'codeOutput' + (errors.length > 0 ? ' alert alert-danger' : ' no-error')}>
+                    <div>
+                    {(output || errors.length>0) &&
+                        <pre className={'codeOutput' + (errors.length > 0 ? ' alert alert-danger' : ' no-error')}>
                         {output}
                         {errors.join('\n')}
-                    </pre>
+                        </pre>
+                    }
+                    <TestResults index={index} />
+                    </div>
                 }
                 <Files index={index} />
             </div>

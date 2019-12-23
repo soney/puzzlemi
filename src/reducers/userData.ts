@@ -13,7 +13,7 @@ export const userData = (state: {[problemID: string]: IProblemUserInfo} = {}, ac
     } else if(action.type === EventTypes.PROBLEM_VISIBILITY_CHANGED) {
         const { problemID, visible } = action;
         return update(state, { $merge: {
-                [problemID]: { visible, completed: [] }
+                [problemID]: { visible, completed: [], testData: {} }
             }
         });
     } else if(action.type === EventTypes.PROBLEM_COMPLETION_INFO_FETCHED) {
@@ -28,6 +28,46 @@ export const userData = (state: {[problemID: string]: IProblemUserInfo} = {}, ac
                 completed: { $splice: [[index, 0, userID]] }
             }
         });
+    } else if(action.type === EventTypes.BEGIN_RUN_CODE){
+        const { id } = action;
+        const testData = {};
+        if(!state[id]) {          
+            testData[id] = {};
+        }
+        return update(state, {
+            [id]: {
+                testData: {$merge: testData}
+            }
+        });
+    } else if(action.type === EventTypes.BEGIN_RUN_TEST){
+        const { id, testID, userID } = action;
+        let test = {};
+        if(!state[id].testData[testID]){
+            test[testID] = {};
+            test[testID][userID] = {passedAll: false};
+        }
+        else if(!state[id].testData[testID][userID]){
+            test = state[id].testData[testID];
+            test[userID] = {passedAll: false};
+        }
+        return update(state,{
+            [id]: {
+                testData: {$merge: test}
+            }
+        })
+    } else if(action.type === EventTypes.DONE_RUNNING_TEST){
+        const { id, testID, passedAll, userID } = action;
+        return update(state, {
+            [id]:{
+                testData:{
+                    [testID]:{
+                        [userID]: {
+                            passedAll: {$set: passedAll}
+                        }
+                    }    
+                }
+            }
+        })
     } else {
         return state;
     }

@@ -16,7 +16,14 @@ export interface IPuzzleSet {
 
 export interface IProblemUserInfo {
     completed: string[];
-    hidden: boolean;
+    visible: boolean;
+    testData: {
+        [testID: string]: {
+            [userID: string]: {
+                passedAll: boolean
+            }
+        }
+    }
 }
 
 export interface ITest {
@@ -25,7 +32,6 @@ export interface ITest {
     author: string,
     verified: boolean,
     id: string,
-    rate: number,
     input: any,
     output: any
 }
@@ -39,6 +45,35 @@ export interface IProblem {
     variables: any;
     tests: ITest[];
 };
+
+export interface IUser {
+    isAdmin: boolean;
+    id: string;
+    solutions: { [problemID: string]: {
+        modified: boolean,
+        code: string,
+        errors: string[],
+        files: Array<{
+                contents: string,
+                name: string
+            }>,
+        output: string,
+        passedAll: boolean,
+        defaultPass: boolean,
+        targetID: string,
+        testResults: {
+            [testID: string]: {
+                passedAll: boolean,
+                results: IOutput[]; 
+            }
+        }
+    }}
+}
+
+export interface IOutput {
+    passed: boolean;
+    message: string;
+}
 
 const emptyDoc = { problems: [], userData: {} };
 const PMApplication = ({ isAdmin, dispatch }) => {

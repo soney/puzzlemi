@@ -69,7 +69,8 @@ export function addProblem() {
 
         doc.submitObjectInsertOp(['userData', newProblem.id], {
             completed: [],
-            visible: true
+            visible: true,
+            testData: {}
         });
         doc.submitListPushOp(['problems'], newProblem);
     };
@@ -99,7 +100,6 @@ export function addTest(index: number, name:string, isAdmin: boolean) {
             author: name,
             verified: isAdmin,
             id: uuid(),
-            rate: 100,
             input,
             output
         };
@@ -293,11 +293,10 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                         case EventTypes.TEST_PART_CHANGED:
                             index = problemRelPath[0] as number;
                             testIndex = problemRelPath[2] as number;
+                            let partType = problemRelPath[3] as string;
+                            let partValue = doc.traverse(['problems', index, 'tests', testIndex, partType])
                             id = doc.traverse(['problems', index, 'id']);
-                            console.log(op)
-                            // const testPartType = problemRelPath[3] as 'actual'|'expected'|'description';
-                            // const newTestPart = doc.traverse(['problems', index, 'tests', testIndex, testPartType]);
-                            // dispatch({ index, type, testIndex, id, part: testPartType, value: newTestPart })
+                            dispatch({ index, type, testIndex, id, partType, partValue});
                             break;
                         case EventTypes.TEST_STATUS_CHANGED:
                             index = problemRelPath[0] as number;

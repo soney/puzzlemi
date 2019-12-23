@@ -2,32 +2,12 @@ import EventTypes from '../actions/EventTypes';
 import store from 'storejs';
 import update from 'immutability-helper';
 import uuid from '../utils/uuid';
+import { IUser } from '../components/App';
 
-export interface IUser {
-    isAdmin: boolean;
-    id: string;
-    solutions: { [problemID: string]: {
-        modified: boolean,
-        code: string,
-        errors: string[],
-        files: Array<{
-                contents: string,
-                name: string
-            }>,
-        output: string,
-        passedAll: boolean,
-        testResults: {
-            [testID: string]: {
-                passed: boolean,
-                message: string
-            }
-        }
-    }}
-}
 const defaultUser: IUser = store.get('user') || {
     id: uuid(),
     isAdmin: false,
-    solutions: {}
+    solutions: {},
 };
 
 function updateStore(u: IUser): void {
@@ -38,11 +18,11 @@ export const user = (state: IUser = defaultUser, action: any) => {
     if(action.type === EventTypes.PUZZLES_FETCHED) {
         const { puzzles } = action;
         const { problems } = puzzles;
-        const solutions = {};
+        let solutions = {};
         problems.forEach((problem) => {
             const { id, givenCode } = problem;
             if(!state.solutions || !state.solutions[id]) {
-                solutions[id] = { code: givenCode, errors: [], modified: false, files: [], output: '', passedAll: false, testResults: {} };
+                solutions[id] = { code: givenCode, errors: [], modified: false, files: [], output: '', passedAll: false, testResults: {}, targetID: '' };
             }
         })
         return update(state, {
@@ -61,7 +41,9 @@ export const user = (state: IUser = defaultUser, action: any) => {
                         modified: false,
                         output: '',
                         passedAll: false,
-                        testResults: {}
+                        defaultPass: false,
+                        testResults: {},
+                        targetID: ''
                     }
                 }
             }
@@ -116,9 +98,24 @@ export const user = (state: IUser = defaultUser, action: any) => {
                     output: { $set: '' },
                     passedAll: { $set: false },
                     testResults: { $set: {} },
+                    targetID: {$set: ''}
                 }
             }
         });
+    } else if(action.type === EventTypes.BEGIN_RUN_TEST) {
+        const { id, testID } = action;
+        let testResults = {};
+
+        if(!state.solutions[id].testResults[testID]) {           
+            testResults[testID] = {passedAll: false, results: []};
+        }
+        return update(state, {
+            solutions: {
+                [id]: {
+                    testResults: { $merge: testResults }
+                }
+            }
+        })
     } else if(action.type === EventTypes.DELETE_USER_FILE) {
         const { problemId, name } = action;
         const files = state.solutions[problemId].files;
@@ -171,17 +168,25 @@ export const user = (state: IUser = defaultUser, action: any) => {
             }
         });
     } else if(action.type === EventTypes.DONE_RUNNING_CODE) {
-        const { id, passedAll, testResults } = action;
-        const newState = update(state, {
+        const { id, passedAll } = action;
+        return update(state, {
             solutions: {
                 [id]: {
-                    passedAll: { $set: passedAll },
-                    testResults:{ $set: testResults },
+                    passedAll: { $set: passedAll }
                 }
             }
         });
-        updateStore(newState);
-        return newState;
+    } else if(action.type === EventTypes.DONE_RUNNING_DEFAULT) {
+        const { id, defaultPass } = action;
+        return update(state, {
+            solutions: {
+                [id]: {
+                    defaultPass: {$set: defaultPass},
+                    testResults: {$set: {}},
+                    passedAll: {$set: false}
+                }
+            }
+        })
     } else if(action.type === EventTypes.TEST_ADDED || action.type === EventTypes.TEST_PART_CHANGED || action.type === EventTypes.TEST_DELETED) {
         const { id } = action;
         return update(state, {
@@ -191,6 +196,29 @@ export const user = (state: IUser = defaultUser, action: any) => {
                 }
             }
         });
+    } else if(action.type === EventTypes.DONE_RUNNING_TEST) {
+        const { id, testID, results, passedAll } = action;
+        return update(state, {
+            solutions: {
+                [id]: {
+                    testResults: {
+                        [testID]: {
+                            passedAll: {$set: passedAll},
+                            results: {$set: results}
+                        }
+                    }
+                }
+            }
+        })
+    } else if(action.type === EventTypes.CHANGE_TARGET_ID){
+        const {problemID, id} = action;
+        return update(state, {
+            solutions: {
+                [problemID]: {
+                    targetID: {$set: id}
+                }    
+            }
+        })
     } else {
         return state;
     }

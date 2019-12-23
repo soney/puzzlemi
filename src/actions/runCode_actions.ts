@@ -29,6 +29,305 @@ if (Sk.externalLibraries) {
     };
 }
 
+// function runUnitTest(test, testIndex, problem, user, dispatch) {
+//     const { id, afterCode } = problem;
+//     const solution = user.solutions[id];
+//     const { code } = solution;
+//     const testSuite = new PMTestSuite();
+
+//     let output: string = '';
+//     let beforeCode = "";
+//     test.input.forEach(variable=>{
+//         const state:string = variable.name + "=" + variable.value + ";\n";
+//         beforeCode = beforeCode.concat(state);
+//     })    
+//     const fullCode = beforeCode.concat(code);
+ 
+//     const outputs: string[] = [];
+//     const outf = (outValue: string): void => {
+//         if(!testSuite.currentlyRunning()) {
+//             outputs.push(outValue);
+//             output = outputs.join('');
+//         }
+//         console.log(output);
+//     };
+
+//     const readf = (fname: string): string => {
+//         const problemFiles = problem.files;
+//         const userFiles = solution.files;
+
+//         if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][fname] === undefined) {
+//             let file;
+//             [...problemFiles, ...userFiles].forEach((f) => {
+//                 const { name } = f;
+//                 if(name === fname) {
+//                     file = f;
+//                 }
+//             });
+
+//             if(file) {
+//                 return file.contents;
+//             } else {
+//                 throw new Error(`File not found: '${fname}'`);
+//             }
+//         } else {
+//             return Sk.builtinFiles["files"][fname];
+//         }
+//     }
+//         // this.setState({ hasError: true, output: '' });
+//         // dispatch({
+//         //     id,
+//         //     type: EventTypes.BEGIN_RUN_CODE
+//         // });
+//     let assertions: PMAssertion[] =[];
+//     assertions = test.output.map((t) => new PMAssertEqual(t.name, t.value, ''));
+//     testSuite.setBeforeTests(afterCode);
+//     testSuite.setAssertions(assertions);
+//     testSuite.onBeforeRunningTests();
+//     Sk.configure({
+//         output: outf,
+//         read: readf
+//     });
+//     const myPromise = Sk.misceval.asyncToPromise(() => {
+//         return Sk.importMainWithBody("<stdin>", false, `${fullCode}\n${testSuite.getString()}`, true);
+//     });
+//     const onFinally = () => {
+//         testSuite.onAfterRanTests();
+//         const testSuiteResults = testSuite.getTestResults();
+//         const { passedAll, results } = testSuiteResults;
+//         const testID = test.id;
+//         dispatch({
+//             id,
+//             testID,
+//             results,
+//             passedAll,
+//             type: EventTypes.DONE_RUNNING_TEST
+//         })
+//         // if(passedAll) {
+//         //     // mark current test set as passed
+//         //     console.log(results)
+//         //     return true;
+//         // }
+//         // else return false;
+//         // const problemTests = getState().problems[index].tests;
+//         // const testResults = { };
+//         // results.forEach((result, i) => {
+//         //     const test = problemTests[i];
+//         //     const testId = test.id;
+//         //     testResults[testId] = result;
+//         // });
+//         // dispatch({
+//         //     hasError: true,
+//         //     id,
+//         //     passedAll,
+//         //     testResults,
+//         //     type: EventTypes.DONE_RUNNING_CODE
+//         // });
+//         // if(passedAll) {
+//         //     const currentState = getState();
+//         //     const userID = currentState.user.id;
+//         //     const doc: SDBDoc<IPuzzleSet> = currentState.doc;
+//         //     const { userData } = doc.getData();
+//         //     if(userData[id]) {
+//         //             if(userData[id].completed.indexOf(userID) < 0) {
+//         //                 doc.submitListPushOp(['userData', id, 'completed'], userID);
+//         //             }
+//         //         } else {
+//         //             doc.submitObjectInsertOp(['userData', id], {
+//         //                 completed: [userID],
+//         //                 visible: true
+//         //             });
+//         //         }
+//         // }
+//         };
+//         myPromise.then(onFinally, (err) => {
+//             console.log(err);
+//             const pretextLines = 0;
+//             const matches = fullCode.match(/\n/g);
+//             const progLines = matches ? (matches.length + 1) : 1;
+
+//             let errorBefore: boolean = false;
+//             let errorAfter: boolean = false;
+//             if (err.traceback.length >= 1) {
+//                 const errorLine = err.traceback[0].lineno;
+//                 if (errorLine <= pretextLines) {
+//                     errorBefore = true;
+//                 } else if(errorLine > (progLines + pretextLines)) {
+//                     errorAfter = true;
+//                 } else {
+//                     if (pretextLines > 0) {
+//                         err.traceback[0].lineno = err.traceback[0].lineno - pretextLines + 1;
+//                     } 
+//                 }
+//             }
+//             let errString: string;
+//             if(errorBefore) {
+//                 errString = `Error before your code ran:\n${err.toString()}`;
+//             } else if(errorAfter) {
+//                 errString = `Error while running our tests:\n${err.toString()}`;
+//             } else {
+//                 errString = err.toString();
+//             }
+//             console.log(errString);
+
+//             // dispatch({
+//             //     errors: [errString],
+//             //     id,
+//             //     type: EventTypes.ERROR_CHANGED
+//             // });
+//             // onFinally();
+//         });
+
+// }
+
+const runTest = (test, problem, user, dispatch) => {
+    return new Promise(async (resolve,reject) => {
+        const { id, afterCode } = problem;
+        const solution = user.solutions[id];
+        const { code } = solution;
+        const testID = test.id;
+        const userID = user.id;
+
+        const testSuite = new PMTestSuite();
+
+        let output: string = '';
+        let beforeCode = "";
+        test.input.forEach(variable=>{
+            const state:string = variable.name + "=" + variable.value + ";\n";
+            beforeCode = beforeCode.concat(state);
+        })    
+        const fullCode = beforeCode.concat(code);
+ 
+        const outputs: string[] = [];
+        const outf = (outValue: string): void => {
+            if(!testSuite.currentlyRunning()) {
+                outputs.push(outValue);
+                output = outputs.join('');
+            }
+            console.log(output);
+        };
+
+    const readf = (fname: string): string => {
+        const problemFiles = problem.files;
+        const userFiles = solution.files;
+
+        if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][fname] === undefined) {
+            let file;
+            [...problemFiles, ...userFiles].forEach((f) => {
+                const { name } = f;
+                if(name === fname) {
+                    file = f;
+                }
+            });
+
+            if(file) {
+                return file.contents;
+            } else {
+                throw new Error(`File not found: '${fname}'`);
+            }
+        } else {
+            return Sk.builtinFiles["files"][fname];
+        }
+    }
+        // this.setState({ hasError: true, output: '' });
+    dispatch({
+        id,
+        testID,
+        userID,
+        type: EventTypes.BEGIN_RUN_TEST
+    });
+    let assertions: PMAssertion[] =[];
+    assertions = test.output.map((t) => new PMAssertEqual(t.name, t.value, ''));
+    testSuite.setBeforeTests(afterCode);
+    testSuite.setAssertions(assertions);
+    testSuite.onBeforeRunningTests();
+    Sk.configure({
+        output: outf,
+        read: readf
+    });
+    const myPromise = Sk.misceval.asyncToPromise(() => {
+        return Sk.importMainWithBody("<stdin>", false, `${fullCode}\n${testSuite.getString()}`, true);
+    });
+    const onFinally = () => {
+        testSuite.onAfterRanTests();
+        const testSuiteResults = testSuite.getTestResults();
+        const { passedAll, results } = testSuiteResults;
+        dispatch({
+            id,
+            testID,
+            results,
+            passedAll,
+            userID,
+            type: EventTypes.DONE_RUNNING_TEST
+        });
+        resolve(passedAll);
+    };
+    myPromise.then(onFinally, (err) => {
+        console.log(err);
+        const pretextLines = 0;
+        const matches = fullCode.match(/\n/g);
+        const progLines = matches ? (matches.length + 1) : 1;
+
+        let errorBefore: boolean = false;
+        let errorAfter: boolean = false;
+        if (err.traceback.length >= 1) {
+            const errorLine = err.traceback[0].lineno;
+            if (errorLine <= pretextLines) {
+                errorBefore = true;
+            } else if(errorLine > (progLines + pretextLines)) {
+                errorAfter = true;
+            } else {
+                if (pretextLines > 0) {
+                    err.traceback[0].lineno = err.traceback[0].lineno - pretextLines + 1;
+                } 
+            }
+        }
+        let errString: string;
+        if(errorBefore) {
+            errString = `Error before your code ran:\n${err.toString()}`;
+        } else if(errorAfter) {
+            errString = `Error while running our tests:\n${err.toString()}`;
+        } else {
+            errString = err.toString();
+        }
+        console.log(errString);
+            // dispatch({
+            //     errors: [errString],
+            //     id,
+            //     type: EventTypes.ERROR_CHANGED
+            // });
+            // onFinally();
+        });
+    })
+  }
+
+const runTests = async (user, problem, dispatch) => {
+    const { tests } = problem;
+
+    dispatch({
+        id: problem.id,
+        type: EventTypes.BEGIN_RUN_CODE
+    });
+
+    const status = await Promise.all(tests.map(test => runTest(test, problem, user, dispatch)));
+    const passedAll = status.every((value)=> value===true);
+
+    dispatch({
+        id: problem.id,
+        passedAll,
+        type: EventTypes.DONE_RUNNING_CODE
+    })
+
+}
+
+export  function runUnitTests(index: number) {
+    return(dispatch: Dispatch, getState) => {
+        const { user, problems } = getState();
+        const problem = problems[index];
+        runTests(user, problem, dispatch);
+    }
+}
+
 export function runCode(index: number) {
     return (dispatch: Dispatch, getState) => {
         const { user, problems } = getState();
@@ -47,8 +346,7 @@ export function runCode(index: number) {
                 beforeCode = beforeCode.concat(state);
             })    
         }
-        const fullCode = beforeCode.concat(code);
- 
+        const fullCode = beforeCode.concat(code); 
 
         const outputs: string[] = [];
         const outf = (outValue: string): void => {
@@ -126,9 +424,9 @@ export function runCode(index: number) {
             dispatch({
                 hasError: true,
                 id,
-                passedAll,
+                defaultPass: passedAll,
                 testResults,
-                type: EventTypes.DONE_RUNNING_CODE
+                type: EventTypes.DONE_RUNNING_DEFAULT
             });
             if(passedAll) {
                 const currentState = getState();
@@ -142,7 +440,8 @@ export function runCode(index: number) {
                 } else {
                     doc.submitObjectInsertOp(['userData', id], {
                         completed: [userID],
-                        visible: true
+                        visible: true,
+                        testData: {}
                     });
                 }
             }

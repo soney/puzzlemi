@@ -45,12 +45,12 @@ export const problems = (state: IProblem[] = [], action: any) => {
             }
         });
     } else if(action.type === EventTypes.TEST_PART_CHANGED) {
-        const { index, testIndex, part, value } = action;
+        const { index, testIndex, partType, partValue } = action;
         return update(state, {
             [index]: {
                 tests: {
                     [testIndex]: {
-                        [part]: { $set: value }
+                        [partType]: { $set: partValue }
                     }
                 }
             }

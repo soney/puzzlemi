@@ -30,6 +30,10 @@ enum EventTypes {
     PROBLEM_VISIBILITY_CHANGED='problem visibility changed',
     VARIABLE_ADDED = 'add variable',
     VARIABLE_DELETED = 'delete variable',
-    VARIABLE_PART_CHANGED = 'variable part changed'
+    VARIABLE_PART_CHANGED = 'variable part changed',
+    DONE_RUNNING_TEST='done running one test case',
+    BEGIN_RUN_TEST='begin running one test case',
+    DONE_RUNNING_DEFAULT = 'done running default test',
+    CHANGE_TARGET_ID = 'change target user test id'
 };
 export default EventTypes;

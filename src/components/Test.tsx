@@ -5,7 +5,7 @@ import { CodeEditor } from './CodeEditor';
 import update from 'immutability-helper';
 import { deleteTest, changeTestStatus } from '../actions/sharedb_actions';
 
-const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc, isInput, totalNum }) => {
+const Test = ({ testResult, dispatch, index, testUserInfo, testIndex, test, isAdmin, doc, isInput, totalNum }) => {
     const doDeleteTest = () => {
         dispatch(deleteTest(index, testIndex));
     };
@@ -26,8 +26,14 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc, isIn
         outputSubDocs.push(outputVariableSubDoc);
     })
     const isLast = totalNum===testIndex+1;
-
-    const width_style = {width: test.rate+"%"} as React.CSSProperties;
+    
+    const total_user_num = testUserInfo?Object.keys(testUserInfo).length: 0;
+    let pass_user_num = 0;
+    for(let userID in testUserInfo) {
+        if(testUserInfo[userID].passedAll) pass_user_num += 1;
+    }
+    const pass_rate = total_user_num === 0? 0: pass_user_num / total_user_num * 100;
+    const width_style = {width: pass_rate+"%"} as React.CSSProperties;
     const author_name = test.author.slice(-4);
     if(isInput) {
         return <div className = "card">
@@ -53,7 +59,7 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc, isIn
                     </div>
                     <div className="col-sm test-head">
                         <div className="progress">
-                            <div className="progress-bar" role="progressbar" style={width_style} aria-valuenow={test.rate} aria-valuemin={0} aria-valuemax={100}>{test.rate}%</div>
+            <div className="progress-bar progress-bar-striped bg-success" role="progressbar" style={width_style} aria-valuenow={pass_rate} aria-valuemin={0} aria-valuemax={100}>{pass_user_num}/{total_user_num}</div>
                         </div>  
                     </div>
                     <div className="col-sm">
@@ -66,7 +72,7 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc, isIn
                 <div className="row">
                 <div className="col-6 test-info">
                     <h5>Title:</h5>
-                    <CodeEditor shareDBSubDoc={titleSubDoc} value={titleSubDoc.getData()} options={{lineNumbers: false, mode:'markdown', lineWrapping: true, height: 30}} />
+                    <CodeEditor shareDBSubDoc={titleSubDoc} value={titleSubDoc.getData()} options={{lineNumbers: false, mode:'markdown', lineWrapping: true, height: 30}}/>
                     <h5>Description:</h5>
                     <CodeEditor shareDBSubDoc={descriptionSubDoc} value={descriptionSubDoc.getData()} options={{lineNumbers: false, mode:'markdown', lineWrapping: true, height: 30}} />
                 </div>
@@ -110,13 +116,13 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc, isIn
 }
 function mapStateToProps(state, ownProps) {
     const { index, testIndex } = ownProps;
-    const { user, problems, doc } = state;
+    const { user, problems, doc, userData } = state;
     const { isAdmin } = user;
     const problem = problems[index];
     const test = problem.tests[testIndex];
+    const testUserInfo = userData[problem.id].testData[test.id];
     const userSolution = user.solutions[problem.id];
     const testResult = userSolution.testResults[test.id]; 
-
-    return update(ownProps, { testResult: {$set: testResult}, isAdmin: {$set: isAdmin}, test: {$set: test}, doc: {$set: doc} });
+    return update(ownProps, { testResult: {$set: testResult}, testUserInfo: {$set: testUserInfo}, isAdmin: {$set: isAdmin}, test: {$set: test}, doc: {$set: doc} });
 }
 export default connect(mapStateToProps)(Test); 

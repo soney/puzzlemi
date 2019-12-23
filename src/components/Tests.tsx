@@ -10,7 +10,7 @@ const Tests = ({ index, inputTests, verifiedTests, isAdmin, doc, dispatch, uid }
     }
     let myTests = [] as any[];
     inputTests.forEach(({test, i})=> {
-        if(test.author === uid) myTests.push(test);
+        if(test.author === uid) myTests.push({test, i});
     })
     
     return <div className='tests'>
@@ -31,7 +31,7 @@ const Tests = ({ index, inputTests, verifiedTests, isAdmin, doc, dispatch, uid }
         <h4>My Tests</h4>
         <div className="accordion" id="testlist">
         {myTests && myTests.length
-        ? myTests.map((test, i)=> <Test key={test.id+`${i}`} index={index} testIndex={i} isInput={true} totalNum={myTests.length}/>)
+        ? myTests.map(({test, i})=> <Test key={test.id+`${i}`} index={index} testIndex={i} isInput={true} totalNum={myTests.length}/>)
         : <div className='no-tests'>(no tests)</div>                
         }
         </div>    
