@@ -9,11 +9,11 @@ export const setIsAdmin = (isAdmin: boolean) => ({
 //     name, type:EventTypes.SET_NAME,
 // });
 
-export function changeTargetID(problemID: string, id: string){
-    return (dispatch: Dispatch, getState)=>{
-        dispatch({problemID, id, type: EventTypes.CHANGE_TARGET_ID})
-    }
-}
+// export function changeTargetID(problemID: string, id: string) {
+//     return (dispatch: Dispatch, getState) => {
+//         dispatch({ problemID, id, type: EventTypes.CHANGE_TARGET_ID })
+//     }
+// }
 
 export function deleteUserFile(index: number, name: string) {
     return (dispatch: Dispatch, getState) => {

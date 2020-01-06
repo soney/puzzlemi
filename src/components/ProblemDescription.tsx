@@ -5,13 +5,13 @@ import { CodeEditor } from './CodeEditor';
 import update from 'immutability-helper';
 
 const ProblemDescription = ({ index, problem, isAdmin, doc }) => {
-    if(isAdmin) {
+    if (isAdmin) {
         const p = ['problems', index, 'description'];
         const subDoc = doc.subDoc(p);
         return <div className="row">
             <div className="col">
                 <h4>Description: </h4>
-                <CodeEditor shareDBSubDoc={subDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 80}} />
+                <CodeEditor shareDBSubDoc={subDoc} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 80 }} />
             </div>
         </div>;
     } else {
@@ -29,6 +29,6 @@ function mapStateToProps(state, ownProps) {
     const { isAdmin } = user;
     const problem = problems[ownProps.index];
 
-    return update(ownProps, { isAdmin: {$set: isAdmin}, problem: {$set: problem}, doc: {$set: doc} });
+    return update(ownProps, { isAdmin: { $set: isAdmin }, problem: { $set: problem }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(ProblemDescription);

@@ -61,6 +61,8 @@ const Problem = ({ id, visible, uid, code, errors, index, currentHelpSession, cu
     const p = ['problems', index];
     const givenCodeSubDoc = doc.subDoc([...p, 'givenCode']);
     const afterCodeSubDoc = doc.subDoc([...p, 'afterCode']);
+    const standardCodeSubDoc = doc.subDoc([...p, 'standardCode']);
+
     // const userp = ['userData', id, 'helpSessions'];
     // const currentCodeSubDoc = doc.subDoc([...userp, currentHelpSessionIndex, 'solution', 'code']);
 
@@ -86,47 +88,57 @@ const Problem = ({ id, visible, uid, code, errors, index, currentHelpSession, cu
             </div>
         </div>
         {isAdmin &&
-            <div className="row">
-                <div className="col">
-                    <h4>Given Code:</h4>
-                    <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
-                    <h4>Run After:</h4>
-                    <CodeEditor shareDBSubDoc={afterCodeSubDoc} />
+            <div>
+                <div className="row">
+                    <div className="col">
+                        <h4>Given Code:</h4>
+                        <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
+                        <h4>Run After:</h4>
+                        <CodeEditor shareDBSubDoc={afterCodeSubDoc} />
+                        <h4>Standard Code:</h4>
+                        <CodeEditor shareDBSubDoc={standardCodeSubDoc} />
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col">
+                        <TestTemplate index={index} />
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col">
+                        <Tests index={index} />
+                    </div>
                 </div>
             </div>
+
         }
         {!isAdmin &&
             <div>
                 <nav>
                     <div className="nav nav-tabs" id="nav-tab" role="tablist">
                         <a className="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">My Solution</a>
-                        <a className="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Live Code</a>
-                        <a className="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false">Peer Help</a>
+                        <a className="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Instructor</a>
+                        <a className="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false">Peers</a>
                     </div>
                 </nav>
                 <div className="tab-content" id="nav-tabContent">
                     <div className="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
                         <MySolution index={index} />
+                        <div className="row">
+                            <div className="col">
+                                <Tests index={index} />
+                            </div>
+                        </div>
                     </div>
                     <div className="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                        <LiveCode index={index}/>
+                        <LiveCode index={index} />
                     </div>
-                     <div className="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
-                        <PeerHelp index={index}/>
+                    <div className="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+                        <PeerHelp index={index} />
                     </div>
                 </div>
             </div>
         }
-        <div className="row">
-            <div className="col">
-                <TestTemplate index={index} />
-            </div>
-        </div>
-        <div className="row">
-            <div className="col">
-                <Tests index={index} />
-            </div>
-        </div>
         <div className="row completion-info">
             <div className="col">
                 {iHaveCompleted &&

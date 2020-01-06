@@ -191,7 +191,7 @@ export function runSharedCode(index: number, sessionIndex: number) {
         const solution = currentSolutionSubDoc.getData();
         const { code } = solution;
         const testSuite = new PMTestSuite();
-        
+
         let output: string = '';
         let test = tests[0] as any;
         let beforeCode = "";
@@ -350,7 +350,7 @@ export function runSharedCode(index: number, sessionIndex: number) {
 
 const runTest = (test, problem, user, dispatch) => {
     return new Promise(async (resolve, reject) => {
-        if(!test.verified) resolve(false);
+        if (!test.verified) resolve(false);
         const { id, afterCode } = problem;
         const solution = user.solutions[id];
         const { code } = solution;
@@ -472,6 +472,7 @@ const runTest = (test, problem, user, dispatch) => {
 
 const runTests = async (user, problem, dispatch) => {
     const { tests } = problem;
+    console.log(tests);
 
     dispatch({
         id: problem.id,
@@ -488,31 +489,13 @@ const runTests = async (user, problem, dispatch) => {
         type: EventTypes.DONE_RUNNING_CODE
     })
 
-    if(passedAll) {
+    if (passedAll) {
         dispatch({
             id: problem.id,
             userID: user.id,
             type: EventTypes.USER_COMPLETED_PROBLEM
         })
     }
-
-    // if(passedAll) {
-    //     const currentState = getState();
-    //     const userID = currentState.user.id;
-    //     const doc: SDBDoc<IPuzzleSet> = currentState.doc;
-    //     const { userData } = doc.getData();
-    //     if(userData[id]) {
-    //         if(userData[id].completed.indexOf(userID) < 0) {
-    //             doc.submitListPushOp(['userData', id, 'completed'], userID);
-    //         }
-    //     } else {
-    //         doc.submitObjectInsertOp(['userData', id], {
-    //             completed: [userID],
-    //             visible: true
-    //         });
-    //     }
-    // }
-
 }
 
 export function runUnitTests(index: number) {

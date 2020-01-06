@@ -30,13 +30,13 @@ const PeerHelp = ({ index, id, helpSessions, myCompletionIndex, errors, output, 
         <div className="row">
             <div className="col">
                 {currentHelpSession ?
-                        <div>
-                            <CodeEditor shareDBSubDoc={currentCodeSubDoc} />
-                            <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunSharedCode}>Run</button>
-                        </div>
-                : <div>
-                    <CodeEditor />
-                 </div>
+                    <div>
+                        <CodeEditor shareDBSubDoc={currentCodeSubDoc} />
+                        <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunSharedCode}>Run</button>
+                    </div>
+                    : <div>
+                        <CodeEditor />
+                    </div>
                 }
             </div>
             <div className="col">
@@ -89,6 +89,6 @@ function mapStateToProps(state, ownProps) {
     const currentHelpSession = isRequestedHelp[0] || isOfferHelp[0];
     const currentHelpSessionIndex = helpSessions.indexOf(currentHelpSession);
     const { output, passedAll, errors } = currentHelpSession ? currentHelpSession.solution : user.solutions[id];
-    return update(ownProps, { index: { $set: index }, id:{$set: id}, myCompletionIndex: { $set: myCompletionIndex }, currentHelpSession: { $set: currentHelpSession }, currentHelpSessionIndex: { $set: currentHelpSessionIndex }, problem: { $set: problem }, uid: { $set: uid }, doc: { $set: doc }, errors: { $set: errors }, helpSessions: { $set: helpSessions }, output: { $set: output }, passedAll: { $set: passedAll } });
+    return update(ownProps, { index: { $set: index }, id: { $set: id }, myCompletionIndex: { $set: myCompletionIndex }, currentHelpSession: { $set: currentHelpSession }, currentHelpSessionIndex: { $set: currentHelpSessionIndex }, problem: { $set: problem }, uid: { $set: uid }, doc: { $set: doc }, errors: { $set: errors }, helpSessions: { $set: helpSessions }, output: { $set: output }, passedAll: { $set: passedAll } });
 }
 export default connect(mapStateToProps)(PeerHelp);

@@ -10,10 +10,10 @@ const Problems = ({ name, isAdmin, dispatch, problems }) => {
     }
     return <ul className='problems'>
         {problems && problems.length
-        ? problems.map((problem, index) => {
-            return <Problem key={problem.id + `${index}`} index={index} problem={problem} name={name}/>;
+            ? problems.map((problem, index) => {
+                return <Problem key={problem.id + `${index}`} index={index} problem={problem} name={name} />;
             })
-        : <li className='container no-problems'>(no problems yet)</li>}
+            : <li className='container no-problems'>(no problems yet)</li>}
         {
             isAdmin &&
             <li className="container">
@@ -29,6 +29,6 @@ function mapStateToProps(state, givenProps) {
         const { id } = p;
         return userData && userData[id] && userData[id].visible;
     });
-    return update(givenProps, { problems: { $set: filteredProblems}, isAdmin: { $set: isAdmin } });
+    return update(givenProps, { problems: { $set: filteredProblems }, isAdmin: { $set: isAdmin } });
 }
 export default connect(mapStateToProps)(Problems);

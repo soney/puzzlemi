@@ -36,8 +36,6 @@ export interface IProblemUserInfo {
 }
 
 export interface ITest {
-    title: string,
-    description: string,
     author: string,
     verified: boolean,
     id: string,
@@ -51,6 +49,7 @@ export interface IProblem {
     afterCode: string;
     description: string;
     givenCode: string;
+    standardCode: string;
     files: any;
     id: string;
     variables: any;
@@ -59,28 +58,28 @@ export interface IProblem {
 
 export interface ISolution {
     modified: boolean,
-        code: string,
-        errors: string[],
-        files: Array<{
-                contents: string,
-                name: string
-            }>,
-        output: string,
-        passedAll: boolean,
-        defaultPass: boolean,
-        targetID: string,
-        testResults: {
-            [testID: string]: {
-                passedAll: boolean,
-                results: IOutput[]; 
-            }
+    code: string,
+    errors: string[],
+    files: Array<{
+        contents: string,
+        name: string
+    }>,
+    output: string,
+    passedAll: boolean,
+    defaultPass: boolean,
+    // targetID: string,
+    testResults: {
+        [testID: string]: {
+            passedAll: boolean,
+            results: IOutput[];
         }
+    }
 }
 
 export interface IUser {
     isAdmin: boolean;
     id: string;
-    solutions: { [problemID: string]: ISolution}
+    solutions: { [problemID: string]: ISolution }
 }
 
 // export interface IUser {
@@ -134,7 +133,7 @@ const PMApplication = ({ isAdmin, dispatch }) => {
         dispatch(setIsAdmin(true));
     };
     window['toJSON'] = () => {
-        console.log(JSON.stringify(update(sdbDoc.getData(), { userData: { $set: {} }})));
+        console.log(JSON.stringify(update(sdbDoc.getData(), { userData: { $set: {} } })));
     };
     window['fromJSON'] = (str: string) => {
         const newData: IPuzzleSet = JSON.parse(str);

@@ -43,7 +43,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
                         passedAll: false,
                         defaultPass: false,
                         testResults: {},
-                        targetID: ''
+                        // targetID: ''
                     }
                 }
             }
@@ -98,7 +98,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
                     output: { $set: '' },
                     passedAll: { $set: false },
                     testResults: { $set: {} },
-                    targetID: {$set: ''}
+                    // targetID: {$set: ''}
                 }
             }
         });
@@ -210,15 +210,15 @@ export const user = (state: IUser = defaultUser, action: any) => {
                 }
             }
         })
-    } else if(action.type === EventTypes.CHANGE_TARGET_ID){
-        const {problemID, id} = action;
-        return update(state, {
-            solutions: {
-                [problemID]: {
-                    targetID: {$set: id}
-                }    
-            }
-        })
+    // } else if(action.type === EventTypes.CHANGE_TARGET_ID){
+    //     const {problemID, id} = action;
+    //     return update(state, {
+    //         solutions: {
+    //             [problemID]: {
+    //                 targetID: {$set: id}
+    //             }    
+    //         }
+    //     })
     } else {
         return state;
     }

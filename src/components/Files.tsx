@@ -11,19 +11,19 @@ const Files = ({ index, files, isAdmin, doc, dispatch, userFiles }) => {
     const hasFiles = !!(files && files.length);
     const hasUserFiles = !!(userFiles && userFiles.length);
     return <div>
-        {   isAdmin &&
+        {isAdmin &&
             <h4>Files:</h4>
         }
-        {   (hasFiles || hasUserFiles) &&
+        {(hasFiles || hasUserFiles) &&
             <hr />
         }
-        {   (hasFiles) &&
-            files.map((file, i) => <File key={file.id+`${i}`} index={index} fileIndex={i} isUserFile={false} />)
+        {(hasFiles) &&
+            files.map((file, i) => <File key={file.id + `${i}`} index={index} fileIndex={i} isUserFile={false} />)
         }
-        {   (hasUserFiles) &&
-            userFiles.map((file, i) => <File key={file.id+`${i}`} index={index} fileIndex={i} isUserFile={true} />)
+        {(hasUserFiles) &&
+            userFiles.map((file, i) => <File key={file.id + `${i}`} index={index} fileIndex={i} isUserFile={true} />)
         }
-        { isAdmin &&
+        {isAdmin &&
             <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddFile}>+ File</button>
         }
     </div>;
@@ -36,6 +36,6 @@ function mapStateToProps(state, ownProps) {
     const solution = solutions[problem.id];
     const userFiles = solution.files;
 
-    return update(ownProps, { isAdmin: {$set: isAdmin}, files: {$set: files}, userFiles: {$set: userFiles}, doc: {$set: doc} });
+    return update(ownProps, { isAdmin: { $set: isAdmin }, files: { $set: files }, userFiles: { $set: userFiles }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(Files); 

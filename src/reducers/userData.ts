@@ -52,6 +52,7 @@ export const userData = (state: {[problemID: string]: IProblemUserInfo} = {}, ac
             }
         });
     } else if(action.type === EventTypes.BEGIN_RUN_TEST){
+        console.log('begin run test')
         const { id, testID, userID } = action;
         let test = {};
         if(!state[id].testData[testID]){
@@ -68,6 +69,8 @@ export const userData = (state: {[problemID: string]: IProblemUserInfo} = {}, ac
             }
         })
     } else if(action.type === EventTypes.DONE_RUNNING_TEST){
+        console.log('done run test')
+
         const { id, testID, passedAll, userID } = action;
         return update(state, {
             [id]:{
