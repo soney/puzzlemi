@@ -1,4 +1,4 @@
-import { IPuzzleSet, IProblem } from '../components/App';
+import { IPuzzleSet, IProblem, IHelpSession } from '../components/App';
 import { SDBDoc } from 'sdb-ts';
 import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
@@ -8,48 +8,48 @@ import { ListInsertOp, ListDeleteOp, ObjectInsertOp, ObjectDeleteOp } from 'shar
 export const puzzlesFetched = (puzzles: IPuzzleSet) => ({
     puzzles, type: EventTypes.PUZZLES_FETCHED,
 });
-export const problemAdded = (index: number, problem: IProblem) => ({
-    index, problem, type: EventTypes.PROBLEM_ADDED,
-});
-export const descriptionChanged = (index: number, description: string) => ({
-    description, index, type: EventTypes.DESCRIPTION_CHANGED,
-});
-export const givenCodeChanged = (index: number, id: string, code: string) => ({
-    code, id, index, type: EventTypes.GIVEN_CODE_CHANGED,
-});
-export const afterCodeChanged = (index: number, code: string) => ({
-    code, index, type: EventTypes.DESCRIPTION_CHANGED,
-});
-export const problemDeleted = (index: number) => ({
-    index, type: EventTypes.PROBLEM_DELETED,
-});
-export const testAdded = (id: string, index: number, testIndex: number, test) => ({
-    id, index, test, testIndex, type: EventTypes.TEST_ADDED,
-});
-export const testDeleted = (id: string, index: number, testIndex: number) => ({
-    id, index, testIndex, type: EventTypes.TEST_DELETED,
-});
-export const testPartChanged = (id: string, index: number, testIndex: number, part: 'actual'|'expected'|'description'|'verified', value) => ({
-    id, index, part, testIndex, type: EventTypes.TEST_PART_CHANGED, value
-});
-export const fileAdded = (index: number, fileIndex: number, file) => ({
-    file, fileIndex, index, type: EventTypes.FILE_ADDED,
-});
-export const fileDeleted = (index: number, fileIndex: number) => ({
-    fileIndex, index, type: EventTypes.FILE_DELETED,
-});
-export const filePartChanged = (index: number, fileIndex: number, part: 'name'|'contents', value) => ({
-    fileIndex, index, part, type: EventTypes.FILE_PART_CHANGED, value
-});
-export const variableAdded = (index: number, variableIndex: number, variable) => ({
-    index, variable, variableIndex, type: EventTypes.VARIABLE_ADDED
-})
-export const variableDeleted = (index:number, variableIndex: number) => ({
-    variableIndex, index, type: EventTypes.VARIABLE_DELETED
-})
-export const variablePartChanged = (index:number, variableIndex:number, part: 'type'|'name'|'description', value) => ({
-    variableIndex, index, part, type: EventTypes.VARIABLE_PART_CHANGED, value
-})
+// export const problemAdded = (index: number, problem: IProblem) => ({
+//     index, problem, type: EventTypes.PROBLEM_ADDED,
+// });
+// export const descriptionChanged = (index: number, description: string) => ({
+//     description, index, type: EventTypes.DESCRIPTION_CHANGED,
+// });
+// export const givenCodeChanged = (index: number, id: string, code: string) => ({
+//     code, id, index, type: EventTypes.GIVEN_CODE_CHANGED,
+// });
+// export const afterCodeChanged = (index: number, code: string) => ({
+//     code, index, type: EventTypes.DESCRIPTION_CHANGED,
+// });
+// export const problemDeleted = (index: number) => ({
+//     index, type: EventTypes.PROBLEM_DELETED,
+// });
+// export const testAdded = (id: string, index: number, testIndex: number, test) => ({
+//     id, index, test, testIndex, type: EventTypes.TEST_ADDED,
+// });
+// export const testDeleted = (id: string, index: number, testIndex: number) => ({
+//     id, index, testIndex, type: EventTypes.TEST_DELETED,
+// });
+// export const testPartChanged = (id: string, index: number, testIndex: number, part: 'actual'|'expected'|'description'|'verified', value) => ({
+//     id, index, part, testIndex, type: EventTypes.TEST_PART_CHANGED, value
+// });
+// export const fileAdded = (index: number, fileIndex: number, file) => ({
+//     file, fileIndex, index, type: EventTypes.FILE_ADDED,
+// });
+// export const fileDeleted = (index: number, fileIndex: number) => ({
+//     fileIndex, index, type: EventTypes.FILE_DELETED,
+// });
+// export const filePartChanged = (index: number, fileIndex: number, part: 'name'|'contents', value) => ({
+//     fileIndex, index, part, type: EventTypes.FILE_PART_CHANGED, value
+// });
+// export const variableAdded = (index: number, variableIndex: number, variable) => ({
+//     index, variable, variableIndex, type: EventTypes.VARIABLE_ADDED
+// })
+// export const variableDeleted = (index:number, variableIndex: number) => ({
+//     variableIndex, index, type: EventTypes.VARIABLE_DELETED
+// })
+// export const variablePartChanged = (index:number, variableIndex:number, part: 'type'|'name'|'description', value) => ({
+//     variableIndex, index, part, type: EventTypes.VARIABLE_PART_CHANGED, value
+// })
 export const setDoc = (doc: SDBDoc<IPuzzleSet>) => ({
     doc, type: EventTypes.SET_DOC,
 });
@@ -70,7 +70,8 @@ export function addProblem() {
         doc.submitObjectInsertOp(['userData', newProblem.id], {
             completed: [],
             visible: true,
-            testData: {}
+            testData: {},
+            helpSessions: [],
         });
         doc.submitListPushOp(['problems'], newProblem);
     };
@@ -184,13 +185,53 @@ export function setProblemVisibility(id: string, visible: boolean) {
     };
 }
 
+export function setHelpRequest(id: string, uid:string) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc, user } = getState();
+        const { solutions } = user;
+        const solution = solutions[id];
+        let newHelpSession: IHelpSession = {
+            status: true,
+            tutorIDs: [],
+            tuteeID: uid,
+            solution,
+        }
+        doc.submitListPushOp(['userData', id, 'helpSessions'], newHelpSession);     
+    };
+}
+
+export function joinHelpSession(id: string, tuteeID: string, tutorID: string) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        const { userData } = doc.getData();
+        const { helpSessions } = userData[id];
+        let sessionIndex;
+
+        helpSessions.forEach((session, index)=>{
+            if(session.tuteeID === tuteeID) sessionIndex = index;
+        })
+        doc.submitListPushOp(['userData', id, 'helpSessions', sessionIndex, 'tutorIDs'], tutorID);
+    }
+}
+
+export function quitHelpSession(id: string, sessionIndex: string, uid: string) {
+    return (dispatch:Dispatch, getState) => {
+        const { doc } = getState();
+        const { userData } = doc.getData();
+        const { helpSessions } = userData[id];
+        const session = helpSessions[sessionIndex];
+        if(session.tuteeID === uid) doc.submitListDeleteOp(['userData', id, 'helpSessions', sessionIndex]);
+        const tutorIndex = session.tutorIDs.indexOf(uid);
+        if(tutorIndex!== -1) doc.submitListDeleteOp(['userData', id, 'helpSessions', sessionIndex, 'tutorIDs', tutorIndex]);
+    }
+}
+
 function parseOpType(op, doc):string{
     const { p } = op;
     const { li } = op as ListInsertOp;
     const { ld } = op as ListDeleteOp;
     const { oi } = op as ObjectInsertOp;
     const { od } = op as ObjectDeleteOp;
-
     
     const problemRelPath = SDBDoc.relative(['problems'], p);
     const userDataRelPath = SDBDoc.relative(['userData'], p);
@@ -215,6 +256,15 @@ function parseOpType(op, doc):string{
         case ((userDataRelPath) && (userDataRelPath.length === 1) && (oi!==undefined)): return EventTypes.PROBLEM_COMPLETION_INFO_FETCHED;
         case ((userDataRelPath) && (userDataRelPath.length === 2) && (userDataRelPath[1] === 'visible') && (oi!==undefined)): return EventTypes.PROBLEM_VISIBILITY_CHANGED;
         case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed') && (li!==undefined)): return EventTypes.USER_COMPLETED_PROBLEM;
+        // case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'tests')): return EventTypes.TEST_PART_CHANGED;
+        // case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'files')): return EventTypes.FILE_PART_CHANGED;
+        // case ((userDataRelPath) && (userDataRelPath.length === 1) && (oi!==undefined)): return EventTypes.PROBLEM_COMPLETION_INFO_FETCHED;
+        // case ((userDataRelPath) && (userDataRelPath.length === 2) && (userDataRelPath[1] === 'visible') && (oi!==undefined)): return EventTypes.PROBLEM_VISIBILITY_CHANGED;
+        // case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed') && (li!==undefined)): return EventTypes.USER_COMPLETED_PROBLEM;
+        case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'helpSessions') && (li!==undefined)): return EventTypes.ENABLE_HELP_SESSION;
+        case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'helpSessions') && (ld!==undefined)): return EventTypes.DISABLE_HELP_SESSION;
+        case ((userDataRelPath) && (userDataRelPath.length === 5) && (userDataRelPath[1] === 'helpSessions') && (userDataRelPath[3] === 'tutorIDs') && (li!==undefined)): return EventTypes.JOIN_HELP_SESSION;
+        case ((userDataRelPath) && (userDataRelPath.length === 5) && (userDataRelPath[1] === 'helpSessions') && (userDataRelPath[3] === 'tutorIDs') && (ld!==undefined)): return EventTypes.QUIT_HELP_SESSION;
         default:
             console.log(op);
             return 'unknownType';
@@ -298,11 +348,17 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             id = doc.traverse(['problems', index, 'id']);
                             dispatch({ index, type, testIndex, id, partType, partValue});
                             break;
+                            // id = doc.traverse(['problems', index, 'id']);
+                            // const testPartType = problemRelPath[3] as 'actual'|'expected'|'description';
+                            // const newTestPart = doc.traverse(['problems', index, 'tests', testIndex, testPartType]);
+                            // dispatch({ index, type, testIndex, id, part: testPartType, value: newTestPart })
+
                         case EventTypes.TEST_STATUS_CHANGED:
                             index = problemRelPath[0] as number;
                             testIndex = problemRelPath[2] as number;
                             dispatch({ index, type, testIndex, value: oi});
                             break;
+
                         case EventTypes.FILE_PART_CHANGED:
                             index = problemRelPath[0] as number;
                             fileIndex = problemRelPath[2] as number;
@@ -334,6 +390,18 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             variableIndex = problemRelPath[2] as number;
                             const value = doc.traverse(['problems', index, 'variables', variableIndex, problemRelPath[3]]);
                             dispatch({ index, type, variableIndex, part: problemRelPath[3], value})
+                            break;
+                        case EventTypes.ENABLE_HELP_SESSION:
+                            dispatch({ type, problemID: userDataRelPath[0], sessionIndex: userDataRelPath[2], helpSession: li});
+                            break;
+                        case EventTypes.DISABLE_HELP_SESSION:
+                            dispatch( { type, problemID: userDataRelPath[0], sessionIndex: userDataRelPath[2]});
+                            break;
+                        case EventTypes.JOIN_HELP_SESSION:
+                            dispatch({ type, problemID: userDataRelPath[0], sessionIndex: userDataRelPath[2], tutorIndex: userDataRelPath[4], tutorID: li});
+                            break;
+                        case EventTypes.QUIT_HELP_SESSION:
+                            dispatch({ type, problemID: userDataRelPath[0], sessionIndex: userDataRelPath[2], tutorIndex: userDataRelPath[4]});
                             break;
                         default:
                             if(p.length === 0) { // full replacement

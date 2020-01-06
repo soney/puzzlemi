@@ -34,6 +34,15 @@ enum EventTypes {
     DONE_RUNNING_TEST='done running one test case',
     BEGIN_RUN_TEST='begin running one test case',
     DONE_RUNNING_DEFAULT = 'done running default test',
-    CHANGE_TARGET_ID = 'change target user test id'
+    CHANGE_TARGET_ID = 'change target user test id',
+    ENABLE_HELP_SESSION = 'help session added',
+    JOIN_HELP_SESSION = 'join help session',
+    QUIT_HELP_SESSION = 'tutor quit session',
+    DISABLE_HELP_SESSION = 'tutee quit session',
+    SHARED_OUTPUT_CHANGED = 'shared output change',
+    SHARED_FILE_WRITTEN = 'shared file written',
+    BEGIN_RUN_SHARED_CODE = 'begin run shared code',
+    DONE_RUNNING_SHARED_CODE = 'done running shared code',
+    SHARED_ERROR_CHANGED = 'shared error changed'
 };
 export default EventTypes;

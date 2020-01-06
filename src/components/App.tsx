@@ -6,12 +6,20 @@ import Problems from './Problems';
 import { setDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
 import { setIsAdmin } from '../actions/user_actions';
 import update from 'immutability-helper';
+// import { ISolution } from '../reducers/user';
 
 export interface IPuzzleSet {
     problems: IProblem[];
     userData: {
         [problemID: string]: IProblemUserInfo;
     };
+}
+
+export interface IHelpSession {
+    status: boolean;
+    tuteeID: string;
+    tutorIDs: string[];
+    solution: ISolution;
 }
 
 export interface IProblemUserInfo {
@@ -23,7 +31,8 @@ export interface IProblemUserInfo {
                 passedAll: boolean
             }
         }
-    }
+    },
+    helpSessions: IHelpSession[];
 }
 
 export interface ITest {
@@ -34,6 +43,8 @@ export interface ITest {
     id: string,
     input: any,
     output: any
+    hidden: boolean;
+    helpSessions: IHelpSession[];
 }
 
 export interface IProblem {
@@ -46,11 +57,8 @@ export interface IProblem {
     tests: ITest[];
 };
 
-export interface IUser {
-    isAdmin: boolean;
-    id: string;
-    solutions: { [problemID: string]: {
-        modified: boolean,
+export interface ISolution {
+    modified: boolean,
         code: string,
         errors: string[],
         files: Array<{
@@ -67,8 +75,37 @@ export interface IUser {
                 results: IOutput[]; 
             }
         }
-    }}
 }
+
+export interface IUser {
+    isAdmin: boolean;
+    id: string;
+    solutions: { [problemID: string]: ISolution}
+}
+
+// export interface IUser {
+//     isAdmin: boolean;
+//     id: string;
+//     solutions: { [problemID: string]: {
+//         modified: boolean,
+//         code: string,
+//         errors: string[],
+//         files: Array<{
+//                 contents: string,
+//                 name: string
+//             }>,
+//         output: string,
+//         passedAll: boolean,
+//         defaultPass: boolean,
+//         targetID: string,
+//         testResults: {
+//             [testID: string]: {
+//                 passedAll: boolean,
+//                 results: IOutput[]; 
+//             }
+//         }
+//     }}
+// }
 
 export interface IOutput {
     passed: boolean;
