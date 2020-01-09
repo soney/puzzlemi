@@ -2,12 +2,12 @@ import EventTypes from '../actions/EventTypes';
 import store from 'storejs';
 import update from 'immutability-helper';
 import uuid from '../utils/uuid';
-import { UserInfo } from '../components/App';
+import { IUserInfo } from '../components/App';
 
 export interface IUser {
     isAdmin: boolean;
     id: string;
-    userInfo: UserInfo;
+    userInfo: IUserInfo;
     solutions: { [problemID: string]: {
         modified: boolean,
         code: string,

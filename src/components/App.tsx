@@ -29,7 +29,7 @@ export interface IProblem {
     tests: any;
 };
 
-export interface UserInfo {
+export interface IUserInfo {
     username: string,
     email: string,
     isInstructor: boolean,
@@ -43,9 +43,9 @@ const PMApplication = ({ isAdmin, dispatch }) => {
     const puzzleName = DEBUG_MODE ? 'p' : window.location.pathname.slice(1);
 
     const ws: ReconnectingWebsocket = new ReconnectingWebsocket(wsLocation);
-    ws.addListener('close', (ev: CloseEvent) => {
-        console.log(ev);
-    });
+    // ws.addListener('close', (ev: CloseEvent) => {
+    //     console.log(ev);
+    // });
     const sdbClient: SDBClient = new SDBClient(ws);
     const sdbDoc: SDBDoc<IPuzzleSet> = sdbClient.get('puzzles', puzzleName);
     dispatch(setDoc(sdbDoc));
