@@ -126,7 +126,6 @@ export function setProblemVisibility(id: string, visible: boolean) {
     };
 }
 
-
 export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {

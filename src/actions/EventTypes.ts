@@ -26,6 +26,7 @@ enum EventTypes {
     DELETE_USER_FILE='delete user file',
     USER_COMPLETED_PROBLEM='user completed problem',
     PROBLEM_COMPLETION_INFO_FETCHED='problem completion info fetched',
-    PROBLEM_VISIBILITY_CHANGED='problem visibility changed'
+    PROBLEM_VISIBILITY_CHANGED='problem visibility changed',
+    SET_USER='set user'
 };
 export default EventTypes;

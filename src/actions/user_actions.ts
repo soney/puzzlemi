@@ -1,8 +1,13 @@
 import EventTypes from "./EventTypes";
 import { Dispatch } from "redux";
+import { UserInfo } from "../components/App";
 
 export const setIsAdmin = (isAdmin: boolean) => ({
     isAdmin, type: EventTypes.SET_IS_ADMIN,
+});
+
+export const setUser = (user: UserInfo) => ({
+    user, type: EventTypes.SET_USER
 });
 
 export function deleteUserFile(index: number, name: string) {
