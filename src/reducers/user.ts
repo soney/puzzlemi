@@ -3,9 +3,40 @@ import store from 'storejs';
 import update from 'immutability-helper';
 import uuid from '../utils/uuid';
 import { IUser } from '../components/App';
+// import { IUserInfo } from '../components/App';
 
+// export interface IUser {
+//     isAdmin: boolean;
+//     id: string;
+//     userInfo: IUserInfo;
+//     solutions: { [problemID: string]: {
+//         modified: boolean,
+//         code: string,
+//         errors: string[],
+//         files: Array<{
+//                 contents: string,
+//                 name: string
+//             }>,
+//         output: string,
+//         passedAll: boolean,
+//         testResults: {
+//             [testID: string]: {
+//                 passed: boolean,
+//                 message: string
+//             }
+//         }
+//     }}
+// }
 const defaultUser: IUser = store.get('user') || {
     id: uuid(),
+    userInfo: {
+        loggedIn: false,
+        name: '',
+        email: '',
+        isInstructor: false
+    },
+    name: '',
+    email: '',
     isAdmin: false,
     solutions: {},
 };
@@ -50,6 +81,10 @@ export const user = (state: IUser = defaultUser, action: any) => {
         });
     } else if(action.type === EventTypes.SET_IS_ADMIN) {
         const newState = update(state, { isAdmin: { $set: action.isAdmin }});
+        updateStore(newState);
+        return newState;
+    } else if(action.type === EventTypes.SET_USER) {
+        const newState = update(state, { userInfo: { $set: action.user }});
         updateStore(newState);
         return newState;
     } else if(action.type === EventTypes.GIVEN_CODE_CHANGED) {

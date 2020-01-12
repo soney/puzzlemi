@@ -1,9 +1,9 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "baseUrl": "/pm_web"
+        // "baseUrl": "/pm_web"
     },
-    "basePath": "pm_web",
+    // "basePath": "pm_web",
     "exclude": [
         "node_modules",
         "test/**/*"

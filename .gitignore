@@ -76,4 +76,8 @@ typings/
 ./vagrant
 Vagrantfile
 
+<<<<<<< HEAD
 build/
+=======
+build
+>>>>>>> userinfo

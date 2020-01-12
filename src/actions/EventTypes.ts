@@ -43,6 +43,7 @@ enum EventTypes {
     SHARED_FILE_WRITTEN = 'shared file written',
     BEGIN_RUN_SHARED_CODE = 'begin run shared code',
     DONE_RUNNING_SHARED_CODE = 'done running shared code',
-    SHARED_ERROR_CHANGED = 'shared error changed'
+    SHARED_ERROR_CHANGED = 'shared error changed',
+    SET_USER='set user'
 };
 export default EventTypes;
