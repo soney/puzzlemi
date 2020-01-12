@@ -6,7 +6,6 @@ import Problems from './Problems';
 import { setDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
 import { setIsAdmin, setUser } from '../actions/user_actions';
 import update from 'immutability-helper';
-// import { ISolution } from '../reducers/user';
 import UserHeader from './UserHeader';
 
 export interface IPuzzleSet {
@@ -84,30 +83,6 @@ export interface IUser {
     solutions: { [problemID: string]: ISolution }
 }
 
-// export interface IUser {
-//     isAdmin: boolean;
-//     id: string;
-//     solutions: { [problemID: string]: {
-//         modified: boolean,
-//         code: string,
-//         errors: string[],
-//         files: Array<{
-//                 contents: string,
-//                 name: string
-//             }>,
-//         output: string,
-//         passedAll: boolean,
-//         defaultPass: boolean,
-//         targetID: string,
-//         testResults: {
-//             [testID: string]: {
-//                 passedAll: boolean,
-//                 results: IOutput[]; 
-//             }
-//         }
-//     }}
-// }
-
 export interface IOutput {
     passed: boolean;
     message: string;
@@ -134,7 +109,6 @@ const PMApplication = ({ isAdmin, dispatch }) => {
     const sdbDoc: SDBDoc<IPuzzleSet> = sdbClient.get('puzzles', puzzleName);
     dispatch(setDoc(sdbDoc));
     dispatch(setIsAdmin(isAdmin));
-    // dispatch(setName(name!=null?name:'null'));
     sdbDoc.createIfEmpty(emptyDoc).then(() => {
         dispatch(beginListeningOnDoc(sdbDoc));
     });
