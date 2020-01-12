@@ -70,7 +70,6 @@ class ShareDBCodeMirrorBinding {
 
         textIndex += change.from.ch;
 
-
         if (change.to.line !== change.from.line || change.to.ch !== change.from.ch) {
             const removed  = change.removed.join('\n');
             op.push({p: [textIndex], sd: removed});

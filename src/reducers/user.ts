@@ -8,24 +8,32 @@ export interface IUser {
     isAdmin: boolean;
     id: string;
     userInfo: IUserInfo;
-    solutions: { [problemID: string]: {
-        modified: boolean,
-        code: string,
-        errors: string[],
-        files: Array<{
-                contents: string,
-                name: string
-            }>,
-        output: string,
-        passedAll: boolean,
-        testResults: {
-            [testID: string]: {
-                passed: boolean,
-                message: string
-            }
-        }
-    }}
+    solutions: { [problemID: string]: ICodeSolution|IMultipleChoiceSolution }
 }
+
+export interface IMultipleChoiceSolution {
+    selectedItems: number[];
+    passedAll: boolean;
+}
+
+export interface ICodeSolution {
+    modified: boolean,
+    code: string,
+    errors: string[],
+    files: Array<{
+            contents: string,
+            name: string
+        }>,
+    output: string,
+    passedAll: boolean,
+    testResults: {
+        [testID: string]: {
+            passed: boolean,
+            message: string
+        }
+    }
+}
+
 const defaultUser: IUser = store.get('user') || {
     id: uuid(),
     userInfo: {
@@ -49,33 +57,50 @@ export const user = (state: IUser = defaultUser, action: any) => {
         const { puzzles } = action;
         const { problems } = puzzles;
         const solutions = {};
-        problems.forEach((problem) => {
-            const { id, givenCode } = problem;
+        problems.forEach((problemInfo) => {
+            const { id, problem } = problemInfo;
+            const { problemType, givenCode } = problem;
             if(!state.solutions || !state.solutions[id]) {
-                solutions[id] = { code: givenCode, errors: [], modified: false, files: [], output: '', passedAll: false, testResults: {} };
+                if(problemType === 'code' ) {
+                    solutions[id] = { code: givenCode, errors: [], modified: false, files: [], output: '', passedAll: false, testResults: {} };
+                } else if(problemType === 'multiple-choice') {
+                    solutions[id] = { selectedItems: [], passedAll: false };
+                }
             }
         })
         return update(state, {
             solutions: { $merge: solutions }
         });
     } else if(action.type === EventTypes.PROBLEM_ADDED) {
-        const { problem } = action;
-        const { id } = problem;
-        return update(state, {
-            solutions: { 
-                [id]: {
-                    $set: {
-                        code: problem.givenCode,
-                        errors: [],
-                        files: [],
-                        modified: false,
-                        output: '',
-                        passedAll: false,
-                        testResults: {}
+        const problemInfo = action.problem;
+        const { id, problem } = problemInfo;
+
+        const { problemType } = problem;
+        if(problemType === 'code') {
+            return update(state, {
+                solutions: { 
+                    [id]: {
+                        $set: {
+                            code: problem.givenCode,
+                            errors: [],
+                            files: [],
+                            modified: false,
+                            output: '',
+                            passedAll: false,
+                            testResults: {}
+                        }
                     }
                 }
-            }
-        });
+            });
+        } else if(problemType === 'multiple-choice') {
+            return update(state, {
+                solutions: { 
+                    [id]: { $set: { selectedItems: [], passedAll: false } }
+                }
+            });
+        } else {
+            return state;
+        }
     } else if(action.type === EventTypes.SET_IS_ADMIN) {
         const newState = update(state, { isAdmin: { $set: action.isAdmin }});
         updateStore(newState);
@@ -87,7 +112,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
     } else if(action.type === EventTypes.GIVEN_CODE_CHANGED) {
         const { id, code } = action;
         const solution = state.solutions[id];
-        const { modified } = solution;
+        const { modified } = solution as ICodeSolution;
         if(modified) {
             return state;
         } else {
@@ -135,7 +160,8 @@ export const user = (state: IUser = defaultUser, action: any) => {
         });
     } else if(action.type === EventTypes.DELETE_USER_FILE) {
         const { problemId, name } = action;
-        const files = state.solutions[problemId].files;
+        const solution = state.solutions[problemId] as ICodeSolution;
+        const { files } = solution;
         const fIndex = files.findIndex((f) => f.name === name);
         if(fIndex >= 0) {
             return update(state, {
@@ -150,7 +176,8 @@ export const user = (state: IUser = defaultUser, action: any) => {
         }
     } else if(action.type === EventTypes.FILE_WRITTEN) {
         const { id, name, contents } = action;
-        const files = state.solutions[id].files;
+        const solution = state.solutions[id] as ICodeSolution;
+        const { files } = solution;
         const fIndex = files.findIndex((f) => f.name === name);
         if(fIndex < 0) {
             return update(state, {
@@ -198,13 +225,37 @@ export const user = (state: IUser = defaultUser, action: any) => {
         return newState;
     } else if(action.type === EventTypes.TEST_ADDED || action.type === EventTypes.TEST_PART_CHANGED || action.type === EventTypes.TEST_DELETED) {
         const { id } = action;
-        return update(state, {
+        const newState = update(state, {
             solutions: {
                 [id]: {
                     passedAll: { $set: false }
                 }
             }
         });
+        updateStore(newState);
+        return newState;
+    } else if(action.type === EventTypes.MULTIPLE_CHOICE_SELECTION_TYPE_CHANGED) {
+        const { problemId } = action;
+        const newState = update(state, {
+            solutions: {
+                [problemId]: {
+                    selectedItems: { $set: [] }
+                }
+            }
+        });
+        updateStore(newState);
+        return newState;
+    } else if(action.type === EventTypes.MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED) {
+        const { problemId, selectedItems } = action;
+        const newState = update(state, {
+            solutions: {
+                [problemId]: {
+                    selectedItems: { $set: selectedItems }
+                }
+            }
+        });
+        updateStore(newState);
+        return newState;
     } else {
         return state;
     }

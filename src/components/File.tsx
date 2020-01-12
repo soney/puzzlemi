@@ -13,7 +13,7 @@ const File = ({ dispatch, index, fileIndex, file, isAdmin, doc, isUserFile }) =>
             dispatch(deleteFile(index, fileIndex));
         }
     };
-    const p = ['problems', index, 'files', fileIndex];
+    const p = ['problems', index, 'problem', 'files', fileIndex];
     const nameSubDoc = doc.subDoc([...p, 'name']);
     const contentsSubDoc = doc.subDoc([...p, 'contents']);
     if(isAdmin) {

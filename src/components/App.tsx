@@ -2,10 +2,9 @@ import * as React from 'react';
 import '../css/App.scss';
 import * as reactRedux from 'react-redux';
 import { ReconnectingWebsocket, SDBClient, SDBDoc } from 'sdb-ts';
-import Problems from './Problems';
+import Problems from './Problems/Problems';
 import { setDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
 import { setIsAdmin, setUser } from '../actions/user_actions';
-import update from 'immutability-helper';
 import UserHeader from './UserHeader';
 
 export interface IPuzzleSet {
@@ -21,13 +20,39 @@ export interface IProblemUserInfo {
 }
 
 export interface IProblem {
+    id: string;
+    problem: IMultipleChoiceProblem | ICodeProblem | ITextResponseProblem
+};
+
+
+export interface IMultipleChoiceOption {
+    description: string;
+    optionType: 'fixed' | 'free-response';
+    freeResponse?: string | null;
+    isCorrect: boolean;
+}
+
+export interface ITextResponseProblem {
+    description: string;
+    problemType: 'text-response';
+}
+
+export interface IMultipleChoiceProblem {
+    description: string;
+    options: IMultipleChoiceOption[];
+    problemType: 'multiple-choice';
+    selectionType: 'single'|'multiple';
+    revealSolution: boolean;
+}
+
+export interface ICodeProblem {
     afterCode: string;
     description: string;
     givenCode: string;
     files: any;
-    id: string;
     tests: any;
-};
+    problemType: 'code';
+}
 
 export interface IUserInfo {
     username: string,
@@ -43,9 +68,6 @@ const PMApplication = ({ isAdmin, dispatch }) => {
     const puzzleName = DEBUG_MODE ? 'p' : window.location.pathname.slice(1);
 
     const ws: ReconnectingWebsocket = new ReconnectingWebsocket(wsLocation);
-    // ws.addListener('close', (ev: CloseEvent) => {
-    //     console.log(ev);
-    // });
     const sdbClient: SDBClient = new SDBClient(ws);
     const sdbDoc: SDBDoc<IPuzzleSet> = sdbClient.get('puzzles', puzzleName);
     dispatch(setDoc(sdbDoc));
@@ -59,12 +81,6 @@ const PMApplication = ({ isAdmin, dispatch }) => {
     }).then((myInfo) => {
         dispatch(setUser(myInfo));
     });
-    window['su'] = () => {
-        dispatch(setIsAdmin(true));
-    };
-    window['toJSON'] = () => {
-        console.log(JSON.stringify(update(sdbDoc.getData(), { userData: { $set: {} }})));
-    };
     window['fromJSON'] = (str: string) => {
         const newData: IPuzzleSet = JSON.parse(str);
         sdbDoc.submitObjectReplaceOp([], newData);

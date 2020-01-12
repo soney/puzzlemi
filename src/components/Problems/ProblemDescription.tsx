@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import * as showdown from 'showdown';
-import { CodeEditor } from './CodeEditor';
+import { CodeEditor } from '../CodeEditor';
 import update from 'immutability-helper';
 
 const ProblemDescription = ({ index, problem, isAdmin, doc }) => {
     if(isAdmin) {
-        const p = ['problems', index, 'description'];
+        const p = ['problems', index, 'problem', 'description'];
         const subDoc = doc.subDoc(p);
         return <div className="row">
             <div className="col">
@@ -27,7 +27,8 @@ const ProblemDescription = ({ index, problem, isAdmin, doc }) => {
 function mapStateToProps(state, ownProps) {
     const { user, problems, doc } = state;
     const { isAdmin } = user;
-    const problem = problems[ownProps.index];
+    const problemInfo = problems[ownProps.index];
+    const { problem } = problemInfo;
 
     return update(ownProps, { isAdmin: {$set: isAdmin}, problem: {$set: problem}, doc: {$set: doc} });
 }

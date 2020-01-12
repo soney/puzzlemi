@@ -1,4 +1,4 @@
-import { IPuzzleSet, IProblem } from '../components/App';
+import { IPuzzleSet, IProblem, IMultipleChoiceOption } from '../components/App';
 import { SDBDoc } from 'sdb-ts';
 import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
@@ -17,8 +17,26 @@ export const descriptionChanged = (index: number, description: string) => ({
 export const givenCodeChanged = (index: number, id: string, code: string) => ({
     code, id, index, type: EventTypes.GIVEN_CODE_CHANGED,
 });
+export const multipleChoiceOptionAdded = (index: number, optionIndex: number, option: IMultipleChoiceOption) => ({
+    index, option, optionIndex, type: EventTypes.OPTION_ADDED
+});
+export const multipleChoiceOptionDeleted = (index: number, optionIndex: number) => ({
+    index, optionIndex, type: EventTypes.OPTION_DELETED
+});
+export const multipleChoiceOptionDescriptionChanged = (index: number, optionIndex: number, description: string) => ({
+    index, optionIndex, description, type: EventTypes.OPTION_DESCRIPTION_CHANGED
+});
+export const multipleChoiceOptionCorrectChanged = (index: number, optionIndex: number, isCorrect: boolean) => ({
+    index, optionIndex, isCorrect, type: EventTypes.OPTION_CORRECTNESS_CHANGED
+});
+export const multipleChoiceSelectionTypeChanged = (index: number, selectionType: 'single'|'multiple', problemId: string) => ({
+    index, selectionType, problemId, type: EventTypes.MULTIPLE_CHOICE_SELECTION_TYPE_CHANGED
+});
+export const multipleChoiceRevealSolutionChanged = (index: number, revealSolution: boolean) => ({
+    index, revealSolution, type: EventTypes.MULTIPLE_CHOICE_REVEAL_SOLUTION_CHANGED
+});
 export const afterCodeChanged = (index: number, code: string) => ({
-    code, index, type: EventTypes.DESCRIPTION_CHANGED,
+    code, index, type: EventTypes.AFTER_CODE_CHANGED,
 });
 export const problemDeleted = (index: number) => ({
     index, type: EventTypes.PROBLEM_DELETED,
@@ -45,16 +63,97 @@ export const setDoc = (doc: SDBDoc<IPuzzleSet>) => ({
     doc, type: EventTypes.SET_DOC,
 });
 
-export function addProblem() {
+export function addMultipleChoiceOption(index: number, optionType:'fixed'|'free-response'='fixed') {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        const newOption: IMultipleChoiceOption = {
+            description: '(no description)', optionType, isCorrect: false
+        };
+        doc.submitListPushOp(['problems', index, 'problem', 'options'], newOption);
+    };
+}
+export function deleteMultipleChoiceOption(index: number, optionIndex: number) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        doc.submitListDeleteOp(['problems', index, 'problem', 'options', optionIndex]);
+    };
+}
+
+export function setMultipleChoiceOptionCorrect(index: number, optionIndex: number, correct: boolean) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        doc.submitObjectReplaceOp(['problems', index, 'problem', 'options', optionIndex, 'isCorrect'], correct);
+    };
+}
+
+export function setMultipleChoiceSelectionEnabled(index: number, enabled: boolean) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        doc.submitObjectReplaceOp(['problems', index, 'problem', 'selectionType'], enabled ? 'multiple' : 'single');
+    };
+}
+
+export function setRevealSolution(index: number, reveal: boolean) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        doc.submitObjectReplaceOp(['problems', index, 'problem', 'revealSolution'], reveal);
+    };
+}
+
+export function addCodeProblem() {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
         const newProblem: IProblem = {
-            afterCode: '',
-            description: '*no description*',
-            files: [],
-            givenCode: `# code here`,
             id: uuid(),
-            tests: [],
+            problem: {
+                problemType: 'code',
+                tests: [],
+                givenCode: `# code here`,
+                afterCode: '',
+                description: '*no description*',
+                files: [],
+            }
+        };
+
+        doc.submitObjectInsertOp(['userData', newProblem.id], {
+            completed: [],
+            visible: true
+        });
+        doc.submitListPushOp(['problems'], newProblem);
+    };
+}
+
+export function addMultipleChoiceProblem() {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        const newProblem: IProblem = {
+            id: uuid(),
+            problem: {
+                problemType: 'multiple-choice',
+                description: '*no description*',
+                options: [],
+                selectionType: 'single',
+                revealSolution: false
+            }
+        };
+
+        doc.submitObjectInsertOp(['userData', newProblem.id], {
+            completed: [],
+            visible: true
+        });
+        doc.submitListPushOp(['problems'], newProblem);
+    };
+}
+
+export function addTextResponseProblem() {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        const newProblem: IProblem = {
+            id: uuid(),
+            problem: {
+                problemType: 'text-response',
+                description: '*no description*',
+            }
         };
 
         doc.submitObjectInsertOp(['userData', newProblem.id], {
@@ -81,14 +180,14 @@ export function addTest(index: number) {
             expected: 'True',
             id: uuid(),
         };
-        return doc.submitListPushOp(['problems', index, 'tests'], newTest);
+        return doc.submitListPushOp(['problems', index, 'problem', 'tests'], newTest);
     };
 }
 
 export function deleteTest(index: number, testIndex: number) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
-        return doc.submitListDeleteOp(['problems', index, 'tests', testIndex]);
+        return doc.submitListDeleteOp(['problems', index, 'problem', 'tests', testIndex]);
     };
 }
 
@@ -100,14 +199,14 @@ export function addFile(index: number) {
             id: uuid(),
             name: 'file.txt',
         };
-        return doc.submitListPushOp(['problems', index, 'files'], newFile);
+        return doc.submitListPushOp(['problems', index, 'problem', 'files'], newFile);
     };
 }
 
 export function deleteFile(index: number, fileIndex: number) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
-        return doc.submitListDeleteOp(['problems', index, 'files', fileIndex]);
+        return doc.submitListDeleteOp(['problems', index, 'problem', 'files', fileIndex]);
     };
 }
 
@@ -144,56 +243,90 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             const index = problemRelPath[0] as number;
                             if(ld) { dispatch(problemDeleted(index)); }
                             if(li) { dispatch(problemAdded(index, li)); }
-                        } else if(problemRelPath.length === 3) {
+                        } else if(problemRelPath.length === 4 && problemRelPath[1] === 'problem') {
                             const index = problemRelPath[0] as number;
-                            const item = problemRelPath[1];
+                            const item = problemRelPath[2];
                             const problemP = ['problems', index];
                             const problem = doc.traverse(problemP);
                             if(item === 'description') {
-                                const newDescription = doc.traverse([...problemP, item]);
+                                const newDescription = doc.traverse([...problemP, 'problem', item]);
                                 dispatch(descriptionChanged(index, newDescription));
                             } else if(item === 'givenCode') {
                                 const id = doc.traverse([...problemP, 'id']);
-                                const newCode = doc.traverse([...problemP, item]);
+                                const newCode = doc.traverse([...problemP, 'problem', item]);
                                 dispatch(givenCodeChanged(index, id, newCode));
                             } else if(item === 'afterCode') {
-                                const newCode = doc.traverse([...problemP, item]);
+                                const newCode = doc.traverse([...problemP, 'problem', item]);
                                 dispatch(afterCodeChanged(index, newCode));
                             } else if(item === 'tests') {
-                                const testIndex = problemRelPath[2] as number;
+                                const testIndex = problemRelPath[3] as number;
                                 if(li) {
                                     dispatch(testAdded(problem.id, index, testIndex, li));
                                 } else if(ld) {
                                     dispatch(testDeleted(problem.id, index, testIndex));
                                 }
                             } else if(item === 'files') {
-                                const fileIndex = problemRelPath[2] as number;
+                                const fileIndex = problemRelPath[3] as number;
                                 if(li) {
                                     dispatch(fileAdded(index, fileIndex, li));
                                 } else if(ld) {
                                     dispatch(fileDeleted(index, fileIndex));
                                 }
+                            } else if(item === 'options') {
+                                const optionIndex = problemRelPath[3] as number;
+                                if(li) {
+                                    dispatch(multipleChoiceOptionAdded(index, optionIndex, li));
+                                } else if(ld) {
+                                    dispatch(multipleChoiceOptionDeleted(index, optionIndex));
+                                }
                             }
                         } else if(problemRelPath.length === 5) {
                             const index = problemRelPath[0] as number;
-                            const item = problemRelPath[1];
+                            const item = problemRelPath[2];
+
+                            if(item === 'options') {
+                                const optionIndex = problemRelPath[3] as number;
+                                const { oi } = op as ObjectInsertOp;
+                                if(problemRelPath[4] === 'isCorrect') {
+                                    dispatch(multipleChoiceOptionCorrectChanged(index, optionIndex, oi));
+                                }
+                            }
+                        } else if(problemRelPath.length === 6) {
+                            const index = problemRelPath[0] as number;
+                            const item = problemRelPath[2];
 
                             const problemP = ['problems', index];
                             const problem = doc.traverse(problemP);
                             if(item === 'tests') {
-                                const testIndex = problemRelPath[2] as number;
-                                const testP = ['problems', index, item, testIndex];
-                                const testPart = problemRelPath[3] as 'actual'|'expected'|'description';
+                                console.log(problemRelPath);
+                                const testIndex = problemRelPath[3] as number;
+                                const testP = ['problems', index, 'problem', item, testIndex];
+                                const testPart = problemRelPath[4] as 'actual'|'expected'|'description';
                                 const value = doc.traverse([...testP, testPart]);
 
                                 dispatch(testPartChanged(problem.id, index, testIndex, testPart, value));
                             } else if(item === 'files') {
-                                const fileIndex = problemRelPath[2] as number;
-                                const fileP = ['problems', index, item, fileIndex];
-                                const filePart = problemRelPath[3] as 'name'|'contents';
+                                const fileIndex = problemRelPath[3] as number;
+                                const fileP = ['problems', index, 'problem', item, fileIndex];
+                                const filePart = problemRelPath[4] as 'name'|'contents';
                                 const value = doc.traverse([...fileP, filePart]);
 
                                 dispatch(filePartChanged(index, fileIndex, filePart, value));
+                            } else if(item === 'options') {
+                                const optionIndex = problemRelPath[3] as number;
+                                const optionP = ['problems', index, 'problem', item, optionIndex]
+                                const value = doc.traverse([...optionP, 'description']);
+
+                                dispatch(multipleChoiceOptionDescriptionChanged(index, optionIndex, value));
+                            }
+                        } else if(problemRelPath.length === 3) {
+                            const index = problemRelPath[0] as number;
+                            const { oi } = op as ObjectInsertOp;
+                            if(problemRelPath[2] === 'selectionType') {
+                                const problemId = doc.traverse(['problems', index, 'id']);
+                                dispatch(multipleChoiceSelectionTypeChanged(index, oi, problemId));
+                            } else if(problemRelPath[2] === 'revealSolution') {
+                                dispatch(multipleChoiceRevealSolutionChanged(index, oi));
                             }
                         }
                     } else if(userDataRelPath && userDataRelPath.length >= 1) {

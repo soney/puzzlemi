@@ -2,12 +2,16 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import Problem from './Problem';
 import update from 'immutability-helper';
-import { addProblem } from '../actions/sharedb_actions';
+import { addCodeProblem, addMultipleChoiceProblem } from '../../actions/sharedb_actions';
 
 const Problems = ({ isAdmin, dispatch, problems }) => {
-    const doAddProblem = (): void => {
-        dispatch(addProblem());
-    }
+    const doAddCodeProblem = (): void => {
+        dispatch(addCodeProblem());
+    };
+    const doAddMultipleChoiceProblem = (): void => {
+        dispatch(addMultipleChoiceProblem());
+    };
+
     return <ul className='problems'>
         {problems && problems.length
         ? problems.map((problem, index) => {
@@ -17,7 +21,8 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
         {
             isAdmin &&
             <li className="container">
-                <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddProblem}>+ Problem</button>
+                <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddCodeProblem}>+ Code Problem</button>
+                <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddMultipleChoiceProblem}>+ Multiple Choice Problem</button>
             </li>
         }
     </ul>

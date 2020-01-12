@@ -42,6 +42,30 @@
         padding: 40px;
         color: #AAA;
     }
+    .multiple-choice-table {
+        border-top: 1px solid #EEE;
+        tr {
+            td {
+                padding-top: 0px;
+                padding-bottom: 0px;
+                border-top: none;
+                label {
+                    padding: 5px;
+                    display: block;
+                }
+            }
+        }
+        tr:not(.answer-revealed) {
+            label:hover {
+                background-color: #F9F9F9;
+            }
+        }
+        .multiple-choice-option {
+            > p {
+                display: inline;
+            }
+        }
+    }
 }
 .CodeMirror {
     border: 1px solid #EEE;

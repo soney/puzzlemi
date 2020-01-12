@@ -1,6 +1,12 @@
 enum EventTypes {
     RUN_CODE='run code',
     DESCRIPTION_CHANGED='description changed',
+    OPTION_ADDED='multiple-choice option added',
+    OPTION_DELETED='multiple-choice option deleted',
+    OPTION_DESCRIPTION_CHANGED='multiple-choice option description changed',
+    OPTION_CORRECTNESS_CHANGED='multiple-choice option correctness changed',
+    MULTIPLE_CHOICE_SELECTION_TYPE_CHANGED='multiple-choice selection type changed',
+    MULTIPLE_CHOICE_REVEAL_SOLUTION_CHANGED='multiple-choice reveal solution changed',
     GIVEN_CODE_CHANGED='given code changed',
     AFTER_CODE_CHANGED='after code changed',
     PROBLEM_ADDED='problem added',
@@ -27,6 +33,7 @@ enum EventTypes {
     USER_COMPLETED_PROBLEM='user completed problem',
     PROBLEM_COMPLETION_INFO_FETCHED='problem completion info fetched',
     PROBLEM_VISIBILITY_CHANGED='problem visibility changed',
-    SET_USER='set user'
+    SET_USER='set user',
+    MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED='multiple-choice selected options changed'
 };
 export default EventTypes;

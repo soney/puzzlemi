@@ -50,7 +50,8 @@ const Tests = ({ index, tests, isAdmin, doc, dispatch }) => {
 function mapStateToProps(state, ownProps) {
     const { user, problems, doc } = state;
     const { isAdmin } = user;
-    const problem = problems[ownProps.index];
+    const problemInfo = problems[ownProps.index];
+    const { problem } = problemInfo;
     const { tests } = problem;
 
     return update(ownProps, { isAdmin: {$set: isAdmin}, tests: {$set: tests}, doc: {$set: doc} });

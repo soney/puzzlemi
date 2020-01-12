@@ -32,8 +32,9 @@ if (Sk.externalLibraries) {
 export function runCode(index: number) {
     return (dispatch: Dispatch, getState) => {
         const { user, problems } = getState();
-        const problem = problems[index];
-        const { id, afterCode, tests } = problem;
+        const problemInfo = problems[index];
+        const { id, problem } = problemInfo;
+        const { afterCode, tests } = problem;
         const solution = user.solutions[id];
         const { code } = solution;
         const testSuite = new PMTestSuite();
@@ -105,7 +106,7 @@ export function runCode(index: number) {
             testSuite.onAfterRanTests();
             const testSuiteResults = testSuite.getTestResults();
             const { passedAll, results } = testSuiteResults;
-            const problemTests = getState().problems[index].tests;
+            const problemTests = getState().problems[index].problem.tests;
             const testResults = { };
             results.forEach((result, i) => {
                 const test = problemTests[i];

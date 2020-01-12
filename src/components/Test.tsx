@@ -9,7 +9,7 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc }) =>
     const doDeleteTest = () => {
         dispatch(deleteTest(index, testIndex));
     };
-    const p = ['problems', index, 'tests', testIndex];
+    const p = ['problems', index, 'problem', 'tests', testIndex];
     const actualSubDoc = doc.subDoc([...p, 'actual']);
     const expectedSubDoc = doc.subDoc([...p, 'expected']);
     const descriptionSubDoc = doc.subDoc([...p, 'description']);
@@ -45,9 +45,10 @@ function mapStateToProps(state, ownProps) {
     const { index, testIndex } = ownProps;
     const { user, problems, doc } = state;
     const { isAdmin } = user;
-    const problem = problems[index];
+    const problemInfo = problems[index];
+    const { id, problem } = problemInfo;
     const test = problem.tests[testIndex];
-    const userSolution = user.solutions[problem.id];
+    const userSolution = user.solutions[id];
     const testResult = userSolution.testResults[test.id]; 
 
     return update(ownProps, { testResult: {$set: testResult}, isAdmin: {$set: isAdmin}, test: {$set: test}, doc: {$set: doc} });
