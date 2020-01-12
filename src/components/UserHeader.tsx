@@ -10,8 +10,20 @@ const PMUserHeader = ({loggedIn, username, email, isInstructor, dispatch, doc, i
         dispatch(setIsAdmin(checked));
     }
     const downloadJSON = () => {
-        const data = JSON.stringify(update(doc.getData(), { userData: { $set: {} }}));
-        download('puzzlemi-saved.json', data);
+        const data = doc.getData();
+        let newData = data;
+        for(let key in data.userData) {
+            if(data.hasOwnProperty(key)) {
+                console.log(key, data);
+                newData = update(newData, { userData: {
+                    [key]: {
+                        completed: { $set: [] }
+                    }
+                }})
+            }
+        }
+        const stringifiedData = JSON.stringify(newData);
+        download('puzzlemi-saved.json', stringifiedData);
     };
     const handleFile = (event) => {
         const { target } = event;
