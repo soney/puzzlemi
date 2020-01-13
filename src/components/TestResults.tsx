@@ -24,27 +24,13 @@ const TestResults = ({ targetID, defaultPass, problem, testResults, passedAll, d
         }
     }
 
-
-    // if (failed_tests.length > 0 && (targetID === '' || failed_tests.indexOf(targetID) < 0)) {
-    //     dispatch(changeTargetID(problem.id, failed_tests[0]));
-    // }
-    // const getTestTitle = (testID): string => {
-    //     let title = '';
-    //     problem.tests.forEach(test => {
-    //         if (test.id === testID) title = test.title;
-    //     })
-    //     return title;
-    // };
-    // const doChangeTargetID = (e) => {
-    //     dispatch(changeTargetID(problem.id, e.target.value));
-    // }
     return <div>
         {(defaultPass && (total_num === 0)) &&
             <div className="alert alert-success" role="alert">
                 You passed the default test!
             </div>
         }
-        {(!defaultPass && (total_num === 0)) &&
+        {(defaultPass===false && (total_num === 0)) &&
             <div className="alert alert-danger" role="alert">
                 You didn't pass the default test!
             </div>
@@ -77,11 +63,6 @@ const TestResults = ({ targetID, defaultPass, problem, testResults, passedAll, d
                     </tbody>
                 </table>
 
-                {/* <select className="custom-select" id="test-list" onChange={doChangeTargetID}>
-                    {failed_tests.map(testID =>
-                        <option key={testID} value={testID}>{getTestTitle(testID)}</option>)}
-                </select>
-                {targetID !== '' && <TestResult testID={targetID} index={index} />} */}
             </div>
         }
     </div>
@@ -95,7 +76,6 @@ function mapStateToProps(state, ownProps) {
     const passedAll = userSolution.passedAll;
     const defaultPass = userSolution.defaultPass;
     const targetID = userSolution.targetID;
-
     return update(ownProps, { targetID: { $set: targetID }, defaultPass: { $set: defaultPass }, testResults: { $set: testResults }, problem: { $set: problem }, passedAll: { $set: passedAll }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(TestResults); 

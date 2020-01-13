@@ -89,10 +89,12 @@ const MySolution = ({ index, uid, doc,id, isAdmin, defaultTest, errors, output, 
                             {output}
                             {errors.join('\n')}
                         </pre>
-                        <button className='btn btn-outline-primary request-help-button' onClick={doRequestHelp}>Request Help</button>
                         </div>
                     }
                     <TestResults index={index} />
+                    {(output || errors.length > 0) &&
+                    <button className='btn btn-outline-primary request-help-button' onClick={doRequestHelp}>Request Help</button>
+                    }
                 </div>
             </div>
         </div>
