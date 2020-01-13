@@ -67,7 +67,7 @@ export function addMultipleChoiceOption(index: number, optionType:'fixed'|'free-
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
         const newOption: IMultipleChoiceOption = {
-            description: '(no description)', optionType, isCorrect: false
+            id: uuid(), description: '(no description)', optionType, isCorrect: false
         };
         doc.submitListPushOp(['problems', index, 'problem', 'options'], newOption);
     };

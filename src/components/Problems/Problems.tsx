@@ -15,7 +15,7 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
     return <ul className='problems'>
         {problems && problems.length
         ? problems.map((problem, index) => {
-            return <Problem key={problem.id + `${index}`} index={index} problem={problem} />;
+            return <Problem key={`${problem.id}${index}`} problem={problem} />;
             })
         : <li className='container no-problems'>(no problems yet)</li>}
         {

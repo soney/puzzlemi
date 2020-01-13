@@ -49,15 +49,25 @@ const Problem = ({ id, doc, visible, problem, index, dispatch, passedAll, isAdmi
     </li>;
 }
 function mapStateToProps(state, ownProps) {
-    const { index } = ownProps;
     const { user, doc, problems, userData } = state;
-    const { id, problem } = problems[index];
+    const problemInfo = ownProps.problem;
+    const { id, problem } = problemInfo;
     const { isAdmin } = user;
     const { code, output, passedAll, errors } = user.solutions[id];
     const visible = userData[id] && userData[id].visible;
     const completed: string[] = userData[id] ? userData[id].completed : [];
     const numCompleted = completed ? completed.length : 0;
     const myCompletionIndex = completed ? completed.indexOf(user.id) : -1;
-    return update(ownProps, { id: {$set: id}, visible: {$set: visible}, numCompleted: {$set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex}, passedAll: { $set: passedAll },  errors: { $set: errors }, problem: { $set: problem }, output: { $set: output }, isAdmin: { $set: isAdmin }, code: { $set: code }, doc: { $set: doc }});
+
+
+    let index: number = -1;
+    for(let i: number = 0; i<problems.length; i++) {
+        if(problems[i].id === id) {
+            index = i;
+            break;
+        }
+    }
+
+    return update(ownProps, { id: {$set: id}, index: {$set: index}, visible: {$set: visible}, numCompleted: {$set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex}, passedAll: { $set: passedAll },  errors: { $set: errors }, problem: { $set: problem }, output: { $set: output }, isAdmin: { $set: isAdmin }, code: { $set: code }, doc: { $set: doc }});
 }
 export default connect(mapStateToProps)(Problem);
