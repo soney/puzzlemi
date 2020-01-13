@@ -14,7 +14,6 @@ const PMUserHeader = ({loggedIn, username, email, isInstructor, dispatch, doc, i
         let newData = data;
         for(let key in data.userData) {
             if(data.hasOwnProperty(key)) {
-                console.log(key, data);
                 newData = update(newData, { userData: {
                     [key]: {
                         completed: { $set: [] }
