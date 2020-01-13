@@ -360,21 +360,26 @@ export function runCode(index: number) {
     return (dispatch: Dispatch, getState) => {
         const { user, problems } = getState();
         const problem = problems[index];
-        const { id, afterCode, tests } = problem;
+        const { id, afterCode } = problem;
+        const variables = problem.variables;
         const solution = user.solutions[id];
         const { code } = solution;
         const testSuite = new PMTestSuite();
         const userID = user.id;
 
         let output: string = '';
-        let test = tests[0] as any;
+
+        let inputVariables:any[] = [];
+        let outputVariables:any[] = [];
+        variables.forEach(variable=>{
+            if(variable.type==="input") inputVariables.push(variable);
+            if(variable.type==="output") outputVariables.push(variable);
+        })
         let beforeCode = "";
-        if (test) {
-            test.input.forEach(variable => {
-                const state: string = variable.name + "=" + variable.value + ";\n";
-                beforeCode = beforeCode.concat(state);
-            })
-        }
+        inputVariables.forEach(variable => {
+            const state: string = variable.name + "=" + variable.value + ";\n";
+            beforeCode = beforeCode.concat(state);
+        })
         const fullCode = beforeCode.concat(code);
 
         const outputs: string[] = [];
@@ -428,7 +433,7 @@ export function runCode(index: number) {
             type: EventTypes.BEGIN_RUN_CODE
         });
         let assertions: PMAssertion[] = [];
-        if (test) assertions = test.output.map((t) => new PMAssertEqual(t.name, t.value, ''));
+        assertions = outputVariables.map((t) => new PMAssertEqual(t.name, t.value, ''));
         testSuite.setBeforeTests(afterCode);
         testSuite.setAssertions(assertions);
         testSuite.onBeforeRunningTests();
@@ -444,18 +449,21 @@ export function runCode(index: number) {
             testSuite.onAfterRanTests();
             const testSuiteResults = testSuite.getTestResults();
             const { passedAll, results } = testSuiteResults;
-            const problemTests = getState().problems[index].tests;
-            const testResults = {};
-            results.forEach((result, i) => {
-                const test = problemTests[i];
-                const testId = test.id;
-                testResults[testId] = result;
-            });
+            console.log(results)
+            // const problemTests = getState().problems[index].tests;
+            // console.log(problemTests)
+            // const testResults = {};
+            // results.forEach((result, i) => {
+            //     const test = problemTests[i];
+            //     console.log(test)
+            //     const testId = test.id;
+            //     testResults[testId] = result;
+            // });
             dispatch({
                 hasError: true,
                 id,
                 defaultPass: passedAll,
-                testResults,
+                results,
                 type: EventTypes.DONE_RUNNING_DEFAULT
             });
             if (passedAll) {

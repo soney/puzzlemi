@@ -55,8 +55,6 @@ export function addTest(index: number, name: string, isAdmin: boolean) {
             if (variable.type === "output") output.push({ name: variable.name, value: '' });
         })
         const newTest = {
-            title: '*title*',
-            description: '*no description*',
             author: name,
             verified: isAdmin,
             id: uuid(),
@@ -80,7 +78,7 @@ export function addTestVariable(index: number, isAdmin: boolean) {
         const newVariable = {
             type: 'input',
             name: '',
-            description: '*no description*'
+            value: 'null'
         };
         return doc.submitListPushOp(['problems', index, 'variables'], newVariable);
     };

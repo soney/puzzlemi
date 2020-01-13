@@ -3,23 +3,33 @@ import { useState } from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 import { CodeEditor } from './CodeEditor';
-// import CodeInput from './CodeInput';
 import { CodeInputEditor } from './CodeInputEditor';
 import { CodeOutputEditor } from './CodeOutputEditor';
 import { setHelpRequest } from '../actions/sharedb_actions';
-// import CodeOutput from './CodeOutput';
 import { setCode } from '../actions/user_actions';
 import TestResults from './TestResults';
 import { runCode, runUnitTests } from '../actions/runCode_actions';
 import { newTest } from '../actions/sharedb_actions';
+import { ITest } from './App';
+import uuid from '../utils/uuid';
 
 
 const MySolution = ({ index, uid, doc,id, isAdmin, defaultTest, errors, output, code, dispatch }) => {
-    let myTest;
+    let myTest:ITest;
     if (defaultTest) {
-        myTest = JSON.parse(JSON.stringify(defaultTest));
-        myTest.author = uid;
-        myTest.verified = isAdmin;
+        myTest = {
+            author: uid,
+            verified:isAdmin,
+            hidden: false,
+            helpSessions: [],
+            id: uuid(),
+            input: [],
+            output: []
+        };
+        defaultTest.forEach(variable=>{
+            if(variable.type === "input") myTest.input.push(variable);
+            else if (variable.type === "output") myTest.output.push(variable);
+        })
     }
     const [count, setCount] = useState(0);
 
@@ -55,11 +65,11 @@ const MySolution = ({ index, uid, doc,id, isAdmin, defaultTest, errors, output, 
             <div className="col">
                 <div>
                     {defaultTest &&
-                        <CodeInputEditor inputVariable={defaultTest.input} onVariableChange={doChangeInputVariable} flag={count} />
+                        <CodeInputEditor variables={defaultTest} onVariableChange={doChangeInputVariable} flag={count} />
                     }
                     <CodeEditor value={code} onChange={doSetCode} />
                     {defaultTest &&
-                        <CodeOutputEditor outputVariable={defaultTest.output} onVariableChange={doChangeOutputVariable} flag={count} />
+                        <CodeOutputEditor variables={defaultTest} onVariableChange={doChangeOutputVariable} flag={count} />
                     }
                     <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
                     <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunTests}>Run All Tests</button>
@@ -94,8 +104,8 @@ function mapStateToProps(state, ownProps) {
     const { user, doc, problems } = state;
     const { isAdmin } = user;
     const problem = problems[index];
-    const { id, tests } = problem;
-    const defaultTest = tests[0];
+    const { id } = problem;
+    const defaultTest = problem.variables;
     const uid = user.id;
     const { code, output, errors } = user.solutions[id];
     return update(ownProps, { index: { $set: index }, uid: { $set: uid }, id:{$set:id}, isAdmin: { $set: isAdmin }, defaultTest: { $set: defaultTest }, errors: { $set: errors }, output: { $set: output }, code: { $set: code }, doc: { $set: doc } });

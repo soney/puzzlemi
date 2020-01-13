@@ -39,8 +39,8 @@ export interface ITest {
     author: string,
     verified: boolean,
     id: string,
-    input: any,
-    output: any
+    input: IVariable[],
+    output: IVariable[]
     hidden: boolean;
     helpSessions: IHelpSession[];
 }
@@ -52,9 +52,15 @@ export interface IProblem {
     standardCode: string;
     files: any;
     id: string;
-    variables: any;
+    variables: IVariable[];
     tests: ITest[];
 };
+
+export interface IVariable {
+    name: string;
+    value: string;
+    type?: string;
+}
 
 export interface ISolution {
     modified: boolean,

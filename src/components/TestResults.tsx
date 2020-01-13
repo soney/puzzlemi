@@ -91,7 +91,6 @@ function mapStateToProps(state, ownProps) {
     const { user, problems, doc } = state;
     const problem = problems[index];
     const userSolution = user.solutions[problem.id];
-    console.log(userSolution)
     const testResults = userSolution.testResults;
     const passedAll = userSolution.passedAll;
     const defaultPass = userSolution.defaultPass;

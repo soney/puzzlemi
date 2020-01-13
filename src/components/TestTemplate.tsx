@@ -18,7 +18,7 @@ const TestTemplate = ({ index, isAdmin, doc, testVariable, dispatch }) => {
                     <tr>
                         <th>Type</th>
                         <th>Variable Name</th>
-                        <th>Description</th>
+                        <th>Default Value</th>
                         <th />
                     </tr>
                 </thead>

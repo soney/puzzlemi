@@ -14,7 +14,7 @@ export interface ICodeChangeEvent {
 interface ICodeInputEditorProps {
     options?: any;
     value?: string;
-    inputVariable?: any;
+    variables?:any;
     onVariableChange?: any;
     flag?: any;
     // shareDBSubDoc?: SDBSubDoc<string>;
@@ -44,19 +44,24 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
     private codeNode!: HTMLTextAreaElement;
     private codemirrorBinding!: ShareDBCodeMirrorBinding;
     private VariableMarker: any[];
-    // private inputVariable: any;
+    private inputVariables: any[];
 
     constructor(props: ICodeInputEditorProps, state: ICodeEditorState) {
         super(props, state);
 
         this.VariableMarker = [];
+        this.inputVariables = [];
 
         let staticText = "# given variables";
-        this.props.inputVariable.forEach(input => {
+        this.props.variables.forEach(variable=>{
+            if (variable.type === "input") this.inputVariables.push(variable);
+        })
+
+        this.inputVariables.forEach(input => {
             staticText += "\n" + input.name + " = " + input.value;
         });
 
-        this.props.options.height = 10 + 20 * (this.props.inputVariable.length + 1);
+        this.props.options.height = 10 + 20 * (this.inputVariables.length + 1);
 
         this.state = {
             code: staticText,
@@ -78,14 +83,14 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
 
     private resetEditor(): void {
         let staticText = "# given variables";
-        this.props.inputVariable.forEach(input => {
+        this.inputVariables.forEach(input => {
             staticText += "\n" + input.name + " = " + input.value;
         });
 
         this.codeMirror.setValue(staticText);
         const doc = this.codeMirror.getDoc();
         doc.markText({ line: 0, ch: 0 }, { line: 1, ch: 0 }, { readOnly: true });
-        this.props.inputVariable.forEach((input, index) => {
+        this.inputVariables.forEach((input, index) => {
             const variable_length = input.name.length;
             const total_length = doc.getLine(index + 1).length;
             doc.markText({ line: index + 1, ch: 0 }, { line: index + 1, ch: variable_length + 3 }, { readOnly: true });
@@ -108,7 +113,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
 
         const doc = this.codeMirror.getDoc();
         doc.markText({ line: 0, ch: 0 }, { line: 1, ch: 0 }, { readOnly: true });
-        this.props.inputVariable.forEach((input, index) => {
+        this.inputVariables.forEach((input, index) => {
             const variable_length = input.name.length;
             const total_length = doc.getLine(index + 1).length;
             doc.markText({ line: index + 1, ch: 0 }, { line: index + 1, ch: variable_length + 3 }, { readOnly: true });
@@ -118,7 +123,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
 
         this.codeMirror.on('change', (instance: CodeMirror.Editor, change: CodeMirror.EditorChangeLinkedList) => {
             const doc = this.codeMirror.getDoc();
-            this.props.inputVariable.forEach((input, index) => {
+            this.inputVariables.forEach((input, index) => {
                 const variable_length = input.name.length;
                 const total_length = doc.getLine(index + 1).length;
                 const content = doc.getLine(index + 1).substr(variable_length + 3, total_length - variable_length - 3);

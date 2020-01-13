@@ -91,17 +91,19 @@ const Problem = ({ id, visible, uid, code, errors, index, currentHelpSession, cu
             <div>
                 <div className="row">
                     <div className="col">
-                        <h4>Given Code:</h4>
-                        <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
-                        <h4>Run After:</h4>
-                        <CodeEditor shareDBSubDoc={afterCodeSubDoc} />
-                        <h4>Standard Code:</h4>
-                        <CodeEditor shareDBSubDoc={standardCodeSubDoc} />
+                        <TestTemplate index={index} />
                     </div>
                 </div>
                 <div className="row">
                     <div className="col">
-                        <TestTemplate index={index} />
+                        <h4>Given Code:</h4>
+                        <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
+                        <h4>Run After:</h4>
+                        <CodeEditor shareDBSubDoc={afterCodeSubDoc} />
+                    </div>
+                    <div className="col">
+                        <h4>Standard Code:</h4>
+                        <CodeEditor shareDBSubDoc={standardCodeSubDoc} />
                     </div>
                 </div>
                 <div className="row">

@@ -15,7 +15,7 @@ const TestTemplateVariable = ({ dispatch, index, variableIndex, variable, isAdmi
     };
     const p = ['problems', index, 'variables', variableIndex];
     const nameSubDoc = doc.subDoc([...p, 'name']);
-    const descriptionSubDoc = doc.subDoc([...p, 'description']);
+    const valueSubDoc = doc.subDoc([...p, 'value']);
     return <tr>
         <td>
             <select defaultValue={variable.type} onChange={doChangeVariableType}>
@@ -27,7 +27,7 @@ const TestTemplateVariable = ({ dispatch, index, variableIndex, variable, isAdmi
             <CodeEditor shareDBSubDoc={nameSubDoc} value={nameSubDoc.getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 40 }} />
         </td>
         <td>
-            <CodeEditor shareDBSubDoc={descriptionSubDoc} value={descriptionSubDoc.getData()} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 40 }} />
+            <CodeEditor shareDBSubDoc={valueSubDoc} value={valueSubDoc.getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 40 }} />
         </td>
         <td>
             <button className="btn btn-outline-danger btn-sm" onClick={doDeleteVariable}>Delete</button>
