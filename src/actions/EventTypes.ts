@@ -44,6 +44,8 @@ enum EventTypes {
     BEGIN_RUN_SHARED_CODE = 'begin run shared code',
     DONE_RUNNING_SHARED_CODE = 'done running shared code',
     SHARED_ERROR_CHANGED = 'shared error changed',
-    SET_USER='set user'
+    SET_USER='set user',
+    CHANGE_PROBLEM_CONFIG = 'change problem config',
+    STANDARD_CODE_CHANGED = 'standard code change'
 };
 export default EventTypes;

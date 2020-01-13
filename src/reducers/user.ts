@@ -3,43 +3,23 @@ import store from 'storejs';
 import update from 'immutability-helper';
 import uuid from '../utils/uuid';
 import { IUser } from '../components/App';
-// import { IUserInfo } from '../components/App';
 
-// export interface IUser {
-//     isAdmin: boolean;
-//     id: string;
-//     userInfo: IUserInfo;
-//     solutions: { [problemID: string]: {
-//         modified: boolean,
-//         code: string,
-//         errors: string[],
-//         files: Array<{
-//                 contents: string,
-//                 name: string
-//             }>,
-//         output: string,
-//         passedAll: boolean,
-//         testResults: {
-//             [testID: string]: {
-//                 passed: boolean,
-//                 message: string
-//             }
-//         }
-//     }}
-// }
+const defaultID = uuid();
+
 const defaultUser: IUser = store.get('user') || {
-    id: uuid(),
+// const defaultUser: IUser =  {
+
+    id: defaultID,
     userInfo: {
         loggedIn: false,
-        name: '',
+        username: 'ANON-' + defaultID.slice(-3),
         email: '',
         isInstructor: false
     },
-    name: '',
-    email: '',
     isAdmin: false,
     solutions: {},
 };
+
 
 function updateStore(u: IUser): void {
     store.set('user', u);
@@ -256,5 +236,5 @@ export const user = (state: IUser = defaultUser, action: any) => {
     //     })
     } else {
         return state;
-    }
+     }
 }

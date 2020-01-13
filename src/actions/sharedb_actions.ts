@@ -24,6 +24,13 @@ export function addProblem() {
             id: uuid(),
             variables: [],
             tests: [],
+            config:{
+                runTests: false,
+                addTests: false,
+                displayInstructor: false,
+                peerHelp: false,
+                autoVerify: false
+            }
         };
 
         doc.submitObjectInsertOp(['userData', newProblem.id], {
@@ -101,6 +108,7 @@ export function deleteTestVariable(index: number, variableIndex: number) {
 export function changeTestStatus(index: number, testIndex: number, verified: boolean) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
+        console.log('change test status')
         // const { tests } = problems[index];
         // const  test = tests[testIndex];
         // const verified = !test.verified;
@@ -147,6 +155,14 @@ export function setProblemVisibility(id: string, visible: boolean) {
             });
         }
     };
+}
+
+export function changeProblemConfig(index:string, item:string, status:boolean) {
+    return (dispatch:Dispatch, getState)=>{
+        const { doc } = getState();
+        const p = ['problems', index, 'config', item];
+        doc.submitObjectReplaceOp(p, status);
+    }
 }
 
 export function setHelpRequest(id: string, uid: string) {
@@ -203,9 +219,11 @@ function parseOpType(op, doc): string {
     switch (true) {
         case ((problemRelPath) && (problemRelPath.length === 1) && (li !== undefined)): return EventTypes.PROBLEM_ADDED;
         case ((problemRelPath) && (problemRelPath.length === 1) && (ld !== undefined)): return EventTypes.PROBLEM_DELETED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'config') && (oi !== undefined)): return EventTypes.CHANGE_PROBLEM_CONFIG;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'description')): return EventTypes.DESCRIPTION_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'givenCode')): return EventTypes.GIVEN_CODE_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'afterCode')): return EventTypes.AFTER_CODE_CHANGED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'standardCode')): return EventTypes.STANDARD_CODE_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'variables') && (li !== undefined)): return EventTypes.VARIABLE_ADDED;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'variables') && (ld !== undefined)): return EventTypes.VARIABLE_DELETED;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'tests') && (li !== undefined)): return EventTypes.TEST_ADDED;
@@ -281,6 +299,11 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             index = problemRelPath[0] as number;
                             const newAfterCode = doc.traverse(['problems', index, 'afterCode']);
                             dispatch({ index, type, code: newAfterCode });
+                            break;
+                        case EventTypes.STANDARD_CODE_CHANGED:
+                            index = problemRelPath[0] as number;
+                            const newStandardCode = doc.traverse(['problems', index, 'standardCode']);
+                            dispatch({ index, type, code: newStandardCode});
                             break;
                         case EventTypes.TEST_ADDED:
                             index = problemRelPath[0] as number;
@@ -366,6 +389,12 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             break;
                         case EventTypes.QUIT_HELP_SESSION:
                             dispatch({ type, problemID: userDataRelPath[0], sessionIndex: userDataRelPath[2], tutorIndex: userDataRelPath[4] });
+                            break;
+                        case EventTypes.CHANGE_PROBLEM_CONFIG:
+                            index = problemRelPath[0] as number;
+                            const config_item = problemRelPath[2];
+                            const config_value = oi;
+                            dispatch({ type, index, config_item, config_value});
                             break;
                         default:
                             if (p.length === 0) { // full replacement

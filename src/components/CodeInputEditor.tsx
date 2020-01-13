@@ -17,6 +17,7 @@ interface ICodeInputEditorProps {
     variables?:any;
     onVariableChange?: any;
     flag?: any;
+    isEdit?:any;
     // shareDBSubDoc?: SDBSubDoc<string>;
     onChange?: (e: ICodeChangeEvent) => void;
 };
@@ -62,7 +63,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
         });
 
         this.props.options.height = 10 + 20 * (this.inputVariables.length + 1);
-
+        this.props.options.readOnly = !this.props.isEdit;
         this.state = {
             code: staticText,
         }
@@ -82,6 +83,11 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
     };
 
     private resetEditor(): void {
+        this.inputVariables = [];
+        console.log(this.props.variables)
+        this.props.variables.forEach(variable=>{
+            if (variable.type === "input") this.inputVariables.push(variable);
+        })
         let staticText = "# given variables";
         this.inputVariables.forEach(input => {
             staticText += "\n" + input.name + " = " + input.value;

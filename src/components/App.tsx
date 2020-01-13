@@ -54,7 +54,16 @@ export interface IProblem {
     id: string;
     variables: IVariable[];
     tests: ITest[];
+    config: IProblemConfig;
 };
+
+export interface IProblemConfig {
+    runTests: boolean;
+    addTests: boolean;
+    displayInstructor: boolean;
+    peerHelp: boolean;
+    autoVerify: boolean;
+}
 
 export interface IVariable {
     name: string;
@@ -103,7 +112,7 @@ export interface IUserInfo {
 
 const DEBUG_MODE = window.location.host === 'localhost:3000';
 const emptyDoc = { problems: [], userData: {} };
-const PMApplication = ({ isAdmin, dispatch }) => {
+const PMApplication = ({dispatch }) => {
     const wsLocation = DEBUG_MODE ? `ws://localhost:8000` : `${window.location.protocol === 'http:' ? 'ws' : 'wss'}://${window.location.host}`;
     const puzzleName = DEBUG_MODE ? 'p' : window.location.pathname.slice(1);
 
@@ -114,7 +123,6 @@ const PMApplication = ({ isAdmin, dispatch }) => {
     const sdbClient: SDBClient = new SDBClient(ws);
     const sdbDoc: SDBDoc<IPuzzleSet> = sdbClient.get('puzzles', puzzleName);
     dispatch(setDoc(sdbDoc));
-    dispatch(setIsAdmin(isAdmin));
     sdbDoc.createIfEmpty(emptyDoc).then(() => {
         dispatch(beginListeningOnDoc(sdbDoc));
     });
@@ -123,6 +131,13 @@ const PMApplication = ({ isAdmin, dispatch }) => {
         return response.json();
     }).then((myInfo) => {
         dispatch(setUser(myInfo));
+    }).catch((err) => {
+        // dispatch(setUser({
+        //     username: '',
+        //     email: '',
+        //     isInstructor: false,
+        //     loggedIn: false
+        // }))
     });
     window['su'] = () => {
         dispatch(setIsAdmin(true));

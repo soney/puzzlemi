@@ -17,6 +17,7 @@ interface ICodeOutputEditorProps {
     variables?:any;
     onVariableChange?: any;
     flag?: any;
+    isEdit?:any;
     // shareDBSubDoc?: SDBSubDoc<string>;
     onChange?: (e: ICodeChangeEvent) => void;
 };
@@ -62,7 +63,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         });
 
         this.props.options.height = 10 + 20 * (this.outputVariables.length + 1);
-
+        this.props.options.readOnly = !this.props.isEdit;
         this.state = {
             code: staticText,
         }
@@ -82,6 +83,10 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
     };
 
     private resetEditor(): void {
+        this.outputVariables = [];
+        this.props.variables.forEach(variable=>{
+            if (variable.type === "output") this.outputVariables.push(variable);
+        })
         let staticText = "# expected variables";
         this.outputVariables.forEach(output => {
             staticText += "\n# " + output.name + " = " + output.value;

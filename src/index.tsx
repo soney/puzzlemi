@@ -22,7 +22,7 @@ export const store = createStore(rootReducer, applyMiddleware(...middleware));
 
 render(
     <Provider store={store}>
-        <App isAdmin={false} />
+        <App />
      </Provider>,
      document.getElementById('root')
 )

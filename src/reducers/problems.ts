@@ -37,6 +37,13 @@ export const problems = (state: IProblem[] = [], action: any) => {
                 afterCode: { $set: code }
             }
         });
+    } else if(action.type === EventTypes.STANDARD_CODE_CHANGED) {
+        const { index, code } = action;
+        return update(state, {
+            [index]: {
+                standardCode: { $set: code }
+            }
+        })
     } else if(action.type === EventTypes.TEST_ADDED) {
         const { index, test, testIndex } = action;
         return update(state, {
@@ -122,6 +129,15 @@ export const problems = (state: IProblem[] = [], action: any) => {
         return update(state, {
             [index]: {
                 files: {$splice: [[fileIndex, 1]]}
+            }
+        });
+    } else if(action.type === EventTypes.CHANGE_PROBLEM_CONFIG){
+        const { index, config_item, config_value } = action;
+        return update(state, {
+            [index]: {
+                config: {
+                    [config_item]: {$set: config_value }
+                }
             }
         });
     } else {

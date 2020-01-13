@@ -196,10 +196,12 @@ export function runSharedCode(index: number, sessionIndex: number) {
 };
 
 
-
 const runTest = (test, problem, user, dispatch) => {
     return new Promise(async (resolve, reject) => {
-        if (!test.verified) resolve(false);
+        if (!test.verified) {
+            resolve(-1);
+            return;
+        }
         const { id, afterCode } = problem;
         const solution = user.solutions[id];
         const { code } = solution;
@@ -321,7 +323,6 @@ const runTest = (test, problem, user, dispatch) => {
 
 const runTests = async (user, problem, dispatch) => {
     const { tests } = problem;
-    console.log(tests);
 
     dispatch({
         id: problem.id,
@@ -330,7 +331,7 @@ const runTests = async (user, problem, dispatch) => {
     });
 
     const status = await Promise.all(tests.map(test => runTest(test, problem, user, dispatch)));
-    const passedAll = status.every((value) => value === true);
+    const passedAll = status.every((value) => value !== false);
 
     dispatch({
         id: problem.id,
@@ -356,6 +357,115 @@ export function runUnitTests(index: number) {
     }
 }
 
+export function runVerifyTest(index: number, testID) {
+    console.log('run verifying test')
+    return (dispatch: Dispatch, getState) => {
+        const { doc, user, problems } = getState();
+        const problem = problems[index];
+        const { standardCode, id, afterCode, tests } = problem;
+        const solution = user.solutions[id];
+        let testIndex = 0;
+        let test;
+        tests.forEach((t, i)=>{
+            if(t.id === testID) {
+                test = t;
+                testIndex = i;
+            }
+        })
+
+        const testSuite = new PMTestSuite();
+
+        let output: string = '';
+        let beforeCode = "";
+        test.input.forEach(variable => {
+            const state: string = variable.name + "=" + variable.value + ";\n";
+            beforeCode = beforeCode.concat(state);
+        })
+        const fullCode = beforeCode.concat(standardCode);
+        const outputs: string[] = [];
+        const outf = (outValue: string): void => {
+            if (!testSuite.currentlyRunning()) {
+                outputs.push(outValue);
+                output = outputs.join('');
+            }
+            console.log(output);
+        };
+
+        const readf = (fname: string): string => {
+            const problemFiles = problem.files;
+            const userFiles = solution.files;
+
+            if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][fname] === undefined) {
+                let file;
+                [...problemFiles, ...userFiles].forEach((f) => {
+                    const { name } = f;
+                    if (name === fname) {
+                        file = f;
+                    }
+                });
+
+                if (file) {
+                    return file.contents;
+                } else {
+                    throw new Error(`File not found: '${fname}'`);
+                }
+            } else {
+                return Sk.builtinFiles["files"][fname];
+            }
+        }
+
+        let assertions: PMAssertion[] = [];
+        assertions = test.output.map((t) => new PMAssertEqual(t.name, t.value, ''));
+        testSuite.setBeforeTests(afterCode);
+        testSuite.setAssertions(assertions);
+        testSuite.onBeforeRunningTests();
+        Sk.configure({
+            output: outf,
+            read: readf
+        });
+        const myPromise = Sk.misceval.asyncToPromise(() => {
+            return Sk.importMainWithBody("<stdin>", false, `${fullCode}\n${testSuite.getString()}`, true);
+        });
+        const onFinally = () => {
+            testSuite.onAfterRanTests();
+            const testSuiteResults = testSuite.getTestResults();
+            const { passedAll } = testSuiteResults;
+            doc.submitObjectReplaceOp(['problems', index, 'tests', testIndex, 'verified'], passedAll);
+        };
+        myPromise.then(onFinally, (err) => {
+            console.log(err);
+            const pretextLines = 0;
+            const matches = fullCode.match(/\n/g);
+            const progLines = matches ? (matches.length + 1) : 1;
+
+            let errorBefore: boolean = false;
+            let errorAfter: boolean = false;
+            if (err.traceback.length >= 1) {
+                const errorLine = err.traceback[0].lineno;
+                if (errorLine <= pretextLines) {
+                    errorBefore = true;
+                } else if (errorLine > (progLines + pretextLines)) {
+                    errorAfter = true;
+                } else {
+                    if (pretextLines > 0) {
+                        err.traceback[0].lineno = err.traceback[0].lineno - pretextLines + 1;
+                    }
+                }
+            }
+            let errString: string;
+            if (errorBefore) {
+                errString = `Error before your code ran:\n${err.toString()}`;
+            } else if (errorAfter) {
+                errString = `Error while running our tests:\n${err.toString()}`;
+            } else {
+                errString = err.toString();
+            }
+            doc.submitObjectReplaceOp(['problems', index, 'tests', testIndex, 'verified'], false);
+            console.log(errString);
+        })
+    }
+}
+
 export function runCode(index: number) {
     return (dispatch: Dispatch, getState) => {
         const { user, problems } = getState();
@@ -369,11 +479,11 @@ export function runCode(index: number) {
 
         let output: string = '';
 
-        let inputVariables:any[] = [];
-        let outputVariables:any[] = [];
-        variables.forEach(variable=>{
-            if(variable.type==="input") inputVariables.push(variable);
-            if(variable.type==="output") outputVariables.push(variable);
+        let inputVariables: any[] = [];
+        let outputVariables: any[] = [];
+        variables.forEach(variable => {
+            if (variable.type === "input") inputVariables.push(variable);
+            if (variable.type === "output") outputVariables.push(variable);
         })
         let beforeCode = "";
         inputVariables.forEach(variable => {
@@ -449,7 +559,6 @@ export function runCode(index: number) {
             testSuite.onAfterRanTests();
             const testSuiteResults = testSuite.getTestResults();
             const { passedAll, results } = testSuiteResults;
-            console.log(results)
             // const problemTests = getState().problems[index].tests;
             // console.log(problemTests)
             // const testResults = {};

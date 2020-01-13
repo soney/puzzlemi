@@ -11,7 +11,8 @@ const TestResult = ({ testResult, testUserInfo, testID, test, dispatch, index, d
     }
     const pass_rate = total_user_num === 0 ? 0 : pass_user_num / total_user_num * 100;
     const width_style = { width: pass_rate + "%" } as React.CSSProperties;
-    const author_name = test.author.slice(-4);
+    // const author_name = test.author.slice(-4);
+    const author_name = test.author;
     const test_id = test.id.slice(-4);
 
     return <tr>

@@ -8,17 +8,18 @@ import { CodeOutputEditor } from './CodeOutputEditor';
 import { setHelpRequest } from '../actions/sharedb_actions';
 import { setCode } from '../actions/user_actions';
 import TestResults from './TestResults';
-import { runCode, runUnitTests } from '../actions/runCode_actions';
+import { runCode, runUnitTests, runVerifyTest} from '../actions/runCode_actions';
 import { newTest } from '../actions/sharedb_actions';
 import { ITest } from './App';
 import uuid from '../utils/uuid';
 
 
-const MySolution = ({ index, uid, doc,id, isAdmin, defaultTest, errors, output, code, dispatch }) => {
+const MySolution = ({ index, uid, doc,id, userInfo, verifiedTests, config, isAdmin, variables, errors, output, code, dispatch }) => {
+
     let myTest:ITest;
-    if (defaultTest) {
+    if (variables) {
         myTest = {
-            author: uid,
+            author: userInfo.username,
             verified:isAdmin,
             hidden: false,
             helpSessions: [],
@@ -26,9 +27,10 @@ const MySolution = ({ index, uid, doc,id, isAdmin, defaultTest, errors, output, 
             input: [],
             output: []
         };
-        defaultTest.forEach(variable=>{
-            if(variable.type === "input") myTest.input.push(variable);
-            else if (variable.type === "output") myTest.output.push(variable);
+        variables.forEach(variable=>{
+            const variable_copy = JSON.parse(JSON.stringify(variable));
+            if(variable.type === "input") myTest.input.push(variable_copy);
+            else if (variable.type === "output") myTest.output.push(variable_copy);
         })
     }
     const [count, setCount] = useState(0);
@@ -55,7 +57,9 @@ const MySolution = ({ index, uid, doc,id, isAdmin, defaultTest, errors, output, 
     }
 
     const doSubmitTest = () => {
-        return dispatch(newTest(index, myTest));
+        dispatch(newTest(index, myTest)).then(
+            dispatch(runVerifyTest(index, myTest.id))
+        );
     }
     const doResetTest = () => {
         setCount(count + 1);
@@ -64,16 +68,18 @@ const MySolution = ({ index, uid, doc,id, isAdmin, defaultTest, errors, output, 
         <div className="row">
             <div className="col">
                 <div>
-                    {defaultTest &&
-                        <CodeInputEditor variables={defaultTest} onVariableChange={doChangeInputVariable} flag={count} />
+                    {variables &&
+                        <CodeInputEditor variables={variables} onVariableChange={doChangeInputVariable} flag={count} isEdit={config.addTests}/>
                     }
                     <CodeEditor value={code} onChange={doSetCode} />
-                    {defaultTest &&
-                        <CodeOutputEditor variables={defaultTest} onVariableChange={doChangeOutputVariable} flag={count} />
+                    {variables &&
+                        <CodeOutputEditor variables={variables} onVariableChange={doChangeOutputVariable} flag={count} isEdit={config.addTests}/>
                     }
                     <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
-                    <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunTests}>Run All Tests</button>
-                    {defaultTest &&
+                    {config.runTests && 
+                        <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunTests}>Run All Tests ({verifiedTests.length})</button>
+                    }
+                    {variables && config.addTests &&
                         <div className="test-btn">
                             <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doResetTest}>Reset Test Case</button>
                             <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doSubmitTest}>Submit New Test Case</button>
@@ -104,12 +110,16 @@ const MySolution = ({ index, uid, doc,id, isAdmin, defaultTest, errors, output, 
 function mapStateToProps(state, ownProps) {
     const { index } = ownProps;
     const { user, doc, problems } = state;
-    const { isAdmin } = user;
+    const { isAdmin, userInfo } = user;
     const problem = problems[index];
-    const { id } = problem;
-    const defaultTest = problem.variables;
+    const { id, config, variables, tests } = problem;
+    let verifiedT: any[] = [];
+    tests.forEach((test, i) => {
+        if (test.verified === true) verifiedT.push({ i, test });
+    });
+    const verifiedTests = verifiedT;
     const uid = user.id;
     const { code, output, errors } = user.solutions[id];
-    return update(ownProps, { index: { $set: index }, uid: { $set: uid }, id:{$set:id}, isAdmin: { $set: isAdmin }, defaultTest: { $set: defaultTest }, errors: { $set: errors }, output: { $set: output }, code: { $set: code }, doc: { $set: doc } });
+    return update(ownProps, { index: { $set: index }, userInfo: {$set: userInfo}, verifiedTests: {$set: verifiedTests}, config: {$set: config}, uid: { $set: uid }, id:{$set:id}, isAdmin: { $set: isAdmin }, variables: { $set: variables }, errors: { $set: errors }, output: { $set: output }, code: { $set: code }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(MySolution);
