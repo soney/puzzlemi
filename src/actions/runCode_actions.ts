@@ -345,6 +345,18 @@ const runTests = async (user, problem, dispatch) => {
             userID: user.id,
             type: EventTypes.USER_COMPLETED_PROBLEM
         })
+    } else {
+        let keyTest:any = null;
+        tests.forEach((test, i)=>{
+            if(status[i]===false && keyTest === null) keyTest = test;
+        })
+        if(keyTest!==null){
+            dispatch({
+                problemID: problem.id,
+                testID: keyTest.id,
+                type: EventTypes.UPDATE_ACTIVE_FAILED_TEST_ID
+            })
+        }
     }
 }
 

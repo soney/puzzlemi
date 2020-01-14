@@ -18,6 +18,7 @@ interface ICodeInputEditorProps {
     onVariableChange?: any;
     flag?: any;
     isEdit?:any;
+    failedTest?:any;
     // shareDBSubDoc?: SDBSubDoc<string>;
     onChange?: (e: ICodeChangeEvent) => void;
 };
@@ -70,7 +71,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
     };
 
     public componentDidUpdate(prevProps: ICodeInputEditorProps): void {
-        const { value, flag } = this.props;
+        const { value, flag, variables, isEdit, failedTest } = this.props;
         if (value !== prevProps.value) {
             this.setState({ code: value as string });
             // if(value !== this.codeMirror.getValue()) {
@@ -79,30 +80,106 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
         }
         if (flag !== prevProps.flag) {
             this.resetEditor();
+            this.resetMarkers();
+        }
+        if (variables !== prevProps.variables ) {
+            this.resetEditor();
+            this.resetMarkers();
+        }
+        if (isEdit !== prevProps.isEdit ) {
+            this.resetEditor();
+            this.resetMarkers();
+        }
+        if (failedTest !== prevProps.failedTest) {
+            if(failedTest!==null){
+                this.resetFailed();
+            }
+            else {
+                this.resetEditor();
+                this.resetMarkers();
+            }
         }
     };
 
-    private resetEditor(): void {
-        this.inputVariables = [];
-        console.log(this.props.variables)
-        this.props.variables.forEach(variable=>{
-            if (variable.type === "input") this.inputVariables.push(variable);
-        })
+    private resetFailed(): void {
+        this.inputVariables = this.props.failedTest.input;
+       
+        // init static text
         let staticText = "# given variables";
         this.inputVariables.forEach(input => {
             staticText += "\n" + input.name + " = " + input.value;
         });
-
         this.codeMirror.setValue(staticText);
+
+        // init code mirror options
+        this.props.options.height = 10 + 20 * (this.inputVariables.length + 1);
+        this.codeMirror.setSize(this.props.options.width, this.props.options.height);
+        this.codeMirror.setOption('readOnly', true);
+
         const doc = this.codeMirror.getDoc();
         doc.markText({ line: 0, ch: 0 }, { line: 1, ch: 0 }, { readOnly: true });
+        
+        // init editing markers
         this.inputVariables.forEach((input, index) => {
             const variable_length = input.name.length;
             const total_length = doc.getLine(index + 1).length;
             doc.markText({ line: index + 1, ch: 0 }, { line: index + 1, ch: variable_length + 3 }, { readOnly: true });
-            this.VariableMarker[index].clear();
+            const marker = doc.markText({ line: index + 1, ch: variable_length + 3 }, { line: index + 1, ch: total_length }, { css: "background: #f8d7da" });
+            this.VariableMarker.push(marker);
+        })
+    }
+
+
+    private resetEditor(): void {
+        // init input variables
+        this.inputVariables = [];
+        this.props.variables.forEach(variable=>{
+            if (variable.type === "input") this.inputVariables.push(variable);
+        })
+
+        // init static text
+        let staticText = "# given variables";
+        this.inputVariables.forEach(input => {
+            staticText += "\n" + input.name + " = " + input.value;
+        });
+        this.codeMirror.setValue(staticText);
+        
+        // init code mirror options
+        this.props.options.height = 10 + 20 * (this.inputVariables.length + 1);
+        this.codeMirror.setSize(this.props.options.width, this.props.options.height);
+        this.codeMirror.setOption('readOnly', !this.props.isEdit);
+    }
+
+    private resetMarkers(): void {
+        // init readOnly markers
+        const doc = this.codeMirror.getDoc();
+        doc.markText({ line: 0, ch: 0 }, { line: 1, ch: 0 }, { readOnly: true });
+        
+        // init editing markers
+        this.VariableMarker = [];
+        this.inputVariables.forEach((input, index) => {
+            const variable_length = input.name.length;
+            const total_length = doc.getLine(index + 1).length;
+            doc.markText({ line: index + 1, ch: 0 }, { line: index + 1, ch: variable_length + 3 }, { readOnly: true });
             const marker = doc.markText({ line: index + 1, ch: variable_length + 3 }, { line: index + 1, ch: total_length }, { css: "background: #baffba" });
-            this.VariableMarker[index] = marker;
+            this.VariableMarker.push(marker);
+        })
+    }
+
+    private listenEditorChange = ()=> {
+        const doc = this.codeMirror.getDoc();
+        this.inputVariables.forEach((input, index) => {
+            const variable_length = input.name.length;
+            const total_length = doc.getLine(index + 1).length;
+            const content = doc.getLine(index + 1).substr(variable_length + 3, total_length - variable_length - 3);
+            if (content !== input.value) {
+                // update input value
+                this.props.onVariableChange(index, content);
+                // update marker
+                this.VariableMarker[index].clear();
+                const marker = doc.markText({ line: index + 1, ch: variable_length + 3 }, { line: index + 1, ch: total_length }, { css: "background: yellow" });
+                this.VariableMarker[index] = marker;
+            }
         })
     }
 
@@ -116,33 +193,8 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
                 cm.getDoc().replaceSelection(spaces);
             }
         });
-
-        const doc = this.codeMirror.getDoc();
-        doc.markText({ line: 0, ch: 0 }, { line: 1, ch: 0 }, { readOnly: true });
-        this.inputVariables.forEach((input, index) => {
-            const variable_length = input.name.length;
-            const total_length = doc.getLine(index + 1).length;
-            doc.markText({ line: index + 1, ch: 0 }, { line: index + 1, ch: variable_length + 3 }, { readOnly: true });
-            const marker = doc.markText({ line: index + 1, ch: variable_length + 3 }, { line: index + 1, ch: total_length }, { css: "background: #baffba" });
-            this.VariableMarker.push(marker);
-        })
-
-        this.codeMirror.on('change', (instance: CodeMirror.Editor, change: CodeMirror.EditorChangeLinkedList) => {
-            const doc = this.codeMirror.getDoc();
-            this.inputVariables.forEach((input, index) => {
-                const variable_length = input.name.length;
-                const total_length = doc.getLine(index + 1).length;
-                const content = doc.getLine(index + 1).substr(variable_length + 3, total_length - variable_length - 3);
-                if (content !== input.value) {
-                    // update input value
-                    this.props.onVariableChange(index, content);
-                    // update marker
-                    this.VariableMarker[index].clear();
-                    const marker = doc.markText({ line: index + 1, ch: variable_length + 3 }, { line: index + 1, ch: total_length }, { css: "background: yellow" });
-                    this.VariableMarker[index] = marker;
-                }
-            })
-        });
+        this.resetMarkers();
+        this.codeMirror.on('change', this.listenEditorChange);
     };
     public componentWillUnmount(): void {
         if (this.codeMirror) {

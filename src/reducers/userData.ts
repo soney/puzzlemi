@@ -123,98 +123,95 @@ export const userData = (state: {[problemID: string]: IProblemUserInfo} = {}, ac
                 }
             }
         })
-    } else if(action.type === EventTypes.SHARED_OUTPUT_CHANGED) {
-        const { id, sessionIndex, output } = action;
-        return update(state, {
-            [id]: {
-                helpSessions: {
-                    [sessionIndex]: {
-                        solution:{
-                            output: {$set: output}
-                        }
-                    }
-                }
-            }
-        })
-    } else if (action.type === EventTypes.SHARED_FILE_WRITTEN) {
-        const { id, sessionIndex, name, contents } = action;
-        const files = state[id].helpSessions[sessionIndex].solution.files;
-        const fIndex = files.findIndex((f) => f.name === name);
-        if(fIndex < 0) {
-            return update(state, {
-                [id]: {
-                    'helpSessions': {
-                        [sessionIndex]: {
-                            'solution':{
-                                files: {
-                                    $push: [{ name, contents }]
-                                }        
-                            }
-                        }
-                    }
-                }
-            });
-        } else {
-            return update(state, {
-                [id]: {
-                    'helpSessions': {
-                        [sessionIndex]: {
-                            'solution': {
-                                files: {
-                                    [fIndex]: {
-                                        contents: {$set: contents}
-                                    }
-                                }        
-                            }
-                        }
-                    }
-                }
-            });
-        }
+    // } else if(action.type === EventTypes.SHARED_OUTPUT_CHANGED) {
+    //     const { id, sessionIndex, output } = action;
+    //     return update(state, {
+    //         [id]: {
+    //             helpSessions: {
+    //                 [sessionIndex]: {
+    //                     solution:{
+    //                         output: {$set: output}
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     })
+    // } else if (action.type === EventTypes.SHARED_FILE_WRITTEN) {
+    //     const { id, sessionIndex, name, contents } = action;
+    //     const files = state[id].helpSessions[sessionIndex].solution.files;
+    //     const fIndex = files.findIndex((f) => f.name === name);
+    //     if(fIndex < 0) {
+    //         return update(state, {
+    //             [id]: {
+    //                 'helpSessions': {
+    //                     [sessionIndex]: {
+    //                         'solution':{
+    //                             files: {
+    //                                 $push: [{ name, contents }]
+    //                             }        
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         });
+    //     } else {
+    //         return update(state, {
+    //             [id]: {
+    //                 'helpSessions': {
+    //                     [sessionIndex]: {
+    //                         'solution': {
+    //                             files: {
+    //                                 [fIndex]: {
+    //                                     contents: {$set: contents}
+    //                                 }
+    //                             }        
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         });
+    //     }
 
-    } else if(action.type === EventTypes.BEGIN_RUN_SHARED_CODE) {
-        const { id, sessionIndex } = action;
-        return update(state, {
-            [id]: {
-                'helpSessions': {
-                    [sessionIndex]: {
-                        'solution': {
-                            errors: { $set: [] },
-                            output: { $set: '' },
-                            passedAll: { $set: false },
-                            testResults: { $set: {} },        
-                        }
-                    }
-                }
-            }
-        });
-    } else if(action.type === EventTypes.DONE_RUNNING_SHARED_CODE) {
-        const { id, passedAll, sessionIndex, testResults } = action;
-        return update(state, {
-            [id]:{
-                'helpSessions': {
-                    [sessionIndex]: {
-                        'solution': {
-                            passedAll: { $set: passedAll },
-                            testResults:{ $set: testResults },        
-                        }
-                    }
-                }
-            }
-        });
-    } else if(action.type === EventTypes.SHARED_ERROR_CHANGED) {
-        const { id, sessionIndex, errors } = action;
-        return update(state, {
-            [id]: {
-                'helpSessions': {
-                    [sessionIndex]: {
-                        'solution': {
-                            errors: { $set: errors }
-                        }
-                    }
-                }
-            }
-        });
+    // } else if(action.type === EventTypes.BEGIN_RUN_SHARED_CODE) {
+    //     const { id, sessionIndex } = action;
+    //     return update(state, {
+    //         [id]: {
+    //             'helpSessions': {
+    //                 [sessionIndex]: {
+    //                     'solution': {
+    //                         testResults: { $set: {} },        
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     });
+    // } else if(action.type === EventTypes.DONE_RUNNING_SHARED_CODE) {
+    //     const { id, passedAll, sessionIndex, testResults } = action;
+    //     return update(state, {
+    //         [id]:{
+    //             'helpSessions': {
+    //                 [sessionIndex]: {
+    //                     'solution': {
+    //                         passedAll: { $set: passedAll },
+    //                         testResults:{ $set: testResults },        
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     });
+    // } else if(action.type === EventTypes.SHARED_ERROR_CHANGED) {
+    //     const { id, sessionIndex, errors } = action;
+    //     return update(state, {
+    //         [id]: {
+    //             'helpSessions': {
+    //                 [sessionIndex]: {
+    //                     'solution': {
+    //                         errors: { $set: errors }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     });
     }
     else {
         return state;

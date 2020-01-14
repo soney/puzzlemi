@@ -46,6 +46,7 @@ enum EventTypes {
     SHARED_ERROR_CHANGED = 'shared error changed',
     SET_USER='set user',
     CHANGE_PROBLEM_CONFIG = 'change problem config',
-    STANDARD_CODE_CHANGED = 'standard code change'
+    STANDARD_CODE_CHANGED = 'standard code change',
+    UPDATE_ACTIVE_FAILED_TEST_ID = 'update active failed test id'
 };
 export default EventTypes;

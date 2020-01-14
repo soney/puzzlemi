@@ -6,7 +6,7 @@ import { addTest } from '../actions/sharedb_actions';
 
 const Tests = ({ index, inputTests, inputVariables, outputVariables,verifiedTests, isAdmin, userInfo, doc, dispatch, uid }) => {
     const doAddTest = () => {
-        dispatch(addTest(index, uid, isAdmin));
+        dispatch(addTest(index, userInfo.username, isAdmin));
     }
 
     let myTests = [] as any[];

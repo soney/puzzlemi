@@ -2,12 +2,13 @@ import * as React from 'react';
 import TestResult from './TestResult';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
+import {updateActiveFailedTestID} from '../actions/user_actions';
 // import { changeTargetID } from '../actions/user_actions';
 
-const TestResults = ({ targetID, defaultPass, problem, testResults, passedAll, dispatch, index, doc }) => {
+const TestResults = ({ activeFailedTestID, defaultPass, problem, testResults, passedAll, dispatch, index, doc }) => {
     const total_num = Object.keys(testResults).length;
     let pass_num = 0;
-    let failed_tests:any[] =[];
+    let failed_tests: any[] = [];
     const getTest = (testID) => {
         let myTest;
         problem.tests.forEach(test => {
@@ -23,14 +24,19 @@ const TestResults = ({ targetID, defaultPass, problem, testResults, passedAll, d
             failed_tests.push(thisTest);
         }
     }
+    const onSwitchPage = (e) => {
+        const failedTestIndex = e.target.getAttribute('data-value');
+        const failedTestID = failed_tests[failedTestIndex].id;
+        dispatch(updateActiveFailedTestID(problem.id, failedTestID));
+    }
 
     return <div>
-        {(defaultPass && (total_num === 0)) &&
+        {(defaultPass === true && (total_num === 0)) &&
             <div className="alert alert-success" role="alert">
                 You passed the default test!
             </div>
         }
-        {(defaultPass===false && (total_num === 0)) &&
+        {(defaultPass === false && (total_num === 0)) &&
             <div className="alert alert-danger" role="alert">
                 You didn't pass the default test!
             </div>
@@ -45,24 +51,27 @@ const TestResults = ({ targetID, defaultPass, problem, testResults, passedAll, d
                 <div className="alert alert-danger" role="alert">
                     You failed {total_num - pass_num} of {total_num} tests.
                 </div>
-                <table className="table table-sm">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Author</th>
-                            <th scope="col">Progress</th>
-                            {failed_tests[0].input.map((inp_var, i) => <th scope="col" key={i}>{inp_var.name}</th>)}
-                            {failed_tests[0].output.map((out_var, i) => <th scope="col" key={i}>{out_var.name}</th>)}
-                            {/* <th scope="col">Message</th> */}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {failed_tests.map((test, i)=><TestResult test={test} index={index} key={i}/>)}
-                        
-                        {/* {myTests.map(({ test, i }) => <Test key={test.id + `${i}`} index={index} testIndex={i} isInput={true} totalNum={inputTests.length} />)} */}
-                    </tbody>
-                </table>
-
+                <TestResult index={index} />
+                
+                <nav aria-label="Page navigation example">
+                    <ul className="pagination">
+                        {/* <li className="page-item">
+                            <div className="page-link" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </div>
+                        </li> */}
+                        {failed_tests.map((test, i) =>
+                             <li className={test.id === activeFailedTestID?"page-item active":"page-item"} key={i}>
+                            <div className="page-link" data-value={i} onClick={onSwitchPage}>{i+1}</div>
+                            </li>
+                        )}
+                        {/* <li className="page-item">
+                            <div className="page-link" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </div>
+                        </li> */}
+                    </ul>
+                </nav>
             </div>
         }
     </div>
@@ -75,7 +84,7 @@ function mapStateToProps(state, ownProps) {
     const testResults = userSolution.testResults;
     const passedAll = userSolution.passedAll;
     const defaultPass = userSolution.defaultPass;
-    const targetID = userSolution.targetID;
-    return update(ownProps, { targetID: { $set: targetID }, defaultPass: { $set: defaultPass }, testResults: { $set: testResults }, problem: { $set: problem }, passedAll: { $set: passedAll }, doc: { $set: doc } });
+    const activeFailedTestID = userSolution.activeFailedTestID;
+    return update(ownProps, { activeFailedTestID: { $set: activeFailedTestID }, defaultPass: { $set: defaultPass }, testResults: { $set: testResults }, problem: { $set: problem }, passedAll: { $set: passedAll }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(TestResults); 

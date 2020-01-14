@@ -81,7 +81,8 @@ export interface ISolution {
     }>,
     output: string,
     passedAll: boolean,
-    defaultPass: boolean,
+    defaultPass: boolean|number,
+    activeFailedTestID: string,
     // targetID: string,
     testResults: {
         [testID: string]: {

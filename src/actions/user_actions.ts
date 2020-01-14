@@ -32,6 +32,15 @@ export function setCode(index: number, code: string) {
         });
     };
 }
+export function updateActiveFailedTestID(problemID, testID) {
+    return(dispatch: Dispatch, getState) => {
+        dispatch({
+            type:EventTypes.UPDATE_ACTIVE_FAILED_TEST_ID,
+            problemID,
+            testID
+        })
+    }
+}
 export function resetCode(index: number) {
     return (dispatch: Dispatch, getState) => {
         const { problems } = getState();

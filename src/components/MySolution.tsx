@@ -6,7 +6,7 @@ import { CodeEditor } from './CodeEditor';
 import { CodeInputEditor } from './CodeInputEditor';
 import { CodeOutputEditor } from './CodeOutputEditor';
 import { setHelpRequest } from '../actions/sharedb_actions';
-import { setCode } from '../actions/user_actions';
+import { setCode, updateActiveFailedTestID } from '../actions/user_actions';
 import TestResults from './TestResults';
 import { runCode, runUnitTests, runVerifyTest} from '../actions/runCode_actions';
 import { newTest } from '../actions/sharedb_actions';
@@ -14,7 +14,7 @@ import { ITest } from './App';
 import uuid from '../utils/uuid';
 
 
-const MySolution = ({ index, uid, doc,id, userInfo, verifiedTests, config, isAdmin, variables, errors, output, code, dispatch }) => {
+const MySolution = ({ index, uid, doc,id, testResults, failedTest, userInfo, verifiedTests, config, isAdmin, variables, errors, output, code, dispatch }) => {
 
     let myTest:ITest;
     if (variables) {
@@ -43,7 +43,12 @@ const MySolution = ({ index, uid, doc,id, userInfo, verifiedTests, config, isAdm
         const { value } = ev;
         return dispatch(setCode(index, value));
     };
+    const doResetTest = () => {
+        setCount(count + 1);
+        dispatch(updateActiveFailedTestID(id, ''));
+    }
     const doRunCode = () => {
+        doResetTest();
         return dispatch(runCode(index));
     };
     const doRunTests = () => {
@@ -60,20 +65,19 @@ const MySolution = ({ index, uid, doc,id, userInfo, verifiedTests, config, isAdm
         dispatch(newTest(index, myTest)).then(
             dispatch(runVerifyTest(index, myTest.id))
         );
+        doResetTest();
     }
-    const doResetTest = () => {
-        setCount(count + 1);
-    }
+
     return <div>
         <div className="row">
             <div className="col">
                 <div>
                     {variables &&
-                        <CodeInputEditor variables={variables} onVariableChange={doChangeInputVariable} flag={count} isEdit={config.addTests}/>
+                        <CodeInputEditor failedTest = {failedTest} variables={variables} onVariableChange={doChangeInputVariable} flag={count} isEdit={config.addTests}/>
                     }
                     <CodeEditor value={code} onChange={doSetCode} />
                     {variables &&
-                        <CodeOutputEditor variables={variables} onVariableChange={doChangeOutputVariable} flag={count} isEdit={config.addTests}/>
+                        <CodeOutputEditor failedTest = {failedTest} variables={variables} onVariableChange={doChangeOutputVariable} flag={count} isEdit={config.addTests}/>
                     }
                     <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
                     {config.runTests && 
@@ -119,7 +123,17 @@ function mapStateToProps(state, ownProps) {
     });
     const verifiedTests = verifiedT;
     const uid = user.id;
-    const { code, output, errors } = user.solutions[id];
-    return update(ownProps, { index: { $set: index }, userInfo: {$set: userInfo}, verifiedTests: {$set: verifiedTests}, config: {$set: config}, uid: { $set: uid }, id:{$set:id}, isAdmin: { $set: isAdmin }, variables: { $set: variables }, errors: { $set: errors }, output: { $set: output }, code: { $set: code }, doc: { $set: doc } });
+
+    const { code, output, errors, activeFailedTestID, testResults } = user.solutions[id];
+
+    let failedT = null;
+    if(activeFailedTestID!=='') {
+        tests.forEach(test => {
+            if(test.id === activeFailedTestID) failedT = test;
+        })
+    }
+    const failedTest = failedT;
+
+    return update(ownProps, { index: { $set: index }, testResults: {$set: testResults}, failedTest: {$set: failedTest}, userInfo: {$set: userInfo}, verifiedTests: {$set: verifiedTests}, config: {$set: config}, uid: { $set: uid }, id:{$set:id}, isAdmin: { $set: isAdmin }, variables: { $set: variables }, errors: { $set: errors }, output: { $set: output }, code: { $set: code }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(MySolution);

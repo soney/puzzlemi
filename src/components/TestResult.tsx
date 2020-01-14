@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 
-const TestResult = ({ testResult, testUserInfo, testID, test, dispatch, index, doc }) => {
+const TestResult = ({ test, testResult, testUserInfo, testID, dispatch, index, doc }) => {
     const result = testResult['results'];
     const total_user_num = testUserInfo ? Object.keys(testUserInfo).length : 0;
     let pass_user_num = 0;
@@ -15,29 +15,28 @@ const TestResult = ({ testResult, testUserInfo, testID, test, dispatch, index, d
     const author_name = test.author;
     const test_id = test.id.slice(-4);
 
-    return <tr>
-    <th scope="row">{test_id}</th>
-    <td>{author_name}</td>
+    return <div>
+    {test_id}
+    {author_name}
 
-    <td> <div className="progress">
+    <div className="progress">
         <div className="progress-bar progress-bar-striped bg-success" role="progressbar" style={width_style} aria-valuenow={pass_rate} aria-valuemin={0} aria-valuemax={100}>{pass_user_num}/{total_user_num}</div>
     </div>
-    </td>
-    {test.input.map((variable, i) => <td key={i}>{variable.value}
+    {test.input.map((variable, i) => <div key={i}>{variable.value}
         {/* <div className="variable-value">
             <CodeEditor shareDBSubDoc={inputSubDocs[i]} value={inputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} />
         </div> */}
-    </td>)}
-    {test.output.map((variable, i) => <td key={i}>{variable.value} <br />
+    </div>)}
+    {test.output.map((variable, i) => <div key={i}>{variable.value} <br />
         {result[i] && !result[i].passed &&
         <span className="badge badge-danger">{result[i].message}</span>
         }
         {/* <div className="variable-value">
             <CodeEditor shareDBSubDoc={outputSubDocs[i]} value={outputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} />
         </div> */}
-    </td>)}
+    </div>)}
     {/* <td><button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}>Delete</button></td> */}
-</tr>
+</div>
     
     // <th scope="col">#</th>
     // <th scope="col">Author</th>
@@ -92,13 +91,19 @@ const TestResult = ({ testResult, testUserInfo, testID, test, dispatch, index, d
     // </div>
 }
 function mapStateToProps(state, ownProps) {
-    const { index, test } = ownProps;
+    const { index } = ownProps;
     const { problems, doc, user, userData } = state;
     const problem = problems[index];
-    // const test = problem.tests.filter(test => test.id === testID)[0];
-    const testUserInfo = userData[problem.id].testData[test.id];
     const userSolution = user.solutions[problem.id];
-    const testResult = test ? userSolution.testResults[test.id] : null;
-    return update(ownProps, { test: { $set: test }, testResult: { $set: testResult }, testUserInfo: { $set: testUserInfo }, problem: { $set: problem }, doc: { $set: doc } });
+    const activeFailedTestID = userSolution.activeFailedTestID;
+
+    const test = problem.tests.filter(test => test.id === activeFailedTestID)[0];
+    const testUserInfo = userData[problem.id].testData[activeFailedTestID];
+
+    const testResult = userSolution.testResults[activeFailedTestID];
+    console.log(testResult)
+    console.log(testUserInfo);
+    console.log(test)
+    return update(ownProps, {test: {$set: test}, testResult: { $set: testResult }, testUserInfo: { $set: testUserInfo }, problem: { $set: problem }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(TestResult); 
