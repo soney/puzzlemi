@@ -22,12 +22,20 @@ export const userData = (state: {[problemID: string]: IProblemUserInfo} = {}, ac
             [problemID]: { $set: completionInfo }
         });
     } else if(action.type === EventTypes.USER_COMPLETED_PROBLEM) {
-        const { index, problemID, userID } = action;
-        return update(state, {
-            [problemID]: {
-                completed: { $splice: [[index, 0, userID]] }
-            }
-        });
+        const { index, problemID, userID, completed } = action;
+        if(completed) {
+            return update(state, {
+                [problemID]: {
+                    completed: { $splice: [[index, 0, userID]] }
+                }
+            });
+        } else {
+            return update(state, {
+                [problemID]: {
+                    completed: { $splice: [[index, 1]] }
+                }
+            });
+        }
     } else {
         return state;
     }

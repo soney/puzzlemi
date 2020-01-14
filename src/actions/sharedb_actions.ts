@@ -68,22 +68,29 @@ export function updateUserMultipleChoiceCorrectness(index, dispatch, getState) {
                     passedAll = false;
                 }
             });
-
-            if(passedAll) {
-                const { userData } = doc.getData();
-                if(userData[id]) {
-                    if(userData[id].completed.indexOf(userID) < 0) {
-                        doc.submitListPushOp(['userData', id, 'completed'], userID);
-                    }
-                } else {
-                    doc.submitObjectInsertOp(['userData', id], {
-                        completed: [userID],
-                        visible: true
-                    });
-                }
-            }
         } else {
             passedAll = false;
+        }
+        const { userData } = doc.getData();
+        if(passedAll) {
+            if(userData[id]) {
+                if(userData[id].completed.indexOf(userID) < 0) {
+                    doc.submitListPushOp(['userData', id, 'completed'], userID);
+                }
+            } else {
+                doc.submitObjectInsertOp(['userData', id], {
+                    completed: [userID],
+                    visible: true
+                });
+            }
+        } else {
+            if(userData[id]) {
+                const completedIndex = userData[id].completed.indexOf(userID);
+            
+                if(completedIndex >= 0) {
+                    doc.submitListDeleteOp(['userData', id, 'completed', completedIndex]);
+                }
+            }
         }
         dispatch({
             index, problemId: id, passedAll, type: EventTypes.PROBLEM_PASSED_CHANGED
@@ -408,14 +415,27 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                     } else if(userDataRelPath && userDataRelPath.length >= 1) {
                         const problemID = userDataRelPath[0];
                         if(userDataRelPath.length === 3 && userDataRelPath[1] === 'completed') {
-                            const userID = li;
-                            const index = userDataRelPath[2];
-                            dispatch({
-                                index,
-                                problemID,
-                                type: EventTypes.USER_COMPLETED_PROBLEM,
-                                userID,
-                            });
+                            if(li) {
+                                const userID = li;
+                                const index = userDataRelPath[2];
+                                dispatch({
+                                    index,
+                                    problemID,
+                                    type: EventTypes.USER_COMPLETED_PROBLEM,
+                                    userID,
+                                    completed: true
+                                });
+                            } else if(ld) {
+                                const userID = li;
+                                const index = userDataRelPath[2];
+                                dispatch({
+                                    index,
+                                    problemID,
+                                    type: EventTypes.USER_COMPLETED_PROBLEM,
+                                    userID,
+                                    completed: false
+                                });
+                            }
                         } else if(userDataRelPath.length === 2 && userDataRelPath[1] === 'visible') {
                             const { oi } = op as ObjectInsertOp;
                             dispatch({

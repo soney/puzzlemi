@@ -60,10 +60,10 @@ const CodeProblem = ({ index, problem, code, output, dispatch, doc, isAdmin, err
 }
 function mapStateToProps(state, ownProps) {
     const { index } = ownProps;
-    const { user, doc, problems, userData } = state;
+    const { user, doc, problems } = state;
     const { id } = problems[index];
     const { isAdmin } = user;
-    const { code, output, passedAll, errors } = user.solutions[id];
+    const { code, output, errors } = user.solutions[id];
     // const visible = userData[id] && userData[id].visible;
     return update(ownProps, { id: {$set: id},  errors: { $set: errors }, output: { $set: output }, isAdmin: { $set: isAdmin }, code: { $set: code }, doc: { $set: doc }});
 }

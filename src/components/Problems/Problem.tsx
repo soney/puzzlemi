@@ -48,14 +48,17 @@ const Problem = ({ id, doc, visible, problem, index, dispatch, passedAll, isAdmi
             </div>
         }
         {problemDisplay}
-        <div className="row completion-info">
-            <div className="col">
-                {iHaveCompleted &&
-                    <span> You are #{myCompletionIndex+1} of </span>
-                }
-                {numCompleted} {numCompleted === 1 ? 'user' : 'users'}{iHaveCompleted && <span> that</span>} finished this problem.
+        {
+            ((problemType === 'code') || (problemType === 'multiple-choice' && problem.revealSolution)) &&
+            <div className="row completion-info">
+                <div className="col">
+                    {iHaveCompleted &&
+                        <span>You are one of </span>
+                    }
+                    {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{iHaveCompleted && <span> that</span>} answered correctly.
+                </div>
             </div>
-        </div>
+        }
     </li>;
 }
 function mapStateToProps(state, ownProps) {
