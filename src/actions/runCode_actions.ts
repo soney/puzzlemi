@@ -101,7 +101,6 @@ export function runCode(index: number, graphics) {
             inputfunTakesPrompt: true
         });
         (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = graphics;
-        console.log(graphics);
         const myPromise = Sk.misceval.asyncToPromise(() => {
             return Sk.importMainWithBody("<stdin>", false, `${code}\n${testSuite.getString()}`, true);
         });
