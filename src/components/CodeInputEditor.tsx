@@ -14,11 +14,11 @@ export interface ICodeChangeEvent {
 interface ICodeInputEditorProps {
     options?: any;
     value?: string;
-    variables?:any;
+    variables?: any;
     onVariableChange?: any;
     flag?: any;
-    isEdit?:any;
-    failedTest?:any;
+    isEdit?: any;
+    failedTest?: any;
     // shareDBSubDoc?: SDBSubDoc<string>;
     onChange?: (e: ICodeChangeEvent) => void;
 };
@@ -55,7 +55,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
         this.inputVariables = [];
 
         let staticText = "# given variables";
-        this.props.variables.forEach(variable=>{
+        this.props.variables.forEach(variable => {
             if (variable.type === "input") this.inputVariables.push(variable);
         })
 
@@ -82,16 +82,16 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
             this.resetEditor();
             this.resetMarkers();
         }
-        if (variables !== prevProps.variables ) {
+        if (variables !== prevProps.variables) {
             this.resetEditor();
             this.resetMarkers();
         }
-        if (isEdit !== prevProps.isEdit ) {
+        if (isEdit !== prevProps.isEdit) {
             this.resetEditor();
             this.resetMarkers();
         }
         if (failedTest !== prevProps.failedTest) {
-            if(failedTest!==null){
+            if (failedTest !== null) {
                 this.resetFailed();
             }
             else {
@@ -103,7 +103,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
 
     private resetFailed(): void {
         this.inputVariables = this.props.failedTest.input;
-       
+
         // init static text
         let staticText = "# given variables";
         this.inputVariables.forEach(input => {
@@ -118,7 +118,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
 
         const doc = this.codeMirror.getDoc();
         doc.markText({ line: 0, ch: 0 }, { line: 1, ch: 0 }, { readOnly: true });
-        
+
         // init editing markers
         this.inputVariables.forEach((input, index) => {
             const variable_length = input.name.length;
@@ -133,7 +133,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
     private resetEditor(): void {
         // init input variables
         this.inputVariables = [];
-        this.props.variables.forEach(variable=>{
+        this.props.variables.forEach(variable => {
             if (variable.type === "input") this.inputVariables.push(variable);
         })
 
@@ -143,7 +143,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
             staticText += "\n" + input.name + " = " + input.value;
         });
         this.codeMirror.setValue(staticText);
-        
+
         // init code mirror options
         this.props.options.height = 10 + 20 * (this.inputVariables.length + 1);
         this.codeMirror.setSize(this.props.options.width, this.props.options.height);
@@ -154,7 +154,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
         // init readOnly markers
         const doc = this.codeMirror.getDoc();
         doc.markText({ line: 0, ch: 0 }, { line: 1, ch: 0 }, { readOnly: true });
-        
+
         // init editing markers
         this.VariableMarker = [];
         this.inputVariables.forEach((input, index) => {
@@ -166,7 +166,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
         })
     }
 
-    private listenEditorChange = ()=> {
+    private listenEditorChange = () => {
         const doc = this.codeMirror.getDoc();
         this.inputVariables.forEach((input, index) => {
             const variable_length = input.name.length;

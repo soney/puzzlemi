@@ -3,8 +3,8 @@ import { connect } from "react-redux";
 import update from 'immutability-helper';
 
 const Result = ({ result, tag, id }) => {
-    const failed_results = result.results.filter(i => i.passed===false);
-    const messages = failed_results.map(i=>i.message);
+    const failed_results = result.results.filter(i => i.passed === false);
+    const messages = failed_results.map(i => i.message);
     return <div>
         {(tag === "default") &&
             <div>

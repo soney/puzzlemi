@@ -59,16 +59,16 @@ const Test = ({ testResult, dispatch, config, index, testUserInfo, testIndex, te
             {test.input.map((variable, i) => <td key={i}>
                 <div className="variable-value">
                     {isAdmin
-                    ?<CodeEditor shareDBSubDoc={inputSubDocs[i]} value={inputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} />
-                    :<CodeEditor shareDBSubDoc={inputSubDocs[i]} value={inputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30, readOnly: true }} />
+                        ? <CodeEditor shareDBSubDoc={inputSubDocs[i]} value={inputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} />
+                        : <CodeEditor shareDBSubDoc={inputSubDocs[i]} value={inputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30, readOnly: true }} />
                     }
                 </div>
             </td>)}
             {test.output.map((variable, i) => <td key={i}>
                 <div className="variable-value">
                     {isAdmin
-                    ?<CodeEditor shareDBSubDoc={outputSubDocs[i]} value={outputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} />
-                    :<CodeEditor shareDBSubDoc={outputSubDocs[i]} value={outputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30, readOnly: true }} />
+                        ? <CodeEditor shareDBSubDoc={outputSubDocs[i]} value={outputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} />
+                        : <CodeEditor shareDBSubDoc={outputSubDocs[i]} value={outputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30, readOnly: true }} />
                     }
                 </div>
             </td>)}
@@ -94,10 +94,9 @@ function mapStateToProps(state, ownProps) {
     const problem = problems[index];
     const test = problem.tests[testIndex];
     const testUserInfo = userData[problem.id].testData[test.id];
-    console.log(testUserInfo)
     const userSolution = user.solutions[problem.id];
     const testResult = userSolution.testResults[test.id];
     const config = problem.config;
-    return update(ownProps, { testResult: { $set: testResult }, config: {$set: config}, testUserInfo: { $set: testUserInfo }, isAdmin: { $set: isAdmin }, test: { $set: test }, doc: { $set: doc } });
+    return update(ownProps, { testResult: { $set: testResult }, config: { $set: config }, testUserInfo: { $set: testUserInfo }, isAdmin: { $set: isAdmin }, test: { $set: test }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(Test); 

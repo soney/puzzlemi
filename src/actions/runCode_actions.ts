@@ -196,14 +196,30 @@ export function runSharedCode(index: number, sessionIndex: number) {
 };
 
 
-const runTest = (test, problem, user, dispatch) => {
+
+const initUserData = (id, testID, userID, doc) => {
+    const { userData } = doc.getData();
+    const data = userData[id];
+
+    if (!data.testData[testID]) {
+        const emptyData = { [userID]: { passedAll: false } };
+        doc.submitObjectInsertOp(['userData', id, 'testData', testID], emptyData);
+    } else if (!data.testData[testID][userID]) {
+        doc.submitObjectInsertOp(['userData', id, 'testData', testID, userID], { passedAll: false });
+    }
+}
+
+const updateUserData = (id, testID, userID, passedAll, doc) => {
+    doc.submitObjectReplaceOp(['userData', id, 'testData', testID, userID, 'passedAll'], passedAll);
+}
+
+const runTest = (test, problem, user, dispatch, doc) => {
     return new Promise(async (resolve, reject) => {
         if (!test.verified) {
             resolve(-1);
             return;
         }
         const { id, afterCode } = problem;
-        console.log(user)
         const solution = user.solutions[id];
         const { code } = solution;
         const testID = test.id;
@@ -261,6 +277,7 @@ const runTest = (test, problem, user, dispatch) => {
             userID,
             type: EventTypes.BEGIN_RUN_TEST
         });
+        initUserData(id, testID, userID, doc);
         let assertions: PMAssertion[] = [];
         assertions = test.output.map((t) => new PMAssertEqual(t.name, t.value, ''));
         testSuite.setBeforeTests(afterCode);
@@ -285,6 +302,7 @@ const runTest = (test, problem, user, dispatch) => {
                 userID,
                 type: EventTypes.DONE_RUNNING_TEST
             });
+            updateUserData(id, testID, userID, passedAll, doc);
             resolve(passedAll);
         };
         myPromise.then(onFinally, (err) => {
@@ -328,7 +346,7 @@ const runTest = (test, problem, user, dispatch) => {
 }
 
 
-const runTests = async (user, problem, dispatch) => {
+const runTests = async (user, problem, dispatch, doc) => {
     const { tests } = problem;
 
     dispatch({
@@ -337,7 +355,7 @@ const runTests = async (user, problem, dispatch) => {
         type: EventTypes.BEGIN_RUN_TESTS
     });
 
-    const status = await Promise.all(tests.map(test => runTest(test, problem, user, dispatch)));
+    const status = await Promise.all(tests.map(test => runTest(test, problem, user, dispatch, doc)));
     const passedAll = status.every((value) => value !== false);
 
     dispatch({
@@ -352,9 +370,6 @@ const runTests = async (user, problem, dispatch) => {
             userID: user.id,
             type: EventTypes.USER_COMPLETED_PROBLEM_TESTS
         })
-        // doc.getData();
-        // console.log(doc)
-
     } else {
         let keyTest: any = null;
         tests.forEach((test, i) => {
@@ -371,12 +386,11 @@ const runTests = async (user, problem, dispatch) => {
 }
 
 export function runUnitTests(index: number) {
-    console.log('run unit tests')
     return (dispatch: Dispatch, getState) => {
-        const { doc, user, problems } = getState();
-        console.log(doc.getData())
+        const { doc, user } = getState();
+        const { problems } = doc.getData();
         const problem = problems[index];
-        runTests(user, problem, dispatch);
+        runTests(user, problem, dispatch, doc);
     }
 }
 

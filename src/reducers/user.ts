@@ -139,8 +139,8 @@ export const user = (state: IUser = defaultUser, action: any) => {
         return update(state, {
             solutions: {
                 [id]: {
-                    testResults: {$set: {}},
-                    passedAllTests: {$set: -1},
+                    testResults: { $set: {} },
+                    passedAllTests: { $set: -1 },
                     defaultResult: { $set: defaultResult },
                     activeFailedTestID: { $set: '' },
                     // targetID: {$set: ''}
@@ -153,7 +153,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
             solutions: {
                 [id]: {
                     testResults: { $set: {} },
-                    defaultResult: {$set: defaultResult },
+                    defaultResult: { $set: defaultResult },
                     passedAllTests: { $set: -1 },
                     activeFailedTestID: { $set: '' }
                 }
@@ -239,7 +239,7 @@ export const user = (state: IUser = defaultUser, action: any) => {
                 }
             }
         })
-    } 
+    }
     else if (action.type === EventTypes.DONE_RUNNING_TESTS) {
         const { id, passedAll } = action;
         return update(state, {

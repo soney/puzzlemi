@@ -14,11 +14,11 @@ export interface ICodeChangeEvent {
 interface ICodeOutputEditorProps {
     options?: any;
     value?: string;
-    variables?:any;
+    variables?: any;
     onVariableChange?: any;
     flag?: any;
-    isEdit?:any;
-    failedTest?:any;
+    isEdit?: any;
+    failedTest?: any;
     // shareDBSubDoc?: SDBSubDoc<string>;
     onChange?: (e: ICodeChangeEvent) => void;
 };
@@ -55,8 +55,8 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         this.outputVariables = [];
 
         let staticText = "# expected variables";
-        this.props.variables.forEach(variable=>{
-            if(variable.type === "output") this.outputVariables.push(variable);
+        this.props.variables.forEach(variable => {
+            if (variable.type === "output") this.outputVariables.push(variable);
         })
 
         this.outputVariables.forEach(output => {
@@ -91,7 +91,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
             this.resetMarkers();
         }
         if (failedTest !== prevProps.failedTest) {
-            if(failedTest!==null){
+            if (failedTest !== null) {
                 this.resetFailed();
             }
             else {
@@ -103,7 +103,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
 
     private resetFailed(): void {
         this.outputVariables = this.props.failedTest.output;
-       
+
         // init static text
         let staticText = "# expected variables";
         this.outputVariables.forEach(output => {
@@ -118,7 +118,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
 
         const doc = this.codeMirror.getDoc();
         doc.markText({ line: 0, ch: 0 }, { line: 1, ch: 0 }, { readOnly: true });
-        
+
         // init editing markers
         this.VariableMarker = [];
         this.outputVariables.forEach((output, index) => {
@@ -133,7 +133,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
     private resetEditor(): void {
         // init output variables
         this.outputVariables = [];
-        this.props.variables.forEach(variable=>{
+        this.props.variables.forEach(variable => {
             if (variable.type === "output") this.outputVariables.push(variable);
         })
 
@@ -154,7 +154,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         // init readOnly markers
         const doc = this.codeMirror.getDoc();
         doc.markText({ line: 0, ch: 0 }, { line: 1, ch: 0 }, { readOnly: true });
-        
+
         // init editing markers
         this.VariableMarker = [];
         this.outputVariables.forEach((output, index) => {

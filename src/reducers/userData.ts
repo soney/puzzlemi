@@ -24,7 +24,6 @@ export const userData = (state: { [problemID: string]: IProblemUserInfo } = {}, 
         });
     } else if (action.type === EventTypes.BEGIN_RUN_CODE) {
         const { id, userID } = action;
-        console.log(state)
         let { completed_default } = state[id];
         const flag = completed_default.indexOf(userID);
         if (flag >= 0) completed_default.splice(flag, 1);
@@ -53,45 +52,35 @@ export const userData = (state: { [problemID: string]: IProblemUserInfo } = {}, 
                 completed_tests: { $splice: [[index, 0, userID]] }
             }
         });
-    // } else if (action.type === EventTypes.BEGIN_RUN_CODE) {
-    //     const { id } = action;
-    //     const testData = {};
-    //     if (!state[id]) {
-    //         testData[id] = {};
-    //     }
-    //     return update(state, {
-    //         [id]: {
-    //             testData: { $merge: testData }
-    //         }
-    //     });
-    } else if (action.type === EventTypes.BEGIN_RUN_TEST) {
-        console.log('begin run test')
-        const { id, testID, userID } = action;
-        let test = {};
-        if (!state[id].testData[testID]) {
-            test[testID] = {};
-            test[testID][userID] = { passedAll: false };
-        }
-        else if (!state[id].testData[testID][userID]) {
-            test = state[id].testData[testID];
-            test[userID] = { passedAll: false };
-        }
+    } else if (action.type === EventTypes.INIT_TEST_USER_DATA) {
+        const { problemID, testID, value } = action;
         return update(state, {
-            [id]: {
-                testData: { $merge: test }
+            [problemID]: {
+                testData: {
+                    [testID]: { $set: value }
+                }
             }
         })
-    } else if (action.type === EventTypes.DONE_RUNNING_TEST) {
-        console.log('done run test')
-
-        const { id, testID, passedAll, userID } = action;
+    } else if (action.type === EventTypes.UPDATE_TEST_USER_INFO_USER_DATA) {
+        const { problemID, testID, userID, value } = action;
         return update(state, {
-            [id]: {
+            [problemID]: {
                 testData: {
                     [testID]: {
                         [userID]: {
-                            passedAll: { $set: passedAll }
+                            passedAll: { $set: value }
                         }
+                    }
+                }
+            }
+        })
+    } else if (action.type === EventTypes.INIT_USER_USER_DATA) {
+        const { problemID, testID, userID, value } = action;
+        return update(state, {
+            [problemID]: {
+                testData: {
+                    [testID]: {
+                        [userID]: { $set: value }
                     }
                 }
             }

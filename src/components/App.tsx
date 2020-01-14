@@ -87,7 +87,7 @@ export interface ISolution {
         name: string
     }>,
     defaultResult: IResult,
-    passedAllTests: boolean|number,
+    passedAllTests: boolean | number,
     // targetID: string,
     testResults: {
         [testID: string]: IResult
@@ -98,7 +98,7 @@ export interface ISolution {
 export interface IResult {
     errors: string[],
     output: string,
-    passedAll: boolean|number,
+    passedAll: boolean | number,
     results: ITestMessage[],
 }
 
@@ -116,7 +116,7 @@ export interface IUserInfo {
 
 const DEBUG_MODE = window.location.host === 'localhost:3000';
 const emptyDoc = { problems: [], userData: {} };
-const PMApplication = ({dispatch }) => {
+const PMApplication = ({ dispatch }) => {
     const wsLocation = DEBUG_MODE ? `ws://localhost:8000` : `${window.location.protocol === 'http:' ? 'ws' : 'wss'}://${window.location.host}`;
     const puzzleName = DEBUG_MODE ? 'p' : window.location.pathname.slice(1);
 

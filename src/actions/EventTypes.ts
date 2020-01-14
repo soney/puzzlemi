@@ -48,9 +48,12 @@ enum EventTypes {
     BEGIN_RUN_SHARED_CODE = 'begin run shared code',
     DONE_RUNNING_SHARED_CODE = 'done running shared code',
     SHARED_ERROR_CHANGED = 'shared error changed',
-    SET_USER='set user',
+    SET_USER = 'set user',
     CHANGE_PROBLEM_CONFIG = 'change problem config',
     STANDARD_CODE_CHANGED = 'standard code change',
-    UPDATE_ACTIVE_FAILED_TEST_ID = 'update active failed test id'
+    UPDATE_ACTIVE_FAILED_TEST_ID = 'update active failed test id',
+    INIT_TEST_USER_DATA = 'init test in user data',
+    INIT_USER_USER_DATA = 'init user in user data',
+    UPDATE_TEST_USER_INFO_USER_DATA = 'update test user info in user data'
 };
 export default EventTypes;

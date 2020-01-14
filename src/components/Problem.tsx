@@ -56,7 +56,7 @@ const Problem = ({ id, visible, config, index, currentHelpSession, currentHelpSe
                         <TestTemplate index={index} />
                     </div>
                     <div className="col">
-                        <ConfigPanel index={index}/>
+                        <ConfigPanel index={index} />
                     </div>
                 </div>
                 <div className="row">
@@ -67,11 +67,11 @@ const Problem = ({ id, visible, config, index, currentHelpSession, currentHelpSe
                         <CodeEditor shareDBSubDoc={afterCodeSubDoc} />
                     </div>
                     <div className="col">
-                        {config.autoVerify && 
-                        <div>
-                        <h4>Standard Code:</h4>
-                        <CodeEditor shareDBSubDoc={standardCodeSubDoc} />
-                        </div>
+                        {config.autoVerify &&
+                            <div>
+                                <h4>Standard Code:</h4>
+                                <CodeEditor shareDBSubDoc={standardCodeSubDoc} />
+                            </div>
                         }
                     </div>
                 </div>
@@ -106,14 +106,14 @@ const Problem = ({ id, visible, config, index, currentHelpSession, currentHelpSe
                         </div>
                     </div>
                     {config.displayInstructor &&
-                    <div className="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                        <LiveCode index={index} />
-                    </div>
+                        <div className="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                            <LiveCode index={index} />
+                        </div>
                     }
                     {config.peerHelp &&
-                    <div className="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
-                    <PeerHelp index={index} />
-                    </div>
+                        <div className="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+                            <PeerHelp index={index} />
+                        </div>
                     }
                 </div>
             </div>
@@ -145,6 +145,6 @@ function mapStateToProps(state, ownProps) {
     const currentHelpSession = isRequestedHelp[0] || isOfferHelp[0];
     const currentHelpSessionIndex = helpSessions.indexOf(currentHelpSession);
     const { passedAll } = currentHelpSession ? currentHelpSession.solution : user.solutions[id];
-    return update(ownProps, { id: { $set: id }, config: {$set: config}, currentHelpSession: { $set: currentHelpSession }, currentHelpSessionIndex: { $set: currentHelpSessionIndex }, helpSessions: { $set: activeHelpSessions }, visible: { $set: visible }, numCompleted: { $set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex }, passedAll: { $set: passedAll }, isAdmin: { $set: isAdmin }, doc: { $set: doc } });
+    return update(ownProps, { id: { $set: id }, config: { $set: config }, currentHelpSession: { $set: currentHelpSession }, currentHelpSessionIndex: { $set: currentHelpSessionIndex }, helpSessions: { $set: activeHelpSessions }, visible: { $set: visible }, numCompleted: { $set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex }, passedAll: { $set: passedAll }, isAdmin: { $set: isAdmin }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(Problem);

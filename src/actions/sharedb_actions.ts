@@ -24,7 +24,7 @@ export function addProblem() {
             id: uuid(),
             variables: [],
             tests: [],
-            config:{
+            config: {
                 runTests: false,
                 addTests: false,
                 displayInstructor: false,
@@ -53,7 +53,7 @@ export function deleteProblem(index: number) {
     };
 }
 
-export function addTest(index: number, name: string, isAdmin: boolean) {
+export function newEmptyTest(index: number, name: string, isAdmin: boolean) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
         const p = ['problems', index, 'variables'];
@@ -160,8 +160,8 @@ export function setProblemVisibility(id: string, visible: boolean) {
     };
 }
 
-export function changeProblemConfig(index:string, item:string, status:boolean) {
-    return (dispatch:Dispatch, getState)=>{
+export function changeProblemConfig(index: string, item: string, status: boolean) {
+    return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
         const p = ['problems', index, 'config', item];
         doc.submitObjectReplaceOp(p, status);
@@ -240,6 +240,7 @@ function parseOpType(op, doc): string {
         case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'variables')): return EventTypes.VARIABLE_PART_CHANGED;
         case ((userDataRelPath) && (userDataRelPath.length === 1) && (oi !== undefined)): return EventTypes.PROBLEM_COMPLETION_INFO_FETCHED;
         case ((userDataRelPath) && (userDataRelPath.length === 2) && (userDataRelPath[1] === 'visible') && (oi !== undefined)): return EventTypes.PROBLEM_VISIBILITY_CHANGED;
+        case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'testData') && (oi !== undefined)): return EventTypes.INIT_TEST_USER_DATA;
         case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed_default') && (li !== undefined)): return EventTypes.USER_COMPLETED_PROBLEM_DEFAULT;
         case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed_tests') && (li !== undefined)): return EventTypes.USER_COMPLETED_PROBLEM_TESTS;
         // case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'tests')): return EventTypes.TEST_PART_CHANGED;
@@ -249,6 +250,8 @@ function parseOpType(op, doc): string {
         // case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed') && (li!==undefined)): return EventTypes.USER_COMPLETED_PROBLEM;
         case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'helpSessions') && (li !== undefined)): return EventTypes.ENABLE_HELP_SESSION;
         case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'helpSessions') && (ld !== undefined)): return EventTypes.DISABLE_HELP_SESSION;
+        case ((userDataRelPath) && (userDataRelPath.length === 4) && (userDataRelPath[1] === 'testData') && (oi !== undefined)): return EventTypes.INIT_USER_USER_DATA;
+        case ((userDataRelPath) && (userDataRelPath.length === 5) && (userDataRelPath[1] === 'testData') && (userDataRelPath[4] === 'passedAll') && (oi !== undefined) && (od !== undefined)): return EventTypes.UPDATE_TEST_USER_INFO_USER_DATA;
         case ((userDataRelPath) && (userDataRelPath.length === 5) && (userDataRelPath[1] === 'helpSessions') && (userDataRelPath[3] === 'tutorIDs') && (li !== undefined)): return EventTypes.JOIN_HELP_SESSION;
         case ((userDataRelPath) && (userDataRelPath.length === 5) && (userDataRelPath[1] === 'helpSessions') && (userDataRelPath[3] === 'tutorIDs') && (ld !== undefined)): return EventTypes.QUIT_HELP_SESSION;
         default:
@@ -307,7 +310,7 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                         case EventTypes.STANDARD_CODE_CHANGED:
                             index = problemRelPath[0] as number;
                             const newStandardCode = doc.traverse(['problems', index, 'standardCode']);
-                            dispatch({ index, type, code: newStandardCode});
+                            dispatch({ index, type, code: newStandardCode });
                             break;
                         case EventTypes.TEST_ADDED:
                             index = problemRelPath[0] as number;
@@ -397,12 +400,22 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                         case EventTypes.QUIT_HELP_SESSION:
                             dispatch({ type, problemID: userDataRelPath[0], sessionIndex: userDataRelPath[2], tutorIndex: userDataRelPath[4] });
                             break;
+                        case EventTypes.INIT_TEST_USER_DATA:
+                            dispatch({ type, problemID: userDataRelPath[0], testID: userDataRelPath[2], value: oi });
+                            break;
+                        case EventTypes.INIT_USER_USER_DATA:
+                            dispatch({ type, problemID: userDataRelPath[0], testID: userDataRelPath[2], userID: userDataRelPath[3], value: oi });
+                            break;
+                        case EventTypes.UPDATE_TEST_USER_INFO_USER_DATA:
+                            dispatch({ type, problemID: userDataRelPath[0], testID: userDataRelPath[2], userID: userDataRelPath[3], value: oi });
+                            break;
                         case EventTypes.CHANGE_PROBLEM_CONFIG:
                             index = problemRelPath[0] as number;
                             const config_item = problemRelPath[2];
                             const config_value = oi;
-                            dispatch({ type, index, config_item, config_value});
+                            dispatch({ type, index, config_item, config_value });
                             break;
+
                         default:
                             if (p.length === 0) { // full replacement
                                 dispatch(puzzlesFetched(doc.getData()));
