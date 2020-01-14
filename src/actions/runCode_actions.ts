@@ -29,7 +29,7 @@ if (Sk.externalLibraries) {
     };
 }
 
-export function runCode(index: number) {
+export function runCode(index: number, graphics) {
     return (dispatch: Dispatch, getState) => {
         const { user, problems } = getState();
         const problemInfo = problems[index];
@@ -97,8 +97,11 @@ export function runCode(index: number) {
         Sk.configure({
             filewriter: writef,
             output: outf,
-            read: readf
+            read: readf,
+            inputfunTakesPrompt: true
         });
+        (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = graphics;
+        console.log(graphics);
         const myPromise = Sk.misceval.asyncToPromise(() => {
             return Sk.importMainWithBody("<stdin>", false, `${code}\n${testSuite.getString()}`, true);
         });

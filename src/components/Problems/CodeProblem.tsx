@@ -9,8 +9,13 @@ import { runCode } from '../../actions/runCode_actions';
 import { setCode } from '../../actions/user_actions';
 
 const CodeProblem = ({ index, problem, code, output, dispatch, doc, isAdmin, errors }) => {
+    const graphicsRef = React.createRef<HTMLDivElement>();
     const doRunCode = () => {
-        return dispatch(runCode(index));
+        const graphicsEl = graphicsRef.current;
+        if(graphicsEl) {
+            graphicsEl.innerHTML = '';
+        }
+        return dispatch(runCode(index, graphicsEl));
     };
     const doSetCode = (ev) => {
         const { value } = ev;
@@ -47,6 +52,9 @@ const CodeProblem = ({ index, problem, code, output, dispatch, doc, isAdmin, err
                         {output}
                         {errors.join('\n')}
                     </pre>
+                }
+                {   !isAdmin && 
+                    <div ref={graphicsRef} className='graphics'></div>
                 }
                 <Files index={index} />
             </div>
