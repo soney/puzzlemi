@@ -256,6 +256,17 @@ export const user = (state: IUser = defaultUser, action: any) => {
         });
         updateStore(newState);
         return newState;
+    } else if(action.type === EventTypes.PROBLEM_PASSED_CHANGED) {
+        const { problemId, passedAll } = action;
+        const newState = update(state, {
+            solutions: {
+                [problemId]: {
+                    passedAll: { $set: passedAll }
+                }
+            }
+        });
+        updateStore(newState);
+        return newState;
     } else {
         return state;
     }

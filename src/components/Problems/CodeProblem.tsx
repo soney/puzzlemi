@@ -8,7 +8,7 @@ import Files from '../Files';
 import { runCode } from '../../actions/runCode_actions';
 import { setCode } from '../../actions/user_actions';
 
-const CodeProblem = ({ index, problem, code, output, dispatch, doc, isAdmin, errors, numCompleted, myCompletionIndex }) => {
+const CodeProblem = ({ index, problem, code, output, dispatch, doc, isAdmin, errors }) => {
     const doRunCode = () => {
         return dispatch(runCode(index));
     };
@@ -17,7 +17,6 @@ const CodeProblem = ({ index, problem, code, output, dispatch, doc, isAdmin, err
         return dispatch(setCode(index, value));
     };
 
-    const iHaveCompleted = myCompletionIndex >= 0;
     const p = ['problems', index];
     const givenCodeSubDoc = doc.subDoc([...p, 'problem', 'givenCode']);
     const afterCodeSubDoc = doc.subDoc([...p, 'problem', 'afterCode']);
@@ -57,14 +56,6 @@ const CodeProblem = ({ index, problem, code, output, dispatch, doc, isAdmin, err
                 <Tests index={index} />
             </div>
         </div>
-        <div className="row completion-info">
-            <div className="col">
-                {iHaveCompleted &&
-                    <span> You are #{myCompletionIndex+1} of </span>
-                }
-                {numCompleted} {numCompleted === 1 ? 'user' : 'users'}{iHaveCompleted && <span> that</span>} finished this problem.
-            </div>
-        </div>
     </>;
 }
 function mapStateToProps(state, ownProps) {
@@ -74,9 +65,6 @@ function mapStateToProps(state, ownProps) {
     const { isAdmin } = user;
     const { code, output, passedAll, errors } = user.solutions[id];
     // const visible = userData[id] && userData[id].visible;
-    const completed: string[] = userData[id] ? userData[id].completed : [];
-    const numCompleted = completed ? completed.length : 0;
-    const myCompletionIndex = completed ? completed.indexOf(user.id) : -1;
-    return update(ownProps, { id: {$set: id}, numCompleted: {$set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex}, passedAll: { $set: passedAll },  errors: { $set: errors }, output: { $set: output }, isAdmin: { $set: isAdmin }, code: { $set: code }, doc: { $set: doc }});
+    return update(ownProps, { id: {$set: id},  errors: { $set: errors }, output: { $set: output }, isAdmin: { $set: isAdmin }, code: { $set: code }, doc: { $set: doc }});
 }
 export default connect(mapStateToProps)(CodeProblem);

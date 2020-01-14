@@ -4,8 +4,10 @@ import update from 'immutability-helper';
 import { deleteProblem, setProblemVisibility } from '../../actions/sharedb_actions';
 import CodeProblem from './CodeProblem';
 import MultipleChoiceProblem from './MultipleChoiceProblem';
+import * as classNames from 'classnames';
 
-const Problem = ({ id, doc, visible, problem, index, dispatch, passedAll, isAdmin,}) => {
+const Problem = ({ id, doc, visible, problem, index, dispatch, passedAll, isAdmin, numCompleted, myCompletionIndex}) => {
+    const iHaveCompleted = myCompletionIndex >= 0;
     const doDeleteProblem = () => {
         return dispatch(deleteProblem(index));
     };
@@ -29,7 +31,7 @@ const Problem = ({ id, doc, visible, problem, index, dispatch, passedAll, isAdmi
     //     console.log(ev);
     // };
 
-    return <li className={'problem container' + (passedAll ? ' passedAll' : '')}>
+    return <li className={classNames({'problem': true, 'container': true, 'passedAll': passedAll})}>
         { isAdmin &&
             <div className="row">
                 <div className="col clearfix">
@@ -46,6 +48,14 @@ const Problem = ({ id, doc, visible, problem, index, dispatch, passedAll, isAdmi
             </div>
         }
         {problemDisplay}
+        <div className="row completion-info">
+            <div className="col">
+                {iHaveCompleted &&
+                    <span> You are #{myCompletionIndex+1} of </span>
+                }
+                {numCompleted} {numCompleted === 1 ? 'user' : 'users'}{iHaveCompleted && <span> that</span>} finished this problem.
+            </div>
+        </div>
     </li>;
 }
 function mapStateToProps(state, ownProps) {
@@ -53,12 +63,11 @@ function mapStateToProps(state, ownProps) {
     const problemInfo = ownProps.problem;
     const { id, problem } = problemInfo;
     const { isAdmin } = user;
-    const { code, output, passedAll, errors } = user.solutions[id];
+    const { passedAll } = user.solutions[id];
     const visible = userData[id] && userData[id].visible;
     const completed: string[] = userData[id] ? userData[id].completed : [];
     const numCompleted = completed ? completed.length : 0;
     const myCompletionIndex = completed ? completed.indexOf(user.id) : -1;
-
 
     let index: number = -1;
     for(let i: number = 0; i<problems.length; i++) {
@@ -68,6 +77,6 @@ function mapStateToProps(state, ownProps) {
         }
     }
 
-    return update(ownProps, { id: {$set: id}, index: {$set: index}, visible: {$set: visible}, numCompleted: {$set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex}, passedAll: { $set: passedAll },  errors: { $set: errors }, problem: { $set: problem }, output: { $set: output }, isAdmin: { $set: isAdmin }, code: { $set: code }, doc: { $set: doc }});
+    return update(ownProps, { id: {$set: id}, index: {$set: index}, visible: {$set: visible}, numCompleted: {$set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex}, passedAll: { $set: passedAll }, problem: { $set: problem }, isAdmin: { $set: isAdmin },doc: { $set: doc }});
 }
 export default connect(mapStateToProps)(Problem);

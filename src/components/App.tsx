@@ -26,6 +26,7 @@ export interface IProblem {
 
 
 export interface IMultipleChoiceOption {
+    id: string;
     description: string;
     optionType: 'fixed' | 'free-response';
     freeResponse?: string | null;

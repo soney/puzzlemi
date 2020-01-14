@@ -17,24 +17,6 @@ export const descriptionChanged = (index: number, description: string) => ({
 export const givenCodeChanged = (index: number, id: string, code: string) => ({
     code, id, index, type: EventTypes.GIVEN_CODE_CHANGED,
 });
-export const multipleChoiceOptionAdded = (index: number, optionIndex: number, option: IMultipleChoiceOption) => ({
-    index, option, optionIndex, type: EventTypes.OPTION_ADDED
-});
-export const multipleChoiceOptionDeleted = (index: number, optionIndex: number) => ({
-    index, optionIndex, type: EventTypes.OPTION_DELETED
-});
-export const multipleChoiceOptionDescriptionChanged = (index: number, optionIndex: number, description: string) => ({
-    index, optionIndex, description, type: EventTypes.OPTION_DESCRIPTION_CHANGED
-});
-export const multipleChoiceOptionCorrectChanged = (index: number, optionIndex: number, isCorrect: boolean) => ({
-    index, optionIndex, isCorrect, type: EventTypes.OPTION_CORRECTNESS_CHANGED
-});
-export const multipleChoiceSelectionTypeChanged = (index: number, selectionType: 'single'|'multiple', problemId: string) => ({
-    index, selectionType, problemId, type: EventTypes.MULTIPLE_CHOICE_SELECTION_TYPE_CHANGED
-});
-export const multipleChoiceRevealSolutionChanged = (index: number, revealSolution: boolean) => ({
-    index, revealSolution, type: EventTypes.MULTIPLE_CHOICE_REVEAL_SOLUTION_CHANGED
-});
 export const afterCodeChanged = (index: number, code: string) => ({
     code, index, type: EventTypes.AFTER_CODE_CHANGED,
 });
@@ -63,6 +45,100 @@ export const setDoc = (doc: SDBDoc<IPuzzleSet>) => ({
     doc, type: EventTypes.SET_DOC,
 });
 
+export function updateUserMultipleChoiceCorrectness(index, dispatch, getState) {
+    const state = getState();
+    const { doc, problems, user } = state;
+    const problemInfo = problems[index];
+    const { id, problem } = problemInfo;
+     
+    const userID = user.id;
+
+    const userSolution = state.user.solutions[id];
+    if(userSolution) {
+        let passedAll: boolean = true;
+        if(problem.revealSolution) {
+            const { selectedItems } = userSolution;
+            const { options } = problem;
+
+            options.forEach((option) => {
+                const { id, isCorrect } = option;
+                const userSelected = selectedItems.indexOf(id) >= 0;
+
+                if(userSelected !== isCorrect) {
+                    passedAll = false;
+                }
+            });
+
+            if(passedAll) {
+                const { userData } = doc.getData();
+                if(userData[id]) {
+                    if(userData[id].completed.indexOf(userID) < 0) {
+                        doc.submitListPushOp(['userData', id, 'completed'], userID);
+                    }
+                } else {
+                    doc.submitObjectInsertOp(['userData', id], {
+                        completed: [userID],
+                        visible: true
+                    });
+                }
+            }
+        } else {
+            passedAll = false;
+        }
+        dispatch({
+            index, problemId: id, passedAll, type: EventTypes.PROBLEM_PASSED_CHANGED
+        });
+    }
+}
+
+export function multipleChoiceOptionAdded(index: number, optionIndex: number, option: IMultipleChoiceOption) {
+    return (dispatch: Dispatch, getState) => {
+        dispatch({
+            index, option, optionIndex, type: EventTypes.OPTION_ADDED
+        });
+        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
+    };
+}
+export function multipleChoiceOptionDeleted(index: number, optionIndex: number) {
+    return (dispatch: Dispatch, getState) => {
+        dispatch({
+            index, optionIndex, type: EventTypes.OPTION_DELETED
+        });
+        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
+    };
+}
+export function multipleChoiceOptionDescriptionChanged(index: number, optionIndex: number, description: string) {
+    return (dispatch: Dispatch, getState) => {
+        dispatch({
+            index, optionIndex, description, type: EventTypes.OPTION_DESCRIPTION_CHANGED
+        });
+        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
+    };
+}
+export function multipleChoiceOptionCorrectChanged(index: number, optionIndex: number, isCorrect: boolean) {
+    return (dispatch: Dispatch, getState) => {
+        dispatch({
+            index, optionIndex, isCorrect, type: EventTypes.OPTION_CORRECTNESS_CHANGED
+        });
+        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
+    };
+}
+export function multipleChoiceSelectionTypeChanged(index: number, selectionType: 'single'|'multiple', problemId: string) {
+    return (dispatch: Dispatch, getState) => {
+        dispatch({
+            index, selectionType, problemId, type: EventTypes.MULTIPLE_CHOICE_SELECTION_TYPE_CHANGED
+        });
+        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
+    };
+}
+export function multipleChoiceRevealSolutionChanged(index: number, revealSolution: boolean) {
+    return (dispatch: Dispatch, getState) => {
+        dispatch({
+            index, revealSolution, type: EventTypes.MULTIPLE_CHOICE_REVEAL_SOLUTION_CHANGED
+        });
+        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
+    };
+}
 export function addMultipleChoiceOption(index: number, optionType:'fixed'|'free-response'='fixed') {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
@@ -275,9 +351,9 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             } else if(item === 'options') {
                                 const optionIndex = problemRelPath[3] as number;
                                 if(li) {
-                                    dispatch(multipleChoiceOptionAdded(index, optionIndex, li));
+                                    multipleChoiceOptionAdded(index, optionIndex, li)(dispatch, getState);
                                 } else if(ld) {
-                                    dispatch(multipleChoiceOptionDeleted(index, optionIndex));
+                                    multipleChoiceOptionDeleted(index, optionIndex)(dispatch, getState);
                                 }
                             }
                         } else if(problemRelPath.length === 5) {
@@ -288,7 +364,7 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                                 const optionIndex = problemRelPath[3] as number;
                                 const { oi } = op as ObjectInsertOp;
                                 if(problemRelPath[4] === 'isCorrect') {
-                                    dispatch(multipleChoiceOptionCorrectChanged(index, optionIndex, oi));
+                                    multipleChoiceOptionCorrectChanged(index, optionIndex, oi)(dispatch, getState);
                                 }
                             }
                         } else if(problemRelPath.length === 6) {
@@ -317,16 +393,16 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                                 const optionP = ['problems', index, 'problem', item, optionIndex]
                                 const value = doc.traverse([...optionP, 'description']);
 
-                                dispatch(multipleChoiceOptionDescriptionChanged(index, optionIndex, value));
+                                multipleChoiceOptionDescriptionChanged(index, optionIndex, value)(dispatch, getState);
                             }
                         } else if(problemRelPath.length === 3) {
                             const index = problemRelPath[0] as number;
                             const { oi } = op as ObjectInsertOp;
                             if(problemRelPath[2] === 'selectionType') {
                                 const problemId = doc.traverse(['problems', index, 'id']);
-                                dispatch(multipleChoiceSelectionTypeChanged(index, oi, problemId));
+                                multipleChoiceSelectionTypeChanged(index, oi, problemId)(dispatch, getState);
                             } else if(problemRelPath[2] === 'revealSolution') {
-                                dispatch(multipleChoiceRevealSolutionChanged(index, oi));
+                                multipleChoiceRevealSolutionChanged(index, oi)(dispatch, getState);
                             }
                         }
                     } else if(userDataRelPath && userDataRelPath.length >= 1) {

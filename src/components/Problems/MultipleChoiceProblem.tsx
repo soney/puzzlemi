@@ -7,6 +7,7 @@ import { setUserSelectedOptions } from '../../actions/user_actions';
 import * as showdown from 'showdown';
 import { addMultipleChoiceOption, deleteMultipleChoiceOption, setMultipleChoiceSelectionEnabled, setRevealSolution, setMultipleChoiceOptionCorrect } from '../../actions/sharedb_actions';
 import { IMultipleChoiceSolution } from '../../reducers/user';
+import * as classNames from 'classnames';
 
 const MultipleChoiceProblem = ({ index, selectedItems, problem, dispatch, doc, isAdmin }) => {
     const doAddOption = () => {
@@ -24,6 +25,15 @@ const MultipleChoiceProblem = ({ index, selectedItems, problem, dispatch, doc, i
     }
     const { selectionType } = problem;
     let optionItems: JSX.Element[];
+    let allCorrect: boolean = true;
+    problem.options.forEach((option) => {
+        const { id, isCorrect } = option;
+        const userSelected = selectedItems.indexOf(id) >= 0;
+
+        if(userSelected !== isCorrect) {
+            allCorrect = false;
+        }
+    })
     if(isAdmin) {
         optionItems = problem.options.map((option, i) => {
             const doDeleteOption = () => {
@@ -35,7 +45,7 @@ const MultipleChoiceProblem = ({ index, selectedItems, problem, dispatch, doc, i
                 dispatch(setMultipleChoiceOptionCorrect(index, i, checked));
             }
             const optionSubDoc = doc.subDoc(['problems', index, 'problem', 'options', i, 'description']);
-            return <tr key={i}>
+            return <tr key={`${option.id}`}>
                 <td><label><input type="checkbox" checked={option.isCorrect} onChange={doChangeOptionCorrectness} /> Correct</label></td>
                 <td>
                     <CodeEditor shareDBSubDoc={optionSubDoc} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}} />
@@ -51,28 +61,37 @@ const MultipleChoiceProblem = ({ index, selectedItems, problem, dispatch, doc, i
             const onSelectionChange = (event) => {
                 const { target } = event;
                 if(selectionType === 'single') {
-                    dispatch(setUserSelectedOptions(index, [i]));
+                    dispatch(setUserSelectedOptions(index, [option.id]));
                 } else {
                     const { checked } = target;
-                    const selectedIndex = selectedItems.indexOf(i);
+                    const selectedIndex = selectedItems.indexOf(option.id);
                     if(selectedIndex >= 0 && !checked) {
                         dispatch(setUserSelectedOptions(index, update(selectedItems, { $splice: [[ selectedIndex, 1]] })));
                     } else if( selectedIndex < 0 && checked) {
-                        dispatch(setUserSelectedOptions(index, update(selectedItems, { $push: [i] })));
+                        dispatch(setUserSelectedOptions(index, update(selectedItems, { $push: [option.id] })));
                     }
                 }
             }
+
+            const userCorrect = option.isCorrect === (selectedItems.indexOf(option.id)>=0);
             const optionDescription = { __html: converter.makeHtml(option.description) };
-            return <tr className={problem.revealSolution ? ("answer-revealed alert " + ((option.isCorrect === (selectedItems.indexOf(i)>=0)) ? "alert-success" : "alert-danger")) : ""} key={i}>
+
+            return <tr className={classNames({ 'alert-danger': problem.revealSolution && !userCorrect })} key={`${option.id}`}>
                 <td colSpan={3}>
-                    <label><input type={selectionType === 'single' ? 'radio' : 'checkbox'} key={i} name={index} value={i} checked={selectedItems.indexOf(i) >= 0} onChange={onSelectionChange} /> <span className='multiple-choice-option' dangerouslySetInnerHTML={optionDescription} /></label>
+                    <label><input disabled={problem.revealSolution} type={selectionType === 'single' ? 'radio' : 'checkbox'} key={i} name={index} value={i} checked={selectedItems.indexOf(option.id) >= 0} onChange={onSelectionChange} /> <span className='multiple-choice-option' dangerouslySetInnerHTML={optionDescription} /></label>
                 </td>
             </tr>;
         });
     }
 
     return <>
-        <div className="row">
+        <div className={classNames({
+            row: true,
+            'multiple-choice': true,
+            'answer-revealed': problem.revealSolution,
+            isCorrect: problem.revealSolution && allCorrect,
+            isIncorrect: problem.revealSolution && !allCorrect
+        })}>
             <div className="col">
                 <ProblemDescription index={index} />
             </div>
@@ -80,7 +99,7 @@ const MultipleChoiceProblem = ({ index, selectedItems, problem, dispatch, doc, i
                 isAdmin &&
                 <div className="col">
                     <label><input type='checkbox' checked={problem.selectionType==='multiple'} onChange={doChangeMultipleChoiceSelectionType} /> Multiple item selection</label>
-                    <label><input type='checkbox' checked={problem.revealSolution} onChange={doChangeRevealSolution} /> Reveal Solution</label>
+                    <label><input type='checkbox' checked={problem.revealSolution} onChange={doChangeRevealSolution} /> Reveal Solution (and block further edits)</label>
                 </div>
             }
             <table className="table multiple-choice-table">

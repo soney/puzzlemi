@@ -42,6 +42,19 @@
         padding: 40px;
         color: #AAA;
     }
+    .multiple-choice {
+        &.isCorrect {
+        }
+        &.isIncorrect {
+        }
+        &:not(.answer-revealed) {
+            tr {
+                label:hover {
+                    background-color: #F9F9F9;
+                }
+            }
+        }
+    }
     .multiple-choice-table {
         border-top: 1px solid #EEE;
         tr {
@@ -53,11 +66,6 @@
                     padding: 5px;
                     display: block;
                 }
-            }
-        }
-        tr:not(.answer-revealed) {
-            label:hover {
-                background-color: #F9F9F9;
             }
         }
         .multiple-choice-option {

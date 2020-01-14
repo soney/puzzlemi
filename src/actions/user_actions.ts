@@ -1,6 +1,7 @@
 import EventTypes from "./EventTypes";
 import { Dispatch } from "redux";
 import { IUserInfo } from "../components/App";
+import { updateUserMultipleChoiceCorrectness } from "./sharedb_actions";
 
 export const setIsAdmin = (isAdmin: boolean) => ({
     isAdmin, type: EventTypes.SET_IS_ADMIN,
@@ -21,6 +22,7 @@ export function setUserSelectedOptions(index: number, selectedItems: number[]) {
             selectedItems,
             type: EventTypes.MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED
         });
+        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
     };
 }
 
