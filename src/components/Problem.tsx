@@ -136,7 +136,7 @@ function mapStateToProps(state, ownProps) {
     const uid = user.id;
     const helpSessions = userData[id] && userData[id].helpSessions;
     const visible = userData[id] && userData[id].visible;
-    const completed: string[] = userData[id] ? userData[id].completed : [];
+    const completed: string[] = userData[id] ? userData[id].completed_default : [];
     const numCompleted = completed ? completed.length : 0;
     const myCompletionIndex = completed ? completed.indexOf(user.id) : -1;
     const activeHelpSessions = helpSessions.filter(session => session.status);

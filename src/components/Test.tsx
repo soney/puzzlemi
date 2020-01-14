@@ -41,7 +41,7 @@ const Test = ({ testResult, dispatch, config, index, testUserInfo, testIndex, te
     const author_name = test.author;
     if (isInput) {
         return <tr>
-            <th scope="row">{testIndex}</th>
+            <th scope="row">{test.id.slice(-4)}</th>
             {isAdmin && <td>{author_name}</td>}
             <td>{isAdmin
                 ? (test.verified
@@ -94,6 +94,7 @@ function mapStateToProps(state, ownProps) {
     const problem = problems[index];
     const test = problem.tests[testIndex];
     const testUserInfo = userData[problem.id].testData[test.id];
+    console.log(testUserInfo)
     const userSolution = user.solutions[problem.id];
     const testResult = userSolution.testResults[test.id];
     const config = problem.config;

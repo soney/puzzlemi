@@ -203,6 +203,7 @@ const runTest = (test, problem, user, dispatch) => {
             return;
         }
         const { id, afterCode } = problem;
+        console.log(user)
         const solution = user.solutions[id];
         const { code } = solution;
         const testID = test.id;
@@ -222,8 +223,13 @@ const runTest = (test, problem, user, dispatch) => {
             if (!testSuite.currentlyRunning()) {
                 outputs.push(outValue);
                 output = outputs.join('');
+                dispatch({
+                    id,
+                    testID,
+                    output,
+                    type: EventTypes.TESTS_OUTPUT_CHANGED
+                });
             }
-            console.log(output);
         };
 
         const readf = (fname: string): string => {
@@ -310,12 +316,13 @@ const runTest = (test, problem, user, dispatch) => {
                 errString = err.toString();
             }
             console.log(errString);
-            // dispatch({
-            //     errors: [errString],
-            //     id,
-            //     type: EventTypes.ERROR_CHANGED
-            // });
-            // onFinally();
+            dispatch({
+                errors: [errString],
+                id,
+                testID,
+                type: EventTypes.TESTS_ERROR_CHANGED
+            });
+            onFinally();
         });
     })
 }
@@ -327,7 +334,7 @@ const runTests = async (user, problem, dispatch) => {
     dispatch({
         id: problem.id,
         userID: user.id,
-        type: EventTypes.BEGIN_RUN_CODE
+        type: EventTypes.BEGIN_RUN_TESTS
     });
 
     const status = await Promise.all(tests.map(test => runTest(test, problem, user, dispatch)));
@@ -336,21 +343,24 @@ const runTests = async (user, problem, dispatch) => {
     dispatch({
         id: problem.id,
         passedAll,
-        type: EventTypes.DONE_RUNNING_CODE
+        type: EventTypes.DONE_RUNNING_TESTS
     })
 
     if (passedAll) {
         dispatch({
             id: problem.id,
             userID: user.id,
-            type: EventTypes.USER_COMPLETED_PROBLEM
+            type: EventTypes.USER_COMPLETED_PROBLEM_TESTS
         })
+        // doc.getData();
+        // console.log(doc)
+
     } else {
-        let keyTest:any = null;
-        tests.forEach((test, i)=>{
-            if(status[i]===false && keyTest === null) keyTest = test;
+        let keyTest: any = null;
+        tests.forEach((test, i) => {
+            if (status[i] === false && keyTest === null) keyTest = test;
         })
-        if(keyTest!==null){
+        if (keyTest !== null) {
             dispatch({
                 problemID: problem.id,
                 testID: keyTest.id,
@@ -363,7 +373,8 @@ const runTests = async (user, problem, dispatch) => {
 export function runUnitTests(index: number) {
     console.log('run unit tests')
     return (dispatch: Dispatch, getState) => {
-        const { user, problems } = getState();
+        const { doc, user, problems } = getState();
+        console.log(doc.getData())
         const problem = problems[index];
         runTests(user, problem, dispatch);
     }
@@ -378,8 +389,8 @@ export function runVerifyTest(index: number, testID) {
         const solution = user.solutions[id];
         let testIndex = 0;
         let test;
-        tests.forEach((t, i)=>{
-            if(t.id === testID) {
+        tests.forEach((t, i) => {
+            if (t.id === testID) {
                 test = t;
                 testIndex = i;
             }
@@ -571,21 +582,13 @@ export function runCode(index: number) {
             testSuite.onAfterRanTests();
             const testSuiteResults = testSuite.getTestResults();
             const { passedAll, results } = testSuiteResults;
-            // const problemTests = getState().problems[index].tests;
-            // console.log(problemTests)
-            // const testResults = {};
-            // results.forEach((result, i) => {
-            //     const test = problemTests[i];
-            //     console.log(test)
-            //     const testId = test.id;
-            //     testResults[testId] = result;
-            // });
             dispatch({
                 hasError: true,
                 id,
-                defaultPass: passedAll,
+                passedAll,
                 results,
-                type: EventTypes.DONE_RUNNING_DEFAULT
+                userID,
+                type: EventTypes.DONE_RUNNING_CODE
             });
             if (passedAll) {
                 const currentState = getState();
@@ -593,17 +596,17 @@ export function runCode(index: number) {
                 const doc: SDBDoc<IPuzzleSet> = currentState.doc;
                 const { userData } = doc.getData();
                 if (userData[id]) {
-                    if (userData[id].completed.indexOf(userID) < 0) {
+                    if (userData[id].completed_default.indexOf(userID) < 0) {
                         dispatch({
                             id: problem.id,
                             userID,
-                            type: EventTypes.USER_COMPLETED_PROBLEM
+                            type: EventTypes.USER_COMPLETED_PROBLEM_DEFAULT
                         })
                         //doc.submitListPushOp(['userData', id, 'completed'], userID);
                     }
                 } else {
                     doc.submitObjectInsertOp(['userData', id], {
-                        completed: [userID],
+                        completed_default: [userID],
                         visible: true,
                         testData: {}
                     });

@@ -1,4 +1,4 @@
-import { IPuzzleSet, IProblem, IHelpSession } from '../components/App';
+import { IPuzzleSet, IProblem, IHelpSession, IProblemUserInfo } from '../components/App';
 import { SDBDoc } from 'sdb-ts';
 import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
@@ -33,12 +33,15 @@ export function addProblem() {
             }
         };
 
-        doc.submitObjectInsertOp(['userData', newProblem.id], {
-            completed: [],
+        const newUserData: IProblemUserInfo = {
+            completed_default: [],
+            completed_tests: [],
             visible: true,
             testData: {},
             helpSessions: [],
-        });
+        }
+
+        doc.submitObjectInsertOp(['userData', newProblem.id], newUserData);
         doc.submitListPushOp(['problems'], newProblem);
     };
 }
@@ -237,7 +240,8 @@ function parseOpType(op, doc): string {
         case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'variables')): return EventTypes.VARIABLE_PART_CHANGED;
         case ((userDataRelPath) && (userDataRelPath.length === 1) && (oi !== undefined)): return EventTypes.PROBLEM_COMPLETION_INFO_FETCHED;
         case ((userDataRelPath) && (userDataRelPath.length === 2) && (userDataRelPath[1] === 'visible') && (oi !== undefined)): return EventTypes.PROBLEM_VISIBILITY_CHANGED;
-        case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed') && (li !== undefined)): return EventTypes.USER_COMPLETED_PROBLEM;
+        case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed_default') && (li !== undefined)): return EventTypes.USER_COMPLETED_PROBLEM_DEFAULT;
+        case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed_tests') && (li !== undefined)): return EventTypes.USER_COMPLETED_PROBLEM_TESTS;
         // case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'tests')): return EventTypes.TEST_PART_CHANGED;
         // case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'files')): return EventTypes.FILE_PART_CHANGED;
         // case ((userDataRelPath) && (userDataRelPath.length === 1) && (oi!==undefined)): return EventTypes.PROBLEM_COMPLETION_INFO_FETCHED;
@@ -359,7 +363,10 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                         case EventTypes.PROBLEM_VISIBILITY_CHANGED:
                             dispatch({ type, problemID: userDataRelPath[0], visible: oi as boolean });
                             break;
-                        case EventTypes.USER_COMPLETED_PROBLEM:
+                        case EventTypes.USER_COMPLETED_PROBLEM_DEFAULT:
+                            dispatch({ type, problemID: userDataRelPath[0], index: userDataRelPath[2], userID: li });
+                            break;
+                        case EventTypes.USER_COMPLETED_PROBLEM_TESTS:
                             dispatch({ type, problemID: userDataRelPath[0], index: userDataRelPath[2], userID: li });
                             break;
                         case EventTypes.VARIABLE_ADDED:

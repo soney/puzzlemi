@@ -2,7 +2,7 @@ import EventTypes from '../actions/EventTypes';
 import store from 'storejs';
 import update from 'immutability-helper';
 import uuid from '../utils/uuid';
-import { IUser, ISolution } from '../components/App';
+import { IUser, ISolution, IResult } from '../components/App';
 
 const defaultID = uuid();
 
@@ -20,6 +20,12 @@ const defaultUser: IUser = store.get('user') || {
     solutions: {},
 };
 
+const defaultResult: IResult = {
+    errors: [],
+    output: '',
+    passedAll: -1,
+    results: [],
+}
 
 function updateStore(u: IUser): void {
     store.set('user', u);
@@ -35,13 +41,11 @@ export const user = (state: IUser = defaultUser, action: any) => {
             if (!state.solutions || !state.solutions[id]) {
                 const newSolution: ISolution = {
                     code: givenCode,
-                    errors: [],
                     modified: false,
                     files: [],
-                    output: '',
-                    passedAll: false,
                     testResults: {},
-                    defaultPass: -1,
+                    defaultResult: defaultResult,
+                    passedAllTests: -1,
                     activeFailedTestID: ''
                 }
                 solutions[id] = newSolution;
@@ -58,15 +62,12 @@ export const user = (state: IUser = defaultUser, action: any) => {
                 [id]: {
                     $set: {
                         code: problem.givenCode,
-                        errors: [],
-                        files: [],
                         modified: false,
-                        output: '',
-                        passedAll: false,
-                        defaultPass: -1,
+                        files: [],
                         testResults: {},
-                        activeFailedTestID: '',
-                        // targetID: ''
+                        defaultResult: defaultResult,
+                        passedAllTests: -1,
+                        activeFailedTestID: ''
                     }
                 }
             }
@@ -99,10 +100,25 @@ export const user = (state: IUser = defaultUser, action: any) => {
         return update(state, {
             solutions: {
                 [id]: {
-                    output: { $set: output }
+                    defaultResult: {
+                        output: { $set: output }
+                    }
                 }
             }
         });
+    } else if (action.type === EventTypes.TESTS_OUTPUT_CHANGED) {
+        const { id, output, testID } = action;
+        return update(state, {
+            solutions: {
+                [id]: {
+                    testResults: {
+                        [testID]: {
+                            output: { $set: output }
+                        }
+                    }
+                }
+            }
+        })
     } else if (action.type === EventTypes.CODE_CHANGED) {
         const { id, code, modified } = action;
         const newState = update(state, {
@@ -110,10 +126,12 @@ export const user = (state: IUser = defaultUser, action: any) => {
                 [id]: {
                     code: { $set: code },
                     modified: { $set: modified },
-                    passedAll: { $set: false }
+                    defaultResult: { $set: defaultResult },
+                    testResults: { $set: {} },
+                    passedAllTests: { $set: -1 },
                 }
             }
-        });
+        })
         updateStore(newState);
         return newState;
     } else if (action.type === EventTypes.BEGIN_RUN_CODE) {
@@ -121,20 +139,32 @@ export const user = (state: IUser = defaultUser, action: any) => {
         return update(state, {
             solutions: {
                 [id]: {
-                    errors: { $set: [] },
-                    output: { $set: '' },
-                    passedAll: { $set: false },
-                    testResults: { $set: {} },
+                    testResults: {$set: {}},
+                    passedAllTests: {$set: -1},
+                    defaultResult: { $set: defaultResult },
+                    activeFailedTestID: { $set: '' },
                     // targetID: {$set: ''}
                 }
             }
         });
+    } else if (action.type === EventTypes.BEGIN_RUN_TESTS) {
+        const { id } = action;
+        return update(state, {
+            solutions: {
+                [id]: {
+                    testResults: { $set: {} },
+                    defaultResult: {$set: defaultResult },
+                    passedAllTests: { $set: -1 },
+                    activeFailedTestID: { $set: '' }
+                }
+            }
+        })
     } else if (action.type === EventTypes.BEGIN_RUN_TEST) {
         const { id, testID } = action;
         let testResults = {};
 
         if (!state.solutions[id].testResults[testID]) {
-            testResults[testID] = { passedAll: false, results: [] };
+            testResults[testID] = defaultResult;
         }
         return update(state, {
             solutions: {
@@ -190,36 +220,32 @@ export const user = (state: IUser = defaultUser, action: any) => {
         return update(state, {
             solutions: {
                 [id]: {
-                    errors: { $set: errors }
+                    defaultResult: {
+                        errors: { $set: errors }
+                    }
                 }
             }
         });
-    } else if (action.type === EventTypes.DONE_RUNNING_CODE) {
+    } else if (action.type === EventTypes.TESTS_ERROR_CHANGED) {
+        const { id, testID, errors } = action;
+        return update(state, {
+            solutions: {
+                [id]: {
+                    testResults: {
+                        [testID]: {
+                            errors: { $set: errors }
+                        }
+                    }
+                }
+            }
+        })
+    } 
+    else if (action.type === EventTypes.DONE_RUNNING_TESTS) {
         const { id, passedAll } = action;
         return update(state, {
             solutions: {
                 [id]: {
-                    passedAll: { $set: passedAll }
-                }
-            }
-        });
-    } else if (action.type === EventTypes.DONE_RUNNING_DEFAULT) {
-        const { id, defaultPass } = action;
-        return update(state, {
-            solutions: {
-                [id]: {
-                    defaultPass: { $set: defaultPass },
-                    testResults: { $set: {} },
-                    passedAll: { $set: false }
-                }
-            }
-        })
-    } else if (action.type === EventTypes.TEST_ADDED || action.type === EventTypes.TEST_PART_CHANGED || action.type === EventTypes.TEST_DELETED) {
-        const { id } = action;
-        return update(state, {
-            solutions: {
-                [id]: {
-                    passedAll: { $set: false }
+                    passedAllTests: { $set: passedAll }
                 }
             }
         });
@@ -237,21 +263,34 @@ export const user = (state: IUser = defaultUser, action: any) => {
                 }
             }
         })
-        // } else if(action.type === EventTypes.CHANGE_TARGET_ID){
-        //     const {problemID, id} = action;
-        //     return update(state, {
-        //         solutions: {
-        //             [problemID]: {
-        //                 targetID: {$set: id}
-        //             }    
-        //         }
-        //     })
+    } else if (action.type === EventTypes.DONE_RUNNING_CODE) {
+        const { id, passedAll, results } = action;
+        return update(state, {
+            solutions: {
+                [id]: {
+                    defaultResult: {
+                        passedAll: { $set: passedAll },
+                        results: { $set: results },
+                    }
+                }
+            }
+        })
+    } else if (action.type === EventTypes.TEST_ADDED || action.type === EventTypes.TEST_PART_CHANGED || action.type === EventTypes.TEST_DELETED) {
+        const { id } = action;
+        return update(state, {
+            solutions: {
+                [id]: {
+                    passedAllTests: { $set: -1 },
+                    testResults: { $set: {} },
+                }
+            }
+        });
     } else if (action.type === EventTypes.UPDATE_ACTIVE_FAILED_TEST_ID) {
         const { problemID, testID } = action;
         return update(state, {
             solutions: {
                 [problemID]: {
-                    activeFailedTestID: {$set: testID}
+                    activeFailedTestID: { $set: testID }
                 }
             }
         });

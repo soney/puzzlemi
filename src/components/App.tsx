@@ -15,6 +15,13 @@ export interface IPuzzleSet {
     };
 }
 
+export interface IUser {
+    isAdmin: boolean;
+    id: string;
+    userInfo: IUserInfo;
+    solutions: { [problemID: string]: ISolution }
+}
+
 export interface IHelpSession {
     status: boolean;
     tuteeID: string;
@@ -23,7 +30,8 @@ export interface IHelpSession {
 }
 
 export interface IProblemUserInfo {
-    completed: string[];
+    completed_default: string[];
+    completed_tests: string[];
     visible: boolean;
     testData: {
         [testID: string]: {
@@ -74,32 +82,27 @@ export interface IVariable {
 export interface ISolution {
     modified: boolean,
     code: string,
-    errors: string[],
     files: Array<{
         contents: string,
         name: string
     }>,
-    output: string,
-    passedAll: boolean,
-    defaultPass: boolean|number,
-    activeFailedTestID: string,
+    defaultResult: IResult,
+    passedAllTests: boolean|number,
     // targetID: string,
     testResults: {
-        [testID: string]: {
-            passedAll: boolean,
-            results: IOutput[];
-        }
+        [testID: string]: IResult
     }
+    activeFailedTestID: string,
 }
 
-export interface IUser {
-    isAdmin: boolean;
-    id: string;
-    userInfo: IUserInfo;
-    solutions: { [problemID: string]: ISolution }
+export interface IResult {
+    errors: string[],
+    output: string,
+    passedAll: boolean|number,
+    results: ITestMessage[],
 }
 
-export interface IOutput {
+export interface ITestMessage {
     passed: boolean;
     message: string;
 }

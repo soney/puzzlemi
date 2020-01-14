@@ -1,11 +1,10 @@
 import * as React from 'react';
-import TestResult from './TestResult';
+import Result from './Result';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
-import {updateActiveFailedTestID} from '../actions/user_actions';
-// import { changeTargetID } from '../actions/user_actions';
+import { updateActiveFailedTestID } from '../actions/user_actions';
 
-const TestResults = ({ activeFailedTestID, defaultPass, problem, testResults, passedAll, dispatch, index, doc }) => {
+const TestResults = ({ activeFailedTestID, failedTestResult, passedAllTests, problem, testResults, dispatch, index, doc }) => {
     const total_num = Object.keys(testResults).length;
     let pass_num = 0;
     let failed_tests: any[] = [];
@@ -31,49 +30,31 @@ const TestResults = ({ activeFailedTestID, defaultPass, problem, testResults, pa
     }
 
     return <div>
-        {(defaultPass === true && (total_num === 0)) &&
-            <div className="alert alert-success" role="alert">
-                You passed the default test!
-            </div>
-        }
-        {(defaultPass === false && (total_num === 0)) &&
-            <div className="alert alert-danger" role="alert">
-                You didn't pass the default test!
-            </div>
-        }
-        {(passedAll && (total_num !== 0)) &&
+        {(passedAllTests === true) &&
             <div className="alert alert-success" role="alert">
                 You passed all the tests!
             </div>
         }
-        {(!passedAll && (failed_tests.length !== 0)) &&
+        {(passedAllTests === false) &&
+            <div className="alert alert-danger" role="alert">
+                You failed {total_num - pass_num} of {total_num} tests.
+            </div>
+        }
+        {(failedTestResult !== undefined) &&
             <div>
-                <div className="alert alert-danger" role="alert">
-                    You failed {total_num - pass_num} of {total_num} tests.
-                </div>
-                <TestResult index={index} />
-                
+                <Result result={failedTestResult} tag="test" id={activeFailedTestID} />
                 <nav aria-label="Page navigation example">
                     <ul className="pagination">
-                        {/* <li className="page-item">
-                            <div className="page-link" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </div>
-                        </li> */}
                         {failed_tests.map((test, i) =>
-                             <li className={test.id === activeFailedTestID?"page-item active":"page-item"} key={i}>
-                            <div className="page-link" data-value={i} onClick={onSwitchPage}>{i+1}</div>
+                            <li className={test.id === activeFailedTestID ? "page-item active" : "page-item"} key={i}>
+                                <div className="page-link" data-value={i} onClick={onSwitchPage}>{i + 1}</div>
                             </li>
                         )}
-                        {/* <li className="page-item">
-                            <div className="page-link" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </div>
-                        </li> */}
                     </ul>
                 </nav>
             </div>
         }
+
     </div>
 }
 function mapStateToProps(state, ownProps) {
@@ -81,10 +62,8 @@ function mapStateToProps(state, ownProps) {
     const { user, problems, doc } = state;
     const problem = problems[index];
     const userSolution = user.solutions[problem.id];
-    const testResults = userSolution.testResults;
-    const passedAll = userSolution.passedAll;
-    const defaultPass = userSolution.defaultPass;
-    const activeFailedTestID = userSolution.activeFailedTestID;
-    return update(ownProps, { activeFailedTestID: { $set: activeFailedTestID }, defaultPass: { $set: defaultPass }, testResults: { $set: testResults }, problem: { $set: problem }, passedAll: { $set: passedAll }, doc: { $set: doc } });
+    const { passedAllTests, activeFailedTestID, testResults } = userSolution;
+    const failedTestResult = testResults[activeFailedTestID];
+    return update(ownProps, { activeFailedTestID: { $set: activeFailedTestID }, failedTestResult: { $set: failedTestResult }, passedAllTests: { $set: passedAllTests }, testResults: { $set: testResults }, problem: { $set: problem }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(TestResults); 

@@ -25,9 +25,6 @@ const Tests = ({ index, inputTests, inputVariables, outputVariables,verifiedTest
                             <th scope="col">#</th>
                             <th scope="col" data-field="name">
                                 <div>Name</div>
-                                {/* <div className="filter-control">
-                                    <input type="text" className="form-control bootstrap-table-filter-control-name" />
-                                </div> */}
                             </th>
                             <th scope="col">Status</th>
                             <th scope="col">Progress</th>
@@ -41,12 +38,6 @@ const Tests = ({ index, inputTests, inputVariables, outputVariables,verifiedTest
                     </tbody>
                 </table>
                 }
-                {/* <div className="accordion" id="testlist">
-            {inputTests && inputTests.length
-            ? inputTests.map(({test, i})=> <Test key={test.id+`${i}`} index={index} testIndex={i} isInput={true} totalNum={inputTests.length}/>)
-            : <div className='no-tests'>(no tests)</div>                
-            }
-            </div>     */}
                 <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button>
             </div>
         }
@@ -69,13 +60,6 @@ const Tests = ({ index, inputTests, inputVariables, outputVariables,verifiedTest
                         {myTests.map(({ test, i }) => <Test key={test.id + `${i}`} index={index} testIndex={i} isInput={true} totalNum={inputTests.length} />)}
                     </tbody>
                 </table>
-                {/* <div className="accordion" id="testlist">
-        {myTests && myTests.length
-        ? myTests.map(({test, i})=> <Test key={test.id+`${i}`} index={index} testIndex={i} isInput={true} totalNum={myTests.length}/>)
-        : <div className='no-tests'>(no tests)</div>                
-        }
-        </div>     */}
-                {/* <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button> */}
             </div>
         }
     </div>
