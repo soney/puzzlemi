@@ -5,6 +5,7 @@ import * as React from "react";
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/python/python';
 import 'codemirror/mode/markdown/markdown';
+import 'codemirror/addon/display/autorefresh';
 import { SDBSubDoc } from 'sdb-ts';
 import ShareDBCodeMirrorBinding from '../utils/ShareDBCodeMirrorBinding';
 
@@ -15,6 +16,7 @@ export interface ICodeChangeEvent {
 interface ICodeEditorProps {
     options?: any;
     value?: string;
+    flag?: any;
     shareDBSubDoc?: SDBSubDoc<string>;
     onChange?: (e: ICodeChangeEvent) => void;
 };
@@ -34,7 +36,8 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
             viewportMargin: 50,
             width: null,
             onChangeCallback: null,
-            readOnly: false
+            readOnly: false,
+            autoRefresh:true,
         },
         value: ''
     };
@@ -50,7 +53,7 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
     };
 
     public componentDidUpdate(prevProps: ICodeEditorProps): void {
-        const { value, shareDBSubDoc } = this.props;
+        const { value, shareDBSubDoc, flag } = this.props;
         if (shareDBSubDoc !== prevProps.shareDBSubDoc) {
             if (prevProps.shareDBSubDoc === undefined)
                 this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
@@ -62,6 +65,13 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
             // if(value !== this.codeMirror.getValue()) {
             //     this.codeMirror.setValue(value as string);
             // }
+        }
+        if (flag !== prevProps.flag) {
+            // need a better way to fix the refresh problem
+            let that = this;
+            setTimeout(function(){
+                that.codeMirror.refresh();
+            }, 500)
         }
     };
 

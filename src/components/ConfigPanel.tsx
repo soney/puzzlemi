@@ -8,7 +8,7 @@ const ConfigPanel = ({ dispatch, index, config }) => {
         dispatch(changeProblemConfig(index, e.target.id, e.target.checked));
     }
     return <div className="config-panel">
-        <h4>Config</h4>
+        <h4>Config:</h4>
         <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id="runTests" onClick={onSwitch} defaultChecked={config.runTests} />
             <label className="custom-control-label" htmlFor="runTests">Run All Test</label>

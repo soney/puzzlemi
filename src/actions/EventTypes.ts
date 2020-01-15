@@ -1,6 +1,7 @@
 enum EventTypes {
     RUN_CODE = 'run code',
     DESCRIPTION_CHANGED = 'description changed',
+    NOTES_CHANGED = 'notes changed',
     GIVEN_CODE_CHANGED = 'given code changed',
     AFTER_CODE_CHANGED = 'after code changed',
     PROBLEM_ADDED = 'problem added',

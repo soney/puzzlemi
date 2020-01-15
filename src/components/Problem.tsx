@@ -1,6 +1,8 @@
 import * as React from 'react';
+import { useState } from 'react';
 import { connect } from "react-redux";
 import ProblemDescription from './ProblemDescription';
+import ProblemNotes from './ProblemNotes';
 import update from 'immutability-helper';
 import { CodeEditor } from './CodeEditor';
 import Tests from './Tests';
@@ -21,6 +23,12 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
     const doShowProblem = () => {
         dispatch(setProblemVisibility(id, true));
     }
+    const [count, setCount] = useState(0);
+
+    const refreshLiveCoding = () => {
+        setCount(count + 1);
+        console.log('refreshLiveCoding');
+    }
 
     const iHaveCompleted = myCompletionIndex >= 0;
     const p = ['problems', index];
@@ -28,7 +36,7 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
     const afterCodeSubDoc = doc.subDoc([...p, 'afterCode']);
     const standardCodeSubDoc = doc.subDoc([...p, 'standardCode']);
 
-    return <li className={'problem container' + (passedAll===true ? ' passedAll' : '')}>
+    return <li className={'problem container' + (passedAll === true ? ' passedAll' : '')}>
         {isAdmin &&
             <div className="row">
                 <div className="col clearfix">
@@ -67,12 +75,9 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                         <CodeEditor shareDBSubDoc={afterCodeSubDoc} />
                     </div>
                     <div className="col">
-                        {config.autoVerify &&
-                            <div>
-                                <h4>Standard Code:</h4>
-                                <CodeEditor shareDBSubDoc={standardCodeSubDoc} />
-                            </div>
-                        }
+                        <ProblemNotes index={index} />
+                        <h4>Standard Code:</h4>
+                        <CodeEditor shareDBSubDoc={standardCodeSubDoc} />
                     </div>
                 </div>
                 <div className="row">
@@ -89,7 +94,7 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                     <div className="nav nav-tabs" id="nav-tab" role="tablist">
                         <a className="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">My Solution</a>
                         {config.displayInstructor &&
-                            <a className="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Instructor</a>
+                            <a className="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false" onClick={refreshLiveCoding}>Instructor</a>
                         }
                         {config.peerHelp &&
                             <a className="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false">Peers</a>
@@ -107,7 +112,7 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                     </div>
                     {config.displayInstructor &&
                         <div className="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                            <LiveCode index={index} />
+                            <LiveCode index={index} flag={count}/>
                         </div>
                     }
                     {config.peerHelp &&
@@ -135,13 +140,13 @@ function mapStateToProps(state, ownProps) {
     const { isAdmin } = user;
     const visible = userData[id] && userData[id].visible;
     let completed_string = [];
-    if(userData[id]) {
-        completed_string = config.runTests? userData[id].completed_tests : userData[id].completed_default;
+    if (userData[id]) {
+        completed_string = config.runTests ? userData[id].completed_tests : userData[id].completed_default;
     }
     const completed: string[] = completed_string;
     const numCompleted = completed ? completed.length : 0;
     const myCompletionIndex = completed ? completed.indexOf(user.id) : -1;
-    const passedAll = config.runTests? user.solutions[id].passedAllTests : user.solutions[id].defaultResult.passedAll;
+    const passedAll = config.runTests ? user.solutions[id].passedAllTests : user.solutions[id].defaultResult.passedAll;
     return update(ownProps, { id: { $set: id }, config: { $set: config }, visible: { $set: visible }, numCompleted: { $set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex }, passedAll: { $set: passedAll }, isAdmin: { $set: isAdmin }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(Problem);
