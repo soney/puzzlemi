@@ -294,6 +294,20 @@ export const user = (state: IUser = defaultUser, action: any) => {
                 }
             }
         });
+    } else if (action.type === EventTypes.CHANGE_PROBLEM_CONFIG && action.config_item === "runTests") {
+        const { problemID } = action;
+        const newState = update(state, {
+            solutions: {
+                [problemID]: {
+                    passedAllTests: {$set: -1},
+                    defaultResult: {
+                        passedAll: {$set: -1}
+                    }
+                }
+            }
+        })
+        updateStore(newState);
+        return newState
     }
     else {
         return state;

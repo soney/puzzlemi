@@ -33,22 +33,22 @@ export const userData = (state: { [problemID: string]: IProblemUserInfo } = {}, 
             }
         })
     } else if (action.type === EventTypes.USER_COMPLETED_PROBLEM_DEFAULT) {
-        const { id, userID } = action;
-        let { completed_default } = state[id];
+        const { problemID, userID } = action;
+        let { completed_default } = state[problemID];
         const flag = completed_default.indexOf(userID);
         const index = flag >= 0 ? completed_default.length : completed_default.length - 1;
         return update(state, {
-            [id]: {
+            [problemID]: {
                 completed_default: { $splice: [[index, 0, userID]] }
             }
         });
     } else if (action.type === EventTypes.USER_COMPLETED_PROBLEM_TESTS) {
-        const { id, userID } = action;
-        let { completed_tests } = state[id];
+        const { problemID, userID } = action;
+        let { completed_tests } = state[problemID];
         const flag = completed_tests.indexOf(userID);
         const index = flag >= 0 ? completed_tests.length : completed_tests.length - 1;
         return update(state, {
-            [id]: {
+            [problemID]: {
                 completed_tests: { $splice: [[index, 0, userID]] }
             }
         });
@@ -123,6 +123,14 @@ export const userData = (state: { [problemID: string]: IProblemUserInfo } = {}, 
                         tutorIDs: { $splice: [[tutorIndex, 1]] }
                     }
                 }
+            }
+        })
+    } else if (action.type === EventTypes.CHANGE_PROBLEM_CONFIG && action.config_item === "runTests") {
+        const {problemID} = action;
+        return update(state, {
+            [problemID]: {
+                completed_default: {$set: []},
+                completed_tests: {$set: []},
             }
         })
         // } else if(action.type === EventTypes.SHARED_OUTPUT_CHANGED) {

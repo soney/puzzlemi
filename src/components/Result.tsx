@@ -4,8 +4,6 @@ import update from 'immutability-helper';
 
 const Result = ({ result, tag, id, failedTest }) => {
     const failed_results = result.results.filter(i => i.passed === false);
-    console.log(failed_results)
-    console.log(result)
     const messages = failed_results.map(i => i.message);
     return <div>
         {(tag === "default") &&
@@ -45,10 +43,6 @@ const Result = ({ result, tag, id, failedTest }) => {
                             <div>Expected Variables</div>
                             {failedTest.output.map((variable, i) =>
                                 <div key={i}>
-                                    {/* {variable.name} = {variable.value}
-                            {result.results[i].passed
-                            ?<span className="result-badge result-success">&#10004;</span>
-                            :<span className="result-badge result-fail">&#x2718;</span>} */}
                                     {result.results[i] && result.results[i].passed
                                         ? <div className="result-success">{variable.name} = {variable.value}</div>
                                         : <div className="result-fail">{variable.name} = {variable.value}</div>

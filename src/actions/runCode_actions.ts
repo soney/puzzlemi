@@ -346,12 +346,13 @@ const runTest = (test, problem, user, dispatch, doc) => {
 }
 
 
-const runTests = async (user, problem, dispatch, doc) => {
-    const { tests } = problem;
+const runTests = async (user, problem, dispatch, doc, getState) => {
+    const { tests, id } = problem;
+    const userID  = user.id;
 
     dispatch({
-        id: problem.id,
-        userID: user.id,
+        id,
+        userID,
         type: EventTypes.BEGIN_RUN_TESTS
     });
 
@@ -365,11 +366,12 @@ const runTests = async (user, problem, dispatch, doc) => {
     })
 
     if (passedAll) {
-        dispatch({
-            id: problem.id,
-            userID: user.id,
-            type: EventTypes.USER_COMPLETED_PROBLEM_TESTS
-        })
+        const currentState = getState();
+        const currentDoc = currentState.doc;
+        const { userData } = currentDoc.getData();
+        if (userData[id].completed_tests.indexOf(userID) < 0) {
+            doc.submitListPushOp(['userData', id, 'completed_tests'], userID);
+        }
     } else {
         let keyTest: any = null;
         tests.forEach((test, i) => {
@@ -390,7 +392,7 @@ export function runUnitTests(index: number) {
         const { doc, user } = getState();
         const { problems } = doc.getData();
         const problem = problems[index];
-        runTests(user, problem, dispatch, doc);
+        runTests(user, problem, dispatch, doc, getState);
     }
 }
 
@@ -608,15 +610,10 @@ export function runCode(index: number) {
                 const currentState = getState();
                 const userID = currentState.user.id;
                 const doc: SDBDoc<IPuzzleSet> = currentState.doc;
-                const { userData } = doc.getData();
+                const {userData} = currentState;
                 if (userData[id]) {
                     if (userData[id].completed_default.indexOf(userID) < 0) {
-                        dispatch({
-                            id: problem.id,
-                            userID,
-                            type: EventTypes.USER_COMPLETED_PROBLEM_DEFAULT
-                        })
-                        //doc.submitListPushOp(['userData', id, 'completed'], userID);
+                        doc.submitListPushOp(['userData', id, 'completed_default'], userID);
                     }
                 } else {
                     doc.submitObjectInsertOp(['userData', id], {

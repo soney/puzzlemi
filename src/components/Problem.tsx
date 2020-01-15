@@ -11,7 +11,7 @@ import PeerHelp from './PeerHelp';
 import ConfigPanel from './ConfigPanel';
 import { deleteProblem, setProblemVisibility } from '../actions/sharedb_actions';
 
-const Problem = ({ id, visible, config, index, currentHelpSession, currentHelpSessionIndex, dispatch, helpSessions, doc, passedAll, isAdmin, numCompleted, myCompletionIndex }) => {
+const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin, numCompleted, myCompletionIndex }) => {
     const doDeleteProblem = () => {
         return dispatch(deleteProblem(index));
     };
@@ -28,7 +28,7 @@ const Problem = ({ id, visible, config, index, currentHelpSession, currentHelpSe
     const afterCodeSubDoc = doc.subDoc([...p, 'afterCode']);
     const standardCodeSubDoc = doc.subDoc([...p, 'standardCode']);
 
-    return <li className={'problem container' + (passedAll ? ' passedAll' : '')}>
+    return <li className={'problem container' + (passedAll===true ? ' passedAll' : '')}>
         {isAdmin &&
             <div className="row">
                 <div className="col clearfix">
@@ -133,18 +133,15 @@ function mapStateToProps(state, ownProps) {
     const { user, doc, problems, userData } = state;
     const { id, config } = problems[index];
     const { isAdmin } = user;
-    const uid = user.id;
-    const helpSessions = userData[id] && userData[id].helpSessions;
     const visible = userData[id] && userData[id].visible;
-    const completed: string[] = userData[id] ? userData[id].completed_default : [];
+    let completed_string = [];
+    if(userData[id]) {
+        completed_string = config.runTests? userData[id].completed_tests : userData[id].completed_default;
+    }
+    const completed: string[] = completed_string;
     const numCompleted = completed ? completed.length : 0;
     const myCompletionIndex = completed ? completed.indexOf(user.id) : -1;
-    const activeHelpSessions = helpSessions.filter(session => session.status);
-    const isRequestedHelp = activeHelpSessions.filter(session => session.tuteeID === uid);
-    const isOfferHelp = activeHelpSessions.filter(session => session.tutorIDs.includes(uid));
-    const currentHelpSession = isRequestedHelp[0] || isOfferHelp[0];
-    const currentHelpSessionIndex = helpSessions.indexOf(currentHelpSession);
-    const { passedAll } = currentHelpSession ? currentHelpSession.solution : user.solutions[id];
-    return update(ownProps, { id: { $set: id }, config: { $set: config }, currentHelpSession: { $set: currentHelpSession }, currentHelpSessionIndex: { $set: currentHelpSessionIndex }, helpSessions: { $set: activeHelpSessions }, visible: { $set: visible }, numCompleted: { $set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex }, passedAll: { $set: passedAll }, isAdmin: { $set: isAdmin }, doc: { $set: doc } });
+    const passedAll = config.runTests? user.solutions[id].passedAllTests : user.solutions[id].defaultResult.passedAll;
+    return update(ownProps, { id: { $set: id }, config: { $set: config }, visible: { $set: visible }, numCompleted: { $set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex }, passedAll: { $set: passedAll }, isAdmin: { $set: isAdmin }, doc: { $set: doc } });
 }
 export default connect(mapStateToProps)(Problem);

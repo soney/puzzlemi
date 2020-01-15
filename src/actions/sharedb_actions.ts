@@ -414,9 +414,10 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             break;
                         case EventTypes.CHANGE_PROBLEM_CONFIG:
                             index = problemRelPath[0] as number;
+                            id = doc.traverse(['problems', index, 'id']);
                             const config_item = problemRelPath[2];
                             const config_value = oi;
-                            dispatch({ type, index, config_item, config_value });
+                            dispatch({ type, index, problemID: id, config_item, config_value });
                             break;
 
                         default:
