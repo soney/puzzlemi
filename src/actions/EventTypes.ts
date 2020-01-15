@@ -7,6 +7,7 @@ enum EventTypes {
     TEST_ADDED = 'test added',
     TEST_DELETED = 'test deleted',
     TEST_PART_CHANGED = 'test part changed',
+    TEST_VALUE_CHANGED = 'test value changed',
     FILE_ADDED = 'file added',
     FILE_PART_CHANGED = 'file part changed',
     FILE_DELETED = 'file deleted',

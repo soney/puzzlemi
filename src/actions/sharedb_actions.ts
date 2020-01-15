@@ -238,6 +238,7 @@ function parseOpType(op, doc): string {
         case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'tests')): return EventTypes.TEST_PART_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'files')): return EventTypes.FILE_PART_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'variables')): return EventTypes.VARIABLE_PART_CHANGED;
+        case ((problemRelPath) && (problemRelPath.length === 7) && (problemRelPath[1] === 'tests') && (problemRelPath[5] === 'value')): return EventTypes.TEST_VALUE_CHANGED;
         case ((userDataRelPath) && (userDataRelPath.length === 1) && (oi !== undefined)): return EventTypes.PROBLEM_COMPLETION_INFO_FETCHED;
         case ((userDataRelPath) && (userDataRelPath.length === 2) && (userDataRelPath[1] === 'visible') && (oi !== undefined)): return EventTypes.PROBLEM_VISIBILITY_CHANGED;
         case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'testData') && (oi !== undefined)): return EventTypes.INIT_TEST_USER_DATA;
@@ -342,17 +343,19 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             id = doc.traverse(['problems', index, 'id']);
                             dispatch({ index, type, testIndex, id, partType, partValue });
                             break;
-                        // id = doc.traverse(['problems', index, 'id']);
-                        // const testPartType = problemRelPath[3] as 'actual'|'expected'|'description';
-                        // const newTestPart = doc.traverse(['problems', index, 'tests', testIndex, testPartType]);
-                        // dispatch({ index, type, testIndex, id, part: testPartType, value: newTestPart })
-
+                        case EventTypes.TEST_VALUE_CHANGED:
+                            index = problemRelPath[0] as number;
+                            testIndex = problemRelPath[2] as number;
+                            let variableType = problemRelPath[3];
+                            variableIndex = problemRelPath[4];
+                            let variableValue = doc.traverse(['problems', index, 'tests', testIndex, variableType, variableIndex, 'value']);
+                            dispatch({ index, type, testIndex, variableType, variableIndex, variableValue });
+                            break;
                         case EventTypes.TEST_STATUS_CHANGED:
                             index = problemRelPath[0] as number;
                             testIndex = problemRelPath[2] as number;
                             dispatch({ index, type, testIndex, value: oi });
                             break;
-
                         case EventTypes.FILE_PART_CHANGED:
                             index = problemRelPath[0] as number;
                             fileIndex = problemRelPath[2] as number;

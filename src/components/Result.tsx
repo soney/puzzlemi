@@ -2,8 +2,10 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 
-const Result = ({ result, tag, id }) => {
+const Result = ({ result, tag, id, failedTest }) => {
     const failed_results = result.results.filter(i => i.passed === false);
+    console.log(failed_results)
+    console.log(result)
     const messages = failed_results.map(i => i.message);
     return <div>
         {(tag === "default") &&
@@ -18,7 +20,8 @@ const Result = ({ result, tag, id }) => {
                         <pre className={'codeOutput' + ((result.errors.length > 0 || messages.length > 0) ? ' alert alert-danger' : ' no-error')}>
                             {result.output}
                             {result.errors.join('\n')}
-                            {messages.join('\n')}
+                            {messages.length > 0 ? "You failed the default test." : ""}
+                            {/* {messages.join('\n')} */}
                         </pre>
                     </div>
                 }
@@ -26,19 +29,41 @@ const Result = ({ result, tag, id }) => {
         }
         {(tag === "test") &&
             <div >
-                <h5 >
+                {/* <h5 >
                     Test #{id.slice(-4)}
-                </h5>
-                <div >
-                    {(result.output || result.errors.length > 0 || messages.length > 0) &&
-                        <div>
-                            <pre className={'codeOutput' + ((result.errors.length > 0 || messages.length > 0) ? ' alert alert-danger' : ' no-error')}>
-                                {result.output}
-                                {result.errors.join('\n')}
-                                {messages.join('\n')}
-                            </pre>
-                        </div>
-                    }
+                </h5> */}
+                <div className="card">
+                    <h5 className="card-header">
+                        Test #{id.slice(-4)}
+                    </h5>
+                    <ul className="list-group list-group-flush">
+                        <li className="list-group-item">
+                            <div>Given Variables</div>
+                            {failedTest.input.map((variable, i) => <div key={i}>{variable.name} = {variable.value}</div>)}
+                        </li>
+                        <li className="list-group-item">
+                            <div>Expected Variables</div>
+                            {failedTest.output.map((variable, i) =>
+                                <div key={i}>
+                                    {/* {variable.name} = {variable.value}
+                            {result.results[i].passed
+                            ?<span className="result-badge result-success">&#10004;</span>
+                            :<span className="result-badge result-fail">&#x2718;</span>} */}
+                                    {result.results[i] && result.results[i].passed
+                                        ? <div className="result-success">{variable.name} = {variable.value}</div>
+                                        : <div className="result-fail">{variable.name} = {variable.value}</div>
+                                    }
+                                </div>)}
+                        </li>
+                        {(result.output || result.errors.length > 0) &&
+                            <li className="list-group-item">
+                                <pre className={'codeOutput' + (result.errors.length > 0 ? ' alert alert-danger' : ' no-error')}>
+                                    {result.output}
+                                    {result.errors.join('\n')}
+                                </pre>
+                            </li>
+                        }
+                    </ul>
                 </div>
             </div>
         }

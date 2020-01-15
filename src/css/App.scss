@@ -150,6 +150,15 @@
 .progress {
     background-color: #909090
 }
+.result-badge {
+    margin-left: 10px;
+}
+.result-success {
+    color: green
+}
+.result-fail {
+    color: #ca0000;
+}
 
 .testResult {
     margin-top: 10px;

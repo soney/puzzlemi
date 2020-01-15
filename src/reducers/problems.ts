@@ -62,6 +62,21 @@ export const problems = (state: IProblem[] = [], action: any) => {
                 }
             }
         });
+    } else if (action.type === EventTypes.TEST_VALUE_CHANGED) {
+        const { index, testIndex, variableType, variableIndex, variableValue } = action;
+        return update(state, {
+            [index]: {
+                tests: {
+                    [testIndex]: {
+                        [variableType]: {
+                            [variableIndex]: {
+                                value: { $set: variableValue }
+                            }
+                        }
+                    }
+                }
+            }
+        })
     } else if (action.type === EventTypes.TEST_STATUS_CHANGED) {
         const { index, testIndex, value } = action;
         return update(state, {
