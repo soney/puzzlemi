@@ -3,15 +3,16 @@ import { connect } from "react-redux";
 import ProblemDescription from './ProblemDescription';
 import update from 'immutability-helper';
 import { CodeEditor } from './CodeEditor';
+import SketchOverlay from './SketchOverlay';
 import Tests from './Tests';
 import TestTemplate from './TestTemplate';
 import MySolution from './MySolution';
 import LiveCode from './LiveCode';
 import PeerHelp from './PeerHelp';
 import ConfigPanel from './ConfigPanel';
-import { deleteProblem, setProblemVisibility } from '../actions/sharedb_actions';
+import { deleteProblem, setProblemVisibility, setEditGivenCode } from '../actions/sharedb_actions';
 
-const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin, numCompleted, myCompletionIndex }) => {
+const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin, numCompleted, myCompletionIndex, editgivencode }) => {
     const doDeleteProblem = () => {
         return dispatch(deleteProblem(index));
     };
@@ -22,11 +23,22 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
         dispatch(setProblemVisibility(id, true));
     }
 
+    const doEditGivenCode = () => {
+        console.log('dd')
+        return dispatch(setEditGivenCode(index, true));
+    }
+
+    const doSketchGivenCode = () => {
+        console.log('sketch')
+        return dispatch(setEditGivenCode(index, false));
+    }
+
     const iHaveCompleted = myCompletionIndex >= 0;
     const p = ['problems', index];
     const givenCodeSubDoc = doc.subDoc([...p, 'givenCode']);
     const afterCodeSubDoc = doc.subDoc([...p, 'afterCode']);
     const standardCodeSubDoc = doc.subDoc([...p, 'standardCode']);
+    const whiteboardCodeSubDoc = doc.subDoc([...p, 'whiteboardCode']);
 
     return <li className={'problem container' + (passedAll===true ? ' passedAll' : '')}>
         {isAdmin &&
@@ -62,11 +74,26 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                 <div className="row">
                     <div className="col">
                         <h4>Given Code:</h4>
+                        
                         <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
                         <h4>Run After:</h4>
                         <CodeEditor shareDBSubDoc={afterCodeSubDoc} />
                     </div>
                     <div className="col">
+                        <h4>Whiteboard</h4>
+                        <CodeEditor shareDBSubDoc={whiteboardCodeSubDoc} options={{mode:'markdown'}}/>
+                        <SketchOverlay index={index} isAdmin={isAdmin} editgivencode={editgivencode} dispatch={dispatch}/>
+                        <div>
+                            <div className="btn-group btn-group-toggle" data-toggle="buttons">
+                                <label className={"btn btn-sm " + (editgivencode ? "btn-primary" : "btn-outline-primary")} onClick={doEditGivenCode}>
+                                    <input type="radio" name="editgivencode" id="editcode"/> Edit Text
+                                </label>
+                                <label className={"btn btn-sm " + (!editgivencode ? "btn-secondary" : "btn-outline-secondary")} onClick={doSketchGivenCode}>
+                                    <input type="radio" name="editgivencode" id="drawsketch"  /> Draw Sketch
+                                </label>
+                            </div>
+                            
+                        </div>
                         {config.autoVerify &&
                             <div>
                                 <h4>Standard Code:</h4>
@@ -134,6 +161,8 @@ function mapStateToProps(state, ownProps) {
     const { id, config } = problems[index];
     const { isAdmin } = user;
     const visible = userData[id] && userData[id].visible;
+    const editgivencode = problems[index].editgivencode;
+    console.log(editgivencode)
     let completed_string = [];
     if(userData[id]) {
         completed_string = config.runTests? userData[id].completed_tests : userData[id].completed_default;
@@ -142,6 +171,6 @@ function mapStateToProps(state, ownProps) {
     const numCompleted = completed ? completed.length : 0;
     const myCompletionIndex = completed ? completed.indexOf(user.id) : -1;
     const passedAll = config.runTests? user.solutions[id].passedAllTests : user.solutions[id].defaultResult.passedAll;
-    return update(ownProps, { id: { $set: id }, config: { $set: config }, visible: { $set: visible }, numCompleted: { $set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex }, passedAll: { $set: passedAll }, isAdmin: { $set: isAdmin }, doc: { $set: doc } });
+    return update(ownProps, { id: { $set: id }, config: { $set: config }, visible: { $set: visible }, numCompleted: { $set: numCompleted }, myCompletionIndex: { $set: myCompletionIndex }, passedAll: { $set: passedAll }, isAdmin: { $set: isAdmin }, doc: { $set: doc }, editgivencode: { $set:editgivencode } });
 }
 export default connect(mapStateToProps)(Problem);

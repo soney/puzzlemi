@@ -25,6 +25,7 @@ export const problems = (state: IProblem[] = [], action: any) => {
         });
     } else if (action.type === EventTypes.GIVEN_CODE_CHANGED) {
         const { index, code } = action;
+        console.log(index)
         return update(state, {
             [index]: {
                 givenCode: { $set: code }
@@ -154,6 +155,20 @@ export const problems = (state: IProblem[] = [], action: any) => {
                     [config_item]: { $set: config_value }
                 }
             }
+        });
+    } else if (action.type === EventTypes.PROBLEM_EDIT_GIVEN_CODE_CHANGED) {
+        const { index, editgivencode } = action;
+        return update(state, { 
+            [index]: {
+                editgivencode: { $set: editgivencode}
+            } 
+        });
+    } else if (action.type === EventTypes.PROBLEM_UPDATE_SKETCH) {
+        const { index, dots } = action;
+        return update(state, { 
+            [index]: {
+                sketch: { $set: dots}
+            } 
         });
     } else {
         return state;

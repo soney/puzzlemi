@@ -21,6 +21,7 @@ export function addProblem() {
             files: [],
             givenCode: `# code here`,
             standardCode: `# standard solution`,
+            whiteboardCode: `# Whiteboard for Instructor`,
             id: uuid(),
             variables: [],
             tests: [],
@@ -30,7 +31,9 @@ export function addProblem() {
                 displayInstructor: false,
                 peerHelp: false,
                 autoVerify: false
-            }
+            },
+            editgivencode: true,
+            sketch: [],
         };
 
         const newUserData: IProblemUserInfo = {
@@ -160,6 +163,22 @@ export function setProblemVisibility(id: string, visible: boolean) {
     };
 }
 
+export function setEditGivenCode(index: string, editgivencode: boolean) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        doc.submitObjectReplaceOp(['problems', index, 'editgivencode'], editgivencode);
+
+    };
+}
+export function updateSketch(index: string, sketch: any[]) {
+
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        doc.submitObjectReplaceOp(['problems', index, 'sketch'], sketch);
+
+    };
+}
+
 export function changeProblemConfig(index: string, item: string, status: boolean) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
@@ -255,6 +274,8 @@ function parseOpType(op, doc): string {
         case ((userDataRelPath) && (userDataRelPath.length === 5) && (userDataRelPath[1] === 'testData') && (userDataRelPath[4] === 'passedAll') && (oi !== undefined) && (od !== undefined)): return EventTypes.UPDATE_TEST_USER_INFO_USER_DATA;
         case ((userDataRelPath) && (userDataRelPath.length === 5) && (userDataRelPath[1] === 'helpSessions') && (userDataRelPath[3] === 'tutorIDs') && (li !== undefined)): return EventTypes.JOIN_HELP_SESSION;
         case ((userDataRelPath) && (userDataRelPath.length === 5) && (userDataRelPath[1] === 'helpSessions') && (userDataRelPath[3] === 'tutorIDs') && (ld !== undefined)): return EventTypes.QUIT_HELP_SESSION;
+        case ((problemRelPath) && (problemRelPath.length === 2) && (problemRelPath[1] === 'editgivencode') && (oi !== undefined)): return EventTypes.PROBLEM_EDIT_GIVEN_CODE_CHANGED;
+        case ((problemRelPath) && (problemRelPath.length === 2) && (problemRelPath[1] === 'sketch') && (oi !== undefined)): return EventTypes.PROBLEM_UPDATE_SKETCH;
         default:
             console.log(op);
             return 'unknownType';
@@ -274,6 +295,7 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                     const { oi } = op as ObjectInsertOp;
                     const problemRelPath = SDBDoc.relative(['problems'], p);
                     const userDataRelPath = SDBDoc.relative(['userData'], p);
+                    console.log(problemRelPath)
 
                     const type = parseOpType(op, doc);
                     let index;
@@ -419,7 +441,12 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             const config_value = oi;
                             dispatch({ type, index, problemID: id, config_item, config_value });
                             break;
-
+                        case EventTypes.PROBLEM_EDIT_GIVEN_CODE_CHANGED:
+                            dispatch({ type, index: problemRelPath[0] as number, editgivencode: oi as boolean });
+                            break;
+                        case EventTypes.PROBLEM_UPDATE_SKETCH:
+                            dispatch({ type, index: problemRelPath[0] as number, dots: oi});
+                            break;
                         default:
                             if (p.length === 0) { // full replacement
                                 dispatch(puzzlesFetched(doc.getData()));

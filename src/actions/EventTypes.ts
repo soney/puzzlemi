@@ -55,6 +55,8 @@ enum EventTypes {
     UPDATE_ACTIVE_FAILED_TEST_ID = 'update active failed test id',
     INIT_TEST_USER_DATA = 'init test in user data',
     INIT_USER_USER_DATA = 'init user in user data',
-    UPDATE_TEST_USER_INFO_USER_DATA = 'update test user info in user data'
+    UPDATE_TEST_USER_INFO_USER_DATA = 'update test user info in user data',
+    PROBLEM_EDIT_GIVEN_CODE_CHANGED = 'instructor change the view of own given code pane',
+    PROBLEM_UPDATE_SKETCH = 'instructor draw or delete sketch',
 };
 export default EventTypes;

@@ -58,11 +58,14 @@ export interface IProblem {
     description: string;
     givenCode: string;
     standardCode: string;
+    whiteboardCode: string;
     files: any;
     id: string;
     variables: IVariable[];
     tests: ITest[];
     config: IProblemConfig;
+    editgivencode: boolean;
+    sketch: any [];
 };
 
 export interface IProblemConfig {
