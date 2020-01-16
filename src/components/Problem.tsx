@@ -29,22 +29,11 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
         setCount(count + 1);
     }
 
-    // const doEditGivenCode = () => {
-    //     console.log('dd')
-    //     return dispatch(setEditGivenCode(index, true));
-    // }
-
-    // const doSketchGivenCode = () => {
-    //     console.log('sketch')
-    //     return dispatch(setEditGivenCode(index, false));
-    // }
-
     const iHaveCompleted = myCompletionIndex >= 0;
     const p = ['problems', index];
     const givenCodeSubDoc = doc.subDoc([...p, 'givenCode']);
     const afterCodeSubDoc = doc.subDoc([...p, 'afterCode']);
     const standardCodeSubDoc = doc.subDoc([...p, 'standardCode']);
-    // const whiteboardCodeSubDoc = doc.subDoc([...p, 'whiteboardCode']);
 
     return <li className={'problem container' + (passedAll === true ? ' passedAll' : '')}>
         {isAdmin &&
@@ -99,10 +88,10 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                         </nav>
                         <div className="tab-content" id="nav-tabContent">
                             <div className="tab-pane fade show active" id="nav-notes" role="tabpanel" aria-labelledby="nav-notes-tab">
-                                <ProblemNotes index={index} isRender={false}/>
+                                <ProblemNotes index={index} isRender={false} />
                             </div>
                             <div className="tab-pane fade" id="nav-draw" role="tabpanel" aria-labelledby="nav-draw-tab">
-                                <ProblemNotes index={index} isRender={true}/>
+                                <ProblemNotes index={index} isRender={true} />
                             </div>
                         </div>
                     </div>
