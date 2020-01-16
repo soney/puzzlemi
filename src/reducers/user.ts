@@ -8,12 +8,16 @@ export interface IUser {
     isAdmin: boolean;
     id: string;
     userInfo: IUserInfo;
-    solutions: { [problemID: string]: ICodeSolution|IMultipleChoiceSolution }
+    solutions: { [problemID: string]: ICodeSolution|IMultipleChoiceSolution|ITextResponseSolution }
 }
 
 export interface IMultipleChoiceSolution {
     selectedItems: number[];
     passedAll: boolean;
+}
+
+export interface ITextResponseSolution {
+    response: string;
 }
 
 export interface ICodeSolution {
@@ -98,6 +102,12 @@ export const user = (state: IUser = defaultUser, action: any) => {
                     [id]: { $set: { selectedItems: [], passedAll: false } }
                 }
             });
+        } else if(problemType === 'text-response') {
+            return update(state, {
+                solutions: { 
+                    [id]: { $set: { response: '' } }
+                }
+            });
         } else {
             return state;
         }
@@ -133,6 +143,17 @@ export const user = (state: IUser = defaultUser, action: any) => {
                 }
             }
         });
+    } else if(action.type === EventTypes.TEXT_RESPONSE_CHANGED) {
+        const { id, response } = action;
+        const newState = update(state, {
+            solutions: {
+                [id]: {
+                    response: { $set: response }
+                }
+            }
+        });
+        updateStore(newState);
+        return newState;
     } else if(action.type === EventTypes.CODE_CHANGED) {
         const { id, code, modified } = action;
         const newState = update(state, {

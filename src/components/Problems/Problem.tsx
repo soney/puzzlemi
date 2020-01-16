@@ -5,6 +5,7 @@ import { deleteProblem, setProblemVisibility } from '../../actions/sharedb_actio
 import CodeProblem from './CodeProblem';
 import MultipleChoiceProblem from './MultipleChoiceProblem';
 import * as classNames from 'classnames';
+import TextResponseProblem from './TextResponseProblem';
 
 const Problem = ({ id, doc, visible, problem, index, dispatch, passedAll, isAdmin, numCompleted, myCompletionIndex}) => {
     const iHaveCompleted = myCompletionIndex >= 0;
@@ -25,6 +26,8 @@ const Problem = ({ id, doc, visible, problem, index, dispatch, passedAll, isAdmi
         problemDisplay = <CodeProblem index={index} doc={doc} problem={problem} />;
     } else if(problemType === 'multiple-choice') {
         problemDisplay = <MultipleChoiceProblem index={index} doc={doc} problem={problem} />;
+    } else if(problemType === 'text-response') {
+        problemDisplay = <TextResponseProblem index={index} doc={doc} problem={problem} />;
     }
 
     // const doUpdateProblemVisiblity = (ev) => {

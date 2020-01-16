@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import Problem from './Problem';
 import update from 'immutability-helper';
-import { addCodeProblem, addMultipleChoiceProblem } from '../../actions/sharedb_actions';
+import { addCodeProblem, addMultipleChoiceProblem, addTextResponseProblem } from '../../actions/sharedb_actions';
 
 const Problems = ({ isAdmin, dispatch, problems }) => {
     const doAddCodeProblem = (): void => {
@@ -10,6 +10,9 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
     };
     const doAddMultipleChoiceProblem = (): void => {
         dispatch(addMultipleChoiceProblem());
+    };
+    const doAddTextResponseProblem = (): void => {
+        dispatch(addTextResponseProblem());
     };
 
     return <ul className='problems'>
@@ -23,6 +26,7 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
             <li className="container">
                 <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddCodeProblem}>+ Code Problem</button>
                 <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddMultipleChoiceProblem}>+ Multiple Choice Problem</button>
+                <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTextResponseProblem}>+ Text Response Problem</button>
             </li>
         }
     </ul>

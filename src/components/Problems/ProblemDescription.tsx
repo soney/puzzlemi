@@ -10,7 +10,7 @@ const ProblemDescription = ({ index, problem, isAdmin, doc }) => {
         const subDoc = doc.subDoc(p);
         return <div className="row">
             <div className="col">
-                <h4>Description: </h4>
+                <h4>Description:</h4>
                 <CodeEditor shareDBSubDoc={subDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 80}} />
             </div>
         </div>;

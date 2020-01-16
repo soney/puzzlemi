@@ -48,6 +48,19 @@ export function setCode(index: number, code: string) {
         });
     };
 }
+
+export function setTextResponse(index: number, response: string) {
+    return (dispatch: Dispatch, getState) => {
+        const { problems } = getState();
+        const problemInfo = problems[index];
+        const { id } = problemInfo;
+
+        dispatch({
+            response, id, type: EventTypes.TEXT_RESPONSE_CHANGED
+        });
+    };
+}
+
 export function resetCode(index: number) {
     return (dispatch: Dispatch, getState) => {
         const { problems } = getState();

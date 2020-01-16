@@ -34,6 +34,7 @@ enum EventTypes {
     PROBLEM_COMPLETION_INFO_FETCHED='problem completion info fetched',
     PROBLEM_VISIBILITY_CHANGED='problem visibility changed',
     SET_USER='set user',
-    MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED='multiple-choice selected options changed'
+    MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED='multiple-choice selected options changed',
+    TEXT_RESPONSE_CHANGED='text response changed'
 };
 export default EventTypes;
