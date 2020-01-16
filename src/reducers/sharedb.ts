@@ -1,4 +1,4 @@
-import { IPuzzleSet } from '../components/App';
+import { IPuzzleSet } from '../utils/types';
 import { SDBDoc } from 'sdb-ts';
 import EventTypes from '../actions/EventTypes';
 

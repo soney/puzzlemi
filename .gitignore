@@ -76,4 +76,6 @@ typings/
 ./vagrant
 Vagrantfile
 
-build
+build/
+
+.DS_Store

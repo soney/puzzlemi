@@ -1,4 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle';
 import { render } from 'react-dom'
 import * as React from 'react'
 import { Provider } from 'react-redux'
@@ -21,8 +22,8 @@ export const store = createStore(rootReducer, applyMiddleware(...middleware));
 
 render(
     <Provider store={store}>
-        <App isAdmin={false} />
-    </Provider>,
-    document.getElementById('root')
+        <App />
+     </Provider>,
+     document.getElementById('root')
 )
 registerServiceWorker(); 

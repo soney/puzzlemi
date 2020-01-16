@@ -1,6 +1,6 @@
 import EventTypes from "./EventTypes";
 import { Dispatch } from "redux";
-import { IUserInfo } from "../components/App";
+import { IUserInfo } from "../utils/types";
 
 export const setIsAdmin = (isAdmin: boolean) => ({
     isAdmin, type: EventTypes.SET_IS_ADMIN,
@@ -31,6 +31,15 @@ export function setCode(index: number, code: string) {
             code, id, modified: true, type: EventTypes.CODE_CHANGED
         });
     };
+}
+export function updateActiveFailedTestID(problemID, testID) {
+    return (dispatch: Dispatch, getState) => {
+        dispatch({
+            type: EventTypes.UPDATE_ACTIVE_FAILED_TEST_ID,
+            problemID,
+            testID
+        })
+    }
 }
 export function resetCode(index: number) {
     return (dispatch: Dispatch, getState) => {
