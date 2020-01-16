@@ -1,4 +1,4 @@
-import { IProblemUserInfo } from '../components/App';
+import { IProblemUserInfo } from '../utils/types';
 import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
 

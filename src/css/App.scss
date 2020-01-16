@@ -149,6 +149,7 @@
 
 .problem-notes {
     word-wrap: break-word;
+    position: absolute;
     h1 {
         font-weight: bold;
         font-size: 24px;
@@ -178,6 +179,13 @@
 .result-badge {
     margin-left: 10px;
 }
+.student-tab {
+    margin-bottom:20px;
+}
+
+.instructor-tab {
+    margin-top: 20px;
+}
 .result-success {
     color: green
 }
@@ -191,14 +199,12 @@
 
 .sketchAdmin {
     position: absolute;
-    top: 36px;
     left: 15px;
     width: calc(100% - 30px);
     height: 300px;
 }
 
 .sketchStudent{
-    top: 40px;
     position: absolute;
     width: calc(100% - 30px);
     height: 300px;

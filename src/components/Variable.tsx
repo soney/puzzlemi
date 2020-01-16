@@ -6,7 +6,7 @@ import update from 'immutability-helper';
 import { deleteTestVariable } from '../actions/sharedb_actions';
 import { updateVariableType } from '../actions/sharedb_actions';
 
-const TestTemplateVariable = ({ dispatch, index, variableIndex, variable, isAdmin, doc, isInput }) => {
+const Variable = ({ dispatch, index, variableIndex, variable, isAdmin, doc, isInput }) => {
     const doDeleteVariable = () => {
         dispatch(deleteTestVariable(index, variableIndex));
     };
@@ -43,4 +43,4 @@ function mapStateToProps(state, ownProps) {
 
     return update(ownProps, { variable: { $set: variable }, isAdmin: { $set: isAdmin }, doc: { $set: doc } });
 }
-export default connect(mapStateToProps)(TestTemplateVariable); 
+export default connect(mapStateToProps)(Variable); 

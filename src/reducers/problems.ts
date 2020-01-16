@@ -1,5 +1,5 @@
 import EventTypes from '../actions/EventTypes';
-import { IProblem } from '../components/App';
+import { IProblem } from '../utils/types';
 import update from 'immutability-helper';
 
 export const problems = (state: IProblem[] = [], action: any) => {
@@ -162,13 +162,6 @@ export const problems = (state: IProblem[] = [], action: any) => {
                     [config_item]: { $set: config_value }
                 }
             }
-        });
-    } else if (action.type === EventTypes.PROBLEM_EDIT_GIVEN_CODE_CHANGED) {
-        const { index, editgivencode } = action;
-        return update(state, { 
-            [index]: {
-                editgivencode: { $set: editgivencode}
-            } 
         });
     } else if (action.type === EventTypes.PROBLEM_UPDATE_SKETCH) {
         const { index, dots } = action;

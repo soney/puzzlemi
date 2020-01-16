@@ -22,13 +22,13 @@ const Problems = ({ name, isAdmin, dispatch, problems }) => {
         }
     </ul>
 }
-function mapStateToProps(state, givenProps) {
+function mapStateToProps(state, ownProps) {
     const { problems, user, userData } = state;
     const { isAdmin } = user;
     const filteredProblems = isAdmin ? problems : problems.filter((p) => {
         const { id } = p;
         return userData && userData[id] && userData[id].visible;
     });
-    return update(givenProps, { problems: { $set: filteredProblems }, isAdmin: { $set: isAdmin } });
+    return update(ownProps, { problems: { $set: filteredProblems }, isAdmin: { $set: isAdmin } });
 }
 export default connect(mapStateToProps)(Problems);

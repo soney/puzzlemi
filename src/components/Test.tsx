@@ -7,7 +7,7 @@ import update from 'immutability-helper';
 
 import { deleteTest, changeTestStatus } from '../actions/sharedb_actions';
 
-const Test = ({ testResult, dispatch, config, index, testUserInfo, testIndex, test, isAdmin, doc, isInput, totalNum }) => {
+const Test = ({ testResult, dispatch, flag, index, testUserInfo, testIndex, test, isAdmin, doc, isInput, totalNum }) => {
     const doDeleteTest = () => {
         dispatch(deleteTest(index, testIndex));
     };
@@ -59,7 +59,7 @@ const Test = ({ testResult, dispatch, config, index, testUserInfo, testIndex, te
             {test.input.map((variable, i) => <td key={i}>
                 <div className="variable-value">
                     {isAdmin
-                        ? <CodeEditor shareDBSubDoc={inputSubDocs[i]} value={inputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} />
+                        ? <CodeEditor shareDBSubDoc={inputSubDocs[i]} value={inputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} flag={flag} />
                         : <CodeEditor shareDBSubDoc={inputSubDocs[i]} value={inputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30, readOnly: true }} />
                     }
                 </div>
@@ -67,7 +67,7 @@ const Test = ({ testResult, dispatch, config, index, testUserInfo, testIndex, te
             {test.output.map((variable, i) => <td key={i}>
                 <div className="variable-value">
                     {isAdmin
-                        ? <CodeEditor shareDBSubDoc={outputSubDocs[i]} value={outputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} />
+                        ? <CodeEditor shareDBSubDoc={outputSubDocs[i]} value={outputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} flag={flag} />
                         : <CodeEditor shareDBSubDoc={outputSubDocs[i]} value={outputSubDocs[i].getData()} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30, readOnly: true }} />
                     }
                 </div>
