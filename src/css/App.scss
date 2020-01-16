@@ -9,6 +9,10 @@
     box-shadow: $top $left $blur $color;
   }
 }
+
+html {
+    scroll-behavior: smooth;
+}
 .problems {
     margin: 0px;
     padding: 0px;

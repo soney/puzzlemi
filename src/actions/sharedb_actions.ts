@@ -308,6 +308,13 @@ export function setProblemVisibility(id: string, visible: boolean) {
     };
 }
 
+function isNearBottom(slack: number = 200): boolean {
+    return ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - slack);
+}
+function scrollToBottom(): void {
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
 export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {
@@ -325,7 +332,13 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                         if(problemRelPath.length === 1) {
                             const index = problemRelPath[0] as number;
                             if(ld) { dispatch(problemDeleted(index)); }
-                            if(li) { dispatch(problemAdded(index, li)); }
+                            if(li) {
+                                const wasAtBottom = isNearBottom();
+                                dispatch(problemAdded(index, li));
+                                if(wasAtBottom) {
+                                    scrollToBottom();
+                                }
+                            }
                         } else if(problemRelPath.length === 4 && problemRelPath[1] === 'problem') {
                             const index = problemRelPath[0] as number;
                             const item = problemRelPath[2];
@@ -438,11 +451,15 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             }
                         } else if(userDataRelPath.length === 2 && userDataRelPath[1] === 'visible') {
                             const { oi } = op as ObjectInsertOp;
+                            const wasAtBottom = isNearBottom();
                             dispatch({
                                 problemID,
                                 type: EventTypes.PROBLEM_VISIBILITY_CHANGED,
                                 visible: oi as boolean,
                             });
+                            if(wasAtBottom) {
+                                scrollToBottom();
+                            }
                         } else if(userDataRelPath.length === 1) {
                             const { oi } = op as ObjectInsertOp;
                             dispatch({
