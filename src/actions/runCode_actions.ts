@@ -37,11 +37,10 @@ export function runCode(index: number, graphics) {
         const { afterCode, tests } = problem;
         const solution = user.solutions[id];
         const { code } = solution;
-        const testSuite = new PMTestSuite();
-
         let output: string = '';
-
         const outputs: string[] = [];
+
+        const testSuite = new PMTestSuite(code, outputs);
         const outf = (outValue: string): void => {
             if(!testSuite.currentlyRunning()) {
                 outputs.push(outValue);
@@ -105,8 +104,6 @@ export function runCode(index: number, graphics) {
             return Sk.importMainWithBody("<stdin>", false, `${code}\n${testSuite.getString()}`, true);
         });
         const onFinally = () => {
-            console.log(code);
-            console.log(output);
             testSuite.onAfterRanTests();
             const testSuiteResults = testSuite.getTestResults();
             const { passedAll, results } = testSuiteResults;
