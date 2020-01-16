@@ -12,7 +12,7 @@ const TestTemplate = ({ index, isAdmin, doc, testVariable, dispatch }) => {
 
     return <div className='test-template'>
         {isAdmin && <div>
-            <h4>Default Test</h4>
+            <h4>Default Test:</h4>
             <table className="table">
                 <thead>
                     <tr>

@@ -147,6 +147,31 @@
     width: 80%;
 }
 
+.problem-notes {
+    word-wrap: break-word;
+    h1 {
+        font-weight: bold;
+        font-size: 24px;
+      }
+      
+    h2 {
+        font-weight: bold;
+        font-size: 22px;
+    }
+    h3 {
+        font-weight: bold;
+        font-size: 20px;
+    }
+    h4 {
+        font-weight: bold;
+        font-size: 18px;
+    }
+    h5 {
+        font-weight: bold;
+        font-size: 16px;
+    }
+}
+
 .progress {
     background-color: #909090
 }
@@ -200,7 +225,7 @@
 .popoverColor{
     top: 32px;
     position: absolute;
-    z-index: 2;
+    z-index: 999;
 }
 
 .coverColor{

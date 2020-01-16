@@ -21,7 +21,7 @@ export function addProblem() {
             files: [],
             givenCode: `# code here`,
             standardCode: `# standard solution`,
-            whiteboardCode: `# Whiteboard for Instructor`,
+            notes: '*no notes*',
             id: uuid(),
             variables: [],
             tests: [],
@@ -243,6 +243,7 @@ function parseOpType(op, doc): string {
         case ((problemRelPath) && (problemRelPath.length === 1) && (ld !== undefined)): return EventTypes.PROBLEM_DELETED;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'config') && (oi !== undefined)): return EventTypes.CHANGE_PROBLEM_CONFIG;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'description')): return EventTypes.DESCRIPTION_CHANGED;
+        case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'notes')): return EventTypes.NOTES_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'givenCode')): return EventTypes.GIVEN_CODE_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'afterCode')): return EventTypes.AFTER_CODE_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'standardCode')): return EventTypes.STANDARD_CODE_CHANGED;
@@ -318,6 +319,11 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             index = problemRelPath[0] as number;
                             const newDescription = doc.traverse(['problems', index, 'description']);
                             dispatch({ index, type, description: newDescription });
+                            break;
+                        case EventTypes.NOTES_CHANGED:
+                            index = problemRelPath[0] as number;
+                            const newNotes = doc.traverse(['problems', index, 'notes']);
+                            dispatch({ index, type, notes: newNotes});
                             break;
                         case EventTypes.GIVEN_CODE_CHANGED:
                             index = problemRelPath[0] as number;

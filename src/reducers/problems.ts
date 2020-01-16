@@ -23,6 +23,13 @@ export const problems = (state: IProblem[] = [], action: any) => {
                 description: { $set: description }
             }
         });
+    } else if (action.type === EventTypes.NOTES_CHANGED) {
+        const { index, notes } = action;
+        return update(state, {
+            [index]: {
+                notes: {$set: notes}
+            }
+        });
     } else if (action.type === EventTypes.GIVEN_CODE_CHANGED) {
         const { index, code } = action;
         console.log(index)

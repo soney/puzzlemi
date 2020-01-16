@@ -1,6 +1,8 @@
 import * as React from 'react';
+import { useState } from 'react';
 import { connect } from "react-redux";
 import ProblemDescription from './ProblemDescription';
+import ProblemNotes from './ProblemNotes';
 import update from 'immutability-helper';
 import { CodeEditor } from './CodeEditor';
 import SketchOverlay from './SketchOverlay';
@@ -22,6 +24,12 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
     const doShowProblem = () => {
         dispatch(setProblemVisibility(id, true));
     }
+    const [count, setCount] = useState(0);
+
+    const refreshLiveCoding = () => {
+        setCount(count + 1);
+        console.log('refreshLiveCoding');
+    }
 
     const doEditGivenCode = () => {
         console.log('dd')
@@ -38,9 +46,9 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
     const givenCodeSubDoc = doc.subDoc([...p, 'givenCode']);
     const afterCodeSubDoc = doc.subDoc([...p, 'afterCode']);
     const standardCodeSubDoc = doc.subDoc([...p, 'standardCode']);
-    const whiteboardCodeSubDoc = doc.subDoc([...p, 'whiteboardCode']);
+    const notesSubDoc = doc.subDoc([...p, 'notes']);
 
-    return <li className={'problem container' + (passedAll===true ? ' passedAll' : '')}>
+    return <li className={'problem container' + (passedAll === true ? ' passedAll' : '')}>
         {isAdmin &&
             <div className="row">
                 <div className="col clearfix">
@@ -80,9 +88,20 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                         <CodeEditor shareDBSubDoc={afterCodeSubDoc} />
                     </div>
                     <div className="col">
-                        <h4>Whiteboard</h4>
-                        <CodeEditor shareDBSubDoc={whiteboardCodeSubDoc} options={{mode:'markdown'}}/>
-                        <SketchOverlay index={index} isAdmin={isAdmin} editgivencode={editgivencode} dispatch={dispatch}/>
+                        { editgivencode &&
+                            <div>
+                                <h4>Notes:</h4>
+                                <CodeEditor shareDBSubDoc={notesSubDoc} options={{mode:'markdown'}}/>
+                            </div>
+                        }
+                        { !editgivencode &&
+                            <div>
+                                <ProblemNotes index={index} />
+                                <SketchOverlay index={index} isAdmin={isAdmin} editgivencode={editgivencode} dispatch={dispatch}/>
+                            </div>
+                        }
+                        
+                        
                         <div>
                             <div className="btn-group btn-group-toggle" data-toggle="buttons">
                                 <label className={"btn btn-sm " + (editgivencode ? "btn-primary" : "btn-outline-primary")} onClick={doEditGivenCode}>
@@ -94,12 +113,12 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                             </div>
                             
                         </div>
-                        {config.autoVerify &&
-                            <div>
-                                <h4>Standard Code:</h4>
-                                <CodeEditor shareDBSubDoc={standardCodeSubDoc} />
-                            </div>
-                        }
+                    
+                        <h4>Standard Code:</h4>
+                        <CodeEditor shareDBSubDoc={standardCodeSubDoc} />
+                        
+                        
+                    
                     </div>
                 </div>
                 <div className="row">
@@ -116,7 +135,7 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                     <div className="nav nav-tabs" id="nav-tab" role="tablist">
                         <a className="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">My Solution</a>
                         {config.displayInstructor &&
-                            <a className="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Instructor</a>
+                            <a className="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false" onClick={refreshLiveCoding}>Instructor</a>
                         }
                         {config.peerHelp &&
                             <a className="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false">Peers</a>
@@ -134,7 +153,7 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                     </div>
                     {config.displayInstructor &&
                         <div className="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                            <LiveCode index={index} />
+                            <LiveCode index={index} flag={count}/>
                         </div>
                     }
                     {config.peerHelp &&
@@ -164,8 +183,8 @@ function mapStateToProps(state, ownProps) {
     const editgivencode = problems[index].editgivencode;
     console.log(editgivencode)
     let completed_string = [];
-    if(userData[id]) {
-        completed_string = config.runTests? userData[id].completed_tests : userData[id].completed_default;
+    if (userData[id]) {
+        completed_string = config.runTests ? userData[id].completed_tests : userData[id].completed_default;
     }
     const completed: string[] = completed_string;
     const numCompleted = completed ? completed.length : 0;

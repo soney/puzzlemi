@@ -58,7 +58,7 @@ export interface IProblem {
     description: string;
     givenCode: string;
     standardCode: string;
-    whiteboardCode: string;
+    notes: string;
     files: any;
     id: string;
     variables: IVariable[];
