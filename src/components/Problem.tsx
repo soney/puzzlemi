@@ -88,10 +88,10 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                         </nav>
                         <div className="tab-content" id="nav-tabContent">
                             <div className="tab-pane fade show active" id="nav-notes" role="tabpanel" aria-labelledby="nav-notes-tab">
-                                <ProblemNotes index={index} isRender={false}/>
+                                <ProblemNotes index={index} isRender={false} />
                             </div>
                             <div className="tab-pane fade" id="nav-draw" role="tabpanel" aria-labelledby="nav-draw-tab">
-                                <ProblemNotes index={index} isRender={true}/>
+                                <ProblemNotes index={index} isRender={true} />
                             </div>
                         </div>
                     </div>

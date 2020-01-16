@@ -149,6 +149,7 @@
 
 .problem-notes {
     word-wrap: break-word;
+    position: absolute;
     h1 {
         font-weight: bold;
         font-size: 24px;
@@ -194,4 +195,49 @@
 
 .testResult {
     margin-top: 10px;
+}
+
+.sketchAdmin {
+    position: absolute;
+    left: 15px;
+    width: calc(100% - 30px);
+    height: 300px;
+}
+
+.sketchStudent{
+    position: absolute;
+    width: calc(100% - 30px);
+    height: 300px;
+}
+.sketchMode{
+    z-index: 99;
+}
+
+.colorSwatch {
+    padding: 5px;
+    background-color: #fff;
+    border-radius: 1px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.1);
+    display: inline-block;
+    cursor: pointer;
+}
+
+.colorBox {
+    width: 36px;
+    height: 22px;
+    border-radius: 2px;
+}
+
+.popoverColor{
+    top: 32px;
+    position: absolute;
+    z-index: 2;
+}
+
+.coverColor{
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
 }

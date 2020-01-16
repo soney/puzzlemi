@@ -22,6 +22,7 @@ function parseOpType(op): string {
     switch (true) {
         case ((problemRelPath) && (problemRelPath.length === 1) && (li !== undefined)): return EventTypes.PROBLEM_ADDED;
         case ((problemRelPath) && (problemRelPath.length === 1) && (ld !== undefined)): return EventTypes.PROBLEM_DELETED;
+        case ((problemRelPath) && (problemRelPath.length === 2) && (problemRelPath[1] === 'sketch') && (oi !== undefined)): return EventTypes.PROBLEM_UPDATE_SKETCH;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'config') && (oi !== undefined)): return EventTypes.CHANGE_PROBLEM_CONFIG;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'description')): return EventTypes.DESCRIPTION_CHANGED;
         case ((problemRelPath) && (problemRelPath.length === 3) && (problemRelPath[1] === 'notes')): return EventTypes.NOTES_CHANGED;
@@ -202,7 +203,9 @@ function dispatchOp(op, doc, dispatch) {
             id = doc.traverse(['problems', index, 'id']);
             dispatch({ type, index, problemID: id, config_item: problemRelPath[2], config_value: oi });
             break;
-
+        case EventTypes.PROBLEM_UPDATE_SKETCH:
+            dispatch({ type, index: problemRelPath[0] as number, dots: oi});
+            break;
         default:
             if (p.length === 0) { // full replacement
                 const puzzles = doc.getData();

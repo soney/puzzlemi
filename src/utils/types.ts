@@ -54,6 +54,7 @@ export interface IProblem {
     variables: IVariable[];
     tests: ITest[];
     config: IProblemConfig;
+    sketch: any [];
 };
 
 export interface IProblemConfig {
