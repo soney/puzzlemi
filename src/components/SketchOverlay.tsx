@@ -82,8 +82,8 @@ class SketchOverlay extends React.Component<SketchOverlayProps, SketchOverlaySta
             this.props.dispatch(updateSketch(this.props.index, this.state.sketch))
         }
     }
-    toggleErase() {
-        this.setState({ erasing: !this.state.erasing })
+    toggleErase(val) {
+        this.setState({ erasing: val })
     }
 
     handleColorClick() {
@@ -96,6 +96,11 @@ class SketchOverlay extends React.Component<SketchOverlayProps, SketchOverlaySta
 
     handleColorChange(color) {
         this.setState({ color: color.hex })
+    }
+
+    sketchClear(){
+        this.setState({sketch: []})
+        this.props.dispatch(updateSketch(this.props.index,[]))
     }
 
     renderDots() {
@@ -125,14 +130,17 @@ class SketchOverlay extends React.Component<SketchOverlayProps, SketchOverlaySta
         </svg>
             {this.props.isAdmin &&
                 <div className="btn-group btn-group-toggle" data-toggle="buttons" style={{ float: 'right', top: '300px' }}>
-                    <label className={"btn btn-sm " + (!this.state.erasing ? "btn-primary" : "btn-outline-primary")} onClick={this.toggleErase.bind(this)}>
+                    <label className={"btn btn-sm " + (!this.state.erasing ? "btn-primary" : "btn-outline-primary")} onClick={this.toggleErase.bind(this, false)}>
                         <input type="radio" name="pen_erase" id="pen" /> Pen
                     </label>
-                    <label className={"btn btn-sm " + (this.state.erasing ? "btn-secondary" : "btn-outline-secondary")} onClick={this.toggleErase.bind(this)}>
+                    <label className={"btn btn-sm " + (this.state.erasing ? "btn-secondary" : "btn-outline-secondary")} onClick={this.toggleErase.bind(this, true)}>
                         <input type="radio" name="pen_erase" id="erase" /> Erase
                     </label>
                     <div className='colorSwatch' onClick={this.handleColorClick.bind(this)}>
                         <div className='colorBox' style={{ backgroundColor: this.state.color }}></div>
+                    </div>
+                    <div className='btn btn-sm btn-danger' onClick={this.sketchClear.bind(this)}>
+                        Clear Sketch
                     </div>
                     {this.state.displayColorPicker && <div className='popoverColor'>
                         <div className='coverColor' onClick={this.handleColorClose.bind(this)} />
