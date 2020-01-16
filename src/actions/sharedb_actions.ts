@@ -1,4 +1,4 @@
-import { IPuzzleSet, IProblem, IHelpSession, IProblemUserInfo } from '../components/App';
+import { IPuzzleSet, IProblem, IHelpSession, IProblemUserInfo, IVariable, ITest, IFile } from '../utils/types';
 import { SDBDoc } from 'sdb-ts';
 import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
@@ -59,13 +59,18 @@ export function newEmptyTest(index: number, name: string, isAdmin: boolean) {
         const { doc } = getState();
         const p = ['problems', index, 'variables'];
         const variables = doc.traverse(p);
-        let input = [] as any[];
-        let output = [] as any[];
+        let input = [] as IVariable[];
+        let output = [] as IVariable[];
         variables.forEach(variable => {
-            if (variable.type === "input") input.push({ name: variable.name, value: '' });
-            if (variable.type === "output") output.push({ name: variable.name, value: '' });
+            const newVariable: IVariable = {
+                name: variable.name,
+                value: variable.value,
+                type: variable.type
+            }
+            if (variable.type === "input") input.push(newVariable);
+            if (variable.type === "output") output.push(newVariable);
         })
-        const newTest = {
+        const newTest: ITest = {
             author: name,
             verified: isAdmin,
             id: uuid(),
@@ -86,10 +91,10 @@ export function newTest(index: number, test: any) {
 export function addTestVariable(index: number, isAdmin: boolean) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
-        const newVariable = {
+        const newVariable: IVariable = {
             type: 'input',
-            name: '',
-            value: 'null'
+            name: 'x',
+            value: '0'
         };
         return doc.submitListPushOp(['problems', index, 'variables'], newVariable);
     };
@@ -112,10 +117,6 @@ export function deleteTestVariable(index: number, variableIndex: number) {
 export function changeTestStatus(index: number, testIndex: number, verified: boolean) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
-        console.log('change test status')
-        // const { tests } = problems[index];
-        // const  test = tests[testIndex];
-        // const verified = !test.verified;
         return doc.submitObjectReplaceOp(['problems', index, 'tests', testIndex, 'verified'], verified);
     };
 }
@@ -130,7 +131,7 @@ export function updateVariableType(index: number, variableIndex: number, type: s
 export function addFile(index: number) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
-        const newFile = {
+        const newFile: IFile = {
             contents: 'file contents',
             id: uuid(),
             name: 'file.txt',
@@ -164,8 +165,7 @@ export function setProblemVisibility(id: string, visible: boolean) {
 export function changeProblemConfig(index: string, item: string, status: boolean) {
     return (dispatch: Dispatch, getState) => {
         const { doc } = getState();
-        const p = ['problems', index, 'config', item];
-        doc.submitObjectReplaceOp(p, status);
+        doc.submitObjectReplaceOp(['problems', index, 'config', item], status);
     }
 }
 
@@ -173,12 +173,11 @@ export function setHelpRequest(id: string, uid: string) {
     return (dispatch: Dispatch, getState) => {
         const { doc, user } = getState();
         const { solutions } = user;
-        const solution = solutions[id];
         let newHelpSession: IHelpSession = {
             status: true,
             tutorIDs: [],
             tuteeID: uid,
-            solution,
+            solution: solutions[id],
         }
         doc.submitListPushOp(['userData', id, 'helpSessions'], newHelpSession);
     };
@@ -189,11 +188,7 @@ export function joinHelpSession(id: string, tuteeID: string, tutorID: string) {
         const { doc } = getState();
         const { userData } = doc.getData();
         const { helpSessions } = userData[id];
-        let sessionIndex;
-
-        helpSessions.forEach((session, index) => {
-            if (session.tuteeID === tuteeID) sessionIndex = index;
-        })
+        const sessionIndex = helpSessions.findIndex(e => e.tuteeID === tuteeID);
         doc.submitListPushOp(['userData', id, 'helpSessions', sessionIndex, 'tutorIDs'], tutorID);
     }
 }
@@ -246,11 +241,6 @@ function parseOpType(op, doc): string {
         case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'testData') && (oi !== undefined)): return EventTypes.INIT_TEST_USER_DATA;
         case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed_default') && (li !== undefined)): return EventTypes.USER_COMPLETED_PROBLEM_DEFAULT;
         case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed_tests') && (li !== undefined)): return EventTypes.USER_COMPLETED_PROBLEM_TESTS;
-        // case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'tests')): return EventTypes.TEST_PART_CHANGED;
-        // case ((problemRelPath) && (problemRelPath.length === 5) && (problemRelPath[1] === 'files')): return EventTypes.FILE_PART_CHANGED;
-        // case ((userDataRelPath) && (userDataRelPath.length === 1) && (oi!==undefined)): return EventTypes.PROBLEM_COMPLETION_INFO_FETCHED;
-        // case ((userDataRelPath) && (userDataRelPath.length === 2) && (userDataRelPath[1] === 'visible') && (oi!==undefined)): return EventTypes.PROBLEM_VISIBILITY_CHANGED;
-        // case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'completed') && (li!==undefined)): return EventTypes.USER_COMPLETED_PROBLEM;
         case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'helpSessions') && (li !== undefined)): return EventTypes.ENABLE_HELP_SESSION;
         case ((userDataRelPath) && (userDataRelPath.length === 3) && (userDataRelPath[1] === 'helpSessions') && (ld !== undefined)): return EventTypes.DISABLE_HELP_SESSION;
         case ((userDataRelPath) && (userDataRelPath.length === 4) && (userDataRelPath[1] === 'testData') && (oi !== undefined)): return EventTypes.INIT_USER_USER_DATA;

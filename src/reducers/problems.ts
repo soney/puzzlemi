@@ -1,5 +1,5 @@
 import EventTypes from '../actions/EventTypes';
-import { IProblem } from '../components/App';
+import { IProblem } from '../utils/types';
 import update from 'immutability-helper';
 
 export const problems = (state: IProblem[] = [], action: any) => {

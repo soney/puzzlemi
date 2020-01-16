@@ -27,7 +27,6 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
 
     const refreshLiveCoding = () => {
         setCount(count + 1);
-        console.log('refreshLiveCoding');
     }
 
     const iHaveCompleted = myCompletionIndex >= 0;
@@ -91,7 +90,7 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
         {!isAdmin &&
             <div>
                 <nav>
-                    <div className="nav nav-tabs" id="nav-tab" role="tablist">
+                    <div className="nav nav-tabs student-tab" id="nav-tab" role="tablist">
                         <a className="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">My Solution</a>
                         {config.displayInstructor &&
                             <a className="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false" onClick={refreshLiveCoding}>Instructor</a>

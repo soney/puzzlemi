@@ -1,6 +1,6 @@
 import EventTypes from "./EventTypes";
 import { Dispatch } from "redux";
-import { IUserInfo } from "../components/App";
+import { IUserInfo } from "../utils/types";
 
 export const setIsAdmin = (isAdmin: boolean) => ({
     isAdmin, type: EventTypes.SET_IS_ADMIN,

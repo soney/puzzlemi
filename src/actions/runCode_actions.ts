@@ -5,7 +5,7 @@ import { PMAssertion, PMAssertEqual } from "../pyTests/PMTest";
 import { PMTestSuite } from "../pyTests/PMTestSuite";
 import EventTypes from "./EventTypes";
 import { SDBDoc } from "sdb-ts";
-import { IPuzzleSet } from "../components/App.js";
+import { IPuzzleSet } from "../utils/types";
 
 declare var Sk;
 

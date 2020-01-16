@@ -2,7 +2,7 @@ import EventTypes from '../actions/EventTypes';
 import store from 'storejs';
 import update from 'immutability-helper';
 import uuid from '../utils/uuid';
-import { IUser, ISolution, IResult } from '../components/App';
+import { IUser, ISolution, IResult } from '../utils/types';
 
 const defaultID = uuid();
 

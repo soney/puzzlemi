@@ -11,7 +11,7 @@ import TestResults from './TestResults';
 import Result from './Result';
 import { runCode, runUnitTests, runVerifyTest } from '../actions/runCode_actions';
 import { newTest } from '../actions/sharedb_actions';
-import { ITest } from './App';
+import { ITest } from '../utils/types';
 import uuid from '../utils/uuid';
 
 
@@ -22,8 +22,6 @@ const MySolution = ({ index, uid, doc, id, testResults, failedTest, userInfo, ve
         myTest = {
             author: userInfo.username,
             verified: isAdmin,
-            hidden: false,
-            helpSessions: [],
             id: uuid(),
             input: [],
             output: []
