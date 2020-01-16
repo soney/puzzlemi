@@ -11,6 +11,7 @@ const Tests = ({ index, tests, isAdmin, doc, dispatch }) => {
     if (isAdmin) {
         return <div className='tests'>
             <h4>Tests:</h4>
+            <i>Note: <code>getEditorText()</code> refers to the source code and <code>getOutput()</code> refers to the output.</i>
             <table className="table">
                 <thead>
                     <tr>

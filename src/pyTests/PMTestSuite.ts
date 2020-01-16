@@ -90,13 +90,13 @@ export class PMTestSuite {
         const assertionStrings = this.assertions.map((a) => a.getAssertionString());
         const indentedAssertionStrings = assertionStrings.map((s) => spaces + s);
         return `import puzzlemi
-from unittest import TestCase
+from unittest.gui import TestCaseGui
 
 ${this.beforeTests}
 
-class PMTestCase(TestCase):
+class PMTestCase(TestCaseGui):
     def __init__(self):
-        TestCase.__init__(self)
+        TestCaseGui.__init__(self)
     
     def testOne(self):
 ${indentedAssertionStrings.join('\n')}

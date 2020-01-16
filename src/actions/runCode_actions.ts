@@ -105,6 +105,8 @@ export function runCode(index: number, graphics) {
             return Sk.importMainWithBody("<stdin>", false, `${code}\n${testSuite.getString()}`, true);
         });
         const onFinally = () => {
+            console.log(code);
+            console.log(output);
             testSuite.onAfterRanTests();
             const testSuiteResults = testSuite.getTestResults();
             const { passedAll, results } = testSuiteResults;

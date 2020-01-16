@@ -394,7 +394,6 @@ export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
                             const problemP = ['problems', index];
                             const problem = doc.traverse(problemP);
                             if(item === 'tests') {
-                                console.log(problemRelPath);
                                 const testIndex = problemRelPath[3] as number;
                                 const testP = ['problems', index, 'problem', item, testIndex];
                                 const testPart = problemRelPath[4] as 'actual'|'expected'|'description';
