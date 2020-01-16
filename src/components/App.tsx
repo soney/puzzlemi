@@ -5,7 +5,7 @@ import { ReconnectingWebsocket, SDBClient, SDBDoc } from 'sdb-ts';
 import update from 'immutability-helper';
 import Problems from './Problems';
 import UserHeader from './UserHeader';
-import { setDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
+import { setDoc, beginListeningOnDoc } from '../actions/sharedb_bindings';
 import { setIsAdmin, setUser } from '../actions/user_actions';
 import { IPuzzleSet } from '../utils/types';
 

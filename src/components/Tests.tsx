@@ -4,7 +4,7 @@ import update from 'immutability-helper';
 import Test from './Test';
 import { newEmptyTest } from '../actions/sharedb_actions';
 
-const Tests = ({ index, inputTests, inputVariables, outputVariables, verifiedTests, isAdmin, userInfo, doc, dispatch, uid }) => {
+const Tests = ({ index, flag, inputTests, inputVariables, outputVariables, verifiedTests, isAdmin, userInfo, doc, dispatch, uid }) => {
     const doAddTest = () => {
         dispatch(newEmptyTest(index, userInfo.username, isAdmin));
     }
@@ -17,7 +17,6 @@ const Tests = ({ index, inputTests, inputVariables, outputVariables, verifiedTes
     return <div className='tests'>
         {isAdmin &&
             <div>
-                <h4>Tests</h4>
                 {inputTests.length !== 0 &&
                     <table className="table table-sm">
                         <thead>
@@ -34,7 +33,7 @@ const Tests = ({ index, inputTests, inputVariables, outputVariables, verifiedTes
                             </tr>
                         </thead>
                         <tbody>
-                            {inputTests.map(({ test, i }) => <Test key={test.id + `${i}`} index={index} testIndex={i} isInput={true} totalNum={inputTests.length} />)}
+                            {inputTests.map(({ test, i }) => <Test key={test.id + `${i}`} index={index} testIndex={i} isInput={true} totalNum={inputTests.length} flag={flag}/>)}
                         </tbody>
                     </table>
                 }

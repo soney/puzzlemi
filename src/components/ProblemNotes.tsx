@@ -4,17 +4,26 @@ import * as showdown from 'showdown';
 import { CodeEditor } from './CodeEditor';
 import update from 'immutability-helper';
 
-const ProblemNotes = ({ index, problem, isAdmin, doc }) => {
+const ProblemNotes = ({ index, problem, isRender, isAdmin, doc }) => {
     if (isAdmin) {
-        const p = ['problems', index, 'notes'];
-        const subDoc = doc.subDoc(p);
-        return <div className="row">
-            <div className="col">
-                <h4>Notes: </h4>
-                <CodeEditor shareDBSubDoc={subDoc} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true}} />
-            </div>
-        </div>;
-    } else {
+        if(isRender) {
+            const converter = new showdown.Converter();
+            const problemNotes = { __html: converter.makeHtml(problem.notes) };
+            return <div className="row">
+                <div className="col">
+                    <p className="problem-notes" dangerouslySetInnerHTML={problemNotes} />
+                </div>
+            </div>;
+        } else {
+            const p = ['problems', index, 'notes'];
+            const subDoc = doc.subDoc(p);
+            return <div className="row">
+                <div className="col">
+                    <CodeEditor shareDBSubDoc={subDoc} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true}} />
+                </div>
+            </div>;    
+        }
+    }  else {
         const converter = new showdown.Converter();
         const problemNotes = { __html: converter.makeHtml(problem.notes) };
         return <div className="row">

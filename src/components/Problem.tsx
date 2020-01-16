@@ -6,7 +6,7 @@ import ProblemNotes from './ProblemNotes';
 import update from 'immutability-helper';
 import { CodeEditor } from './CodeEditor';
 import Tests from './Tests';
-import TestTemplate from './TestTemplate';
+import Variables from './Variables';
 import MySolution from './MySolution';
 import LiveCode from './LiveCode';
 import PeerHelp from './PeerHelp';
@@ -14,8 +14,10 @@ import ConfigPanel from './ConfigPanel';
 import { deleteProblem, setProblemVisibility } from '../actions/sharedb_actions';
 
 const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin, numCompleted, myCompletionIndex }) => {
+    const [count, setCount] = useState(0);
+
     const doDeleteProblem = () => {
-        return dispatch(deleteProblem(index));
+        dispatch(deleteProblem(index));
     };
     const doHideProblem = () => {
         dispatch(setProblemVisibility(id, false));
@@ -23,9 +25,7 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
     const doShowProblem = () => {
         dispatch(setProblemVisibility(id, true));
     }
-    const [count, setCount] = useState(0);
-
-    const refreshLiveCoding = () => {
+    const refreshCM = () => {
         setCount(count + 1);
     }
 
@@ -60,28 +60,60 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
             <div>
                 <div className="row">
                     <div className="col">
-                        <TestTemplate index={index} />
+                        <nav>
+                            <div className="nav nav-tabs instructor-tab" id="nav-tab" role="tablist">
+                                <a className="nav-item nav-link active" id="nav-given-tab" data-toggle="tab" href="#nav-given" role="tab" aria-controls="nav-given" aria-selected="true">Given Code</a>
+                                <a className="nav-item nav-link" id="nav-after-tab" data-toggle="tab" href="#nav-after" role="tab" aria-controls="nav-after" aria-selected="false" onClick={refreshCM}>Run After</a>
+                                <a className="nav-item nav-link" id="nav-standard-tab" data-toggle="tab" href="#nav-standard" role="tab" aria-controls="nav-standard" aria-selected="false" onClick={refreshCM}>Standard Code</a>
+                            </div>
+                        </nav>
+                        <div className="tab-content" id="nav-tabContent">
+                            <div className="tab-pane fade show active" id="nav-given" role="tabpanel" aria-labelledby="nav-given-tab">
+                                <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
+                            </div>
+                            <div className="tab-pane fade" id="nav-after" role="tabpanel" aria-labelledby="nav-after-tab">
+                                <CodeEditor shareDBSubDoc={afterCodeSubDoc} flag={count} />
+                            </div>
+                            <div className="tab-pane fade" id="nav-standard" role="tabpanel" aria-labelledby="nav-standard-tab">
+                                <CodeEditor shareDBSubDoc={standardCodeSubDoc} flag={count} />
+                            </div>
+                        </div>
                     </div>
                     <div className="col">
-                        <ConfigPanel index={index} />
+                        <nav>
+                            <div className="nav nav-tabs instructor-tab" id="nav-tab" role="tablist">
+                                <a className="nav-item nav-link active" id="nav-notes-tab" data-toggle="tab" href="#nav-notes" role="tab" aria-controls="nav-notes" aria-selected="true">Notes</a>
+                                <a className="nav-item nav-link" id="nav-draw-tab" data-toggle="tab" href="#nav-draw" role="tab" aria-controls="nav-draw" aria-selected="false">Draw</a>
+                            </div>
+                        </nav>
+                        <div className="tab-content" id="nav-tabContent">
+                            <div className="tab-pane fade show active" id="nav-notes" role="tabpanel" aria-labelledby="nav-notes-tab">
+                                <ProblemNotes index={index} isRender={false}/>
+                            </div>
+                            <div className="tab-pane fade" id="nav-draw" role="tabpanel" aria-labelledby="nav-draw-tab">
+                                <ProblemNotes index={index} isRender={true}/>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className="row">
-                    <div className="col">
-                        <h4>Given Code:</h4>
-                        <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
-                        <h4>Run After:</h4>
-                        <CodeEditor shareDBSubDoc={afterCodeSubDoc} />
-                    </div>
-                    <div className="col">
-                        <ProblemNotes index={index} />
-                        <h4>Standard Code:</h4>
-                        <CodeEditor shareDBSubDoc={standardCodeSubDoc} />
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col">
-                        <Tests index={index} />
+                <div>
+                    <nav>
+                        <div className="nav nav-tabs instructor-tab" id="nav-tab" role="tablist">
+                            <a className="nav-item nav-link active" id="nav-variables-tab" data-toggle="tab" href="#nav-variables" role="tab" aria-controls="nav-variables" aria-selected="true">Variables</a>
+                            <a className="nav-item nav-link" id="nav-config-tab" data-toggle="tab" href="#nav-config" role="tab" aria-controls="nav-config" aria-selected="false">Config</a>
+                            <a className="nav-item nav-link" id="nav-tests-tab" data-toggle="tab" href="#nav-tests" role="tab" aria-controls="nav-tests" aria-selected="false" onClick={refreshCM}>Tests</a>
+                        </div>
+                    </nav>
+                    <div className="tab-content" id="nav-tabContent">
+                        <div className="tab-pane fade show active" id="nav-variables" role="tabpanel" aria-labelledby="nav-variables-tab">
+                            <Variables index={index} />
+                        </div>
+                        <div className="tab-pane fade" id="nav-config" role="tabpanel" aria-labelledby="nav-config-tab">
+                            <ConfigPanel index={index} />
+                        </div>
+                        <div className="tab-pane fade" id="nav-tests" role="tabpanel" aria-labelledby="nav-tests-tab">
+                            <Tests index={index} flag={count} />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -93,7 +125,7 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                     <div className="nav nav-tabs student-tab" id="nav-tab" role="tablist">
                         <a className="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">My Solution</a>
                         {config.displayInstructor &&
-                            <a className="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false" onClick={refreshLiveCoding}>Instructor</a>
+                            <a className="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false" onClick={refreshCM}>Instructor</a>
                         }
                         {config.peerHelp &&
                             <a className="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false">Peers</a>
@@ -111,7 +143,7 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
                     </div>
                     {config.displayInstructor &&
                         <div className="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                            <LiveCode index={index} flag={count}/>
+                            <LiveCode index={index} flag={count} />
                         </div>
                     }
                     {config.peerHelp &&
