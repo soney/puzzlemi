@@ -21,7 +21,8 @@ export function addProblem() {
                 displayInstructor: false,
                 peerHelp: false,
                 autoVerify: false
-            }
+            },
+            sketch: [],
         };
 
         const newUserData: IProblemUserInfo = {
@@ -146,6 +147,22 @@ export function setProblemVisibility(id: string, visible: boolean) {
         } else {
             doc.submitObjectInsertOp(['userData', id], { completed: [], visible});
         }
+    };
+}
+
+export function setEditGivenCode(index: string, editgivencode: boolean) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        doc.submitObjectReplaceOp(['problems', index, 'editgivencode'], editgivencode);
+
+    };
+}
+export function updateSketch(index: string, sketch: any[]) {
+
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        doc.submitObjectReplaceOp(['problems', index, 'sketch'], sketch);
+
     };
 }
 

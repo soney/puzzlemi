@@ -29,11 +29,22 @@ const Problem = ({ id, visible, config, index, dispatch, doc, passedAll, isAdmin
         setCount(count + 1);
     }
 
+    // const doEditGivenCode = () => {
+    //     console.log('dd')
+    //     return dispatch(setEditGivenCode(index, true));
+    // }
+
+    // const doSketchGivenCode = () => {
+    //     console.log('sketch')
+    //     return dispatch(setEditGivenCode(index, false));
+    // }
+
     const iHaveCompleted = myCompletionIndex >= 0;
     const p = ['problems', index];
     const givenCodeSubDoc = doc.subDoc([...p, 'givenCode']);
     const afterCodeSubDoc = doc.subDoc([...p, 'afterCode']);
     const standardCodeSubDoc = doc.subDoc([...p, 'standardCode']);
+    // const whiteboardCodeSubDoc = doc.subDoc([...p, 'whiteboardCode']);
 
     return <li className={'problem container' + (passedAll === true ? ' passedAll' : '')}>
         {isAdmin &&
