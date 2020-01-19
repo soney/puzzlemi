@@ -37,6 +37,7 @@ enum EventTypes {
     MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED='multiple-choice selected options changed',
     TEXT_RESPONSE_CHANGED='text response changed',
     SDB_DOC_CHANGED='sharedb doc changed',
-    APP_STATE_CHANGED='app state changed'
+    APP_STATE_CHANGED='app state changed',
+    SELECT_USER_FOR_SOLUTION_VIEW='select user for solution view'
 };
 export default EventTypes;

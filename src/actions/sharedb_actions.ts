@@ -56,7 +56,7 @@ export interface IProblemPassedChangedAction {
     problemID: string,
     passedAll: boolean
 }
-export function updateUserMultipleChoiceCorrectness(problemID, dispatch, getState) {
+export async function updateUserMultipleChoiceCorrectness(problemID, dispatch, getState) {
     const { shareDBDocs, users, solutions } = getState();
     const problemsDoc = shareDBDocs.problems;
     const aggregateDataDoc = shareDBDocs.aggregateData;
@@ -65,11 +65,6 @@ export function updateUserMultipleChoiceCorrectness(problemID, dispatch, getStat
 
     const myuid = users.myuid as string;
 
-    // const state = getState();
-    // const { doc, problems, user } = state;
-    // const problemInfo = problems[index];
-    // const { id, problem } = problemInfo;
-     
     const userSolution = solutions.allSolutions[problemID][myuid];
 
     if(userSolution) {
@@ -93,10 +88,10 @@ export function updateUserMultipleChoiceCorrectness(problemID, dispatch, getStat
         if(passedAll) {
             if(userData[problemID]) {
                 if(userData[problemID].completed.indexOf(myuid) < 0) {
-                    aggregateDataDoc.submitListPushOp(['userData', problemID, 'completed'], myuid);
+                    await aggregateDataDoc.submitListPushOp(['userData', problemID, 'completed'], myuid);
                 }
             } else {
-                aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
+                await aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
                     completed: [myuid]
                 });
             }
@@ -105,7 +100,7 @@ export function updateUserMultipleChoiceCorrectness(problemID, dispatch, getStat
                 const completedIndex = userData[problemID].completed.indexOf(myuid);
             
                 if(completedIndex >= 0) {
-                    aggregateDataDoc.submitListDeleteOp(['userData', problemID, 'completed', completedIndex]);
+                    await aggregateDataDoc.submitListDeleteOp(['userData', problemID, 'completed', completedIndex]);
                 }
             }
         }
@@ -120,12 +115,12 @@ export interface IMultipleChoiceOptionAddedAction {
     option: IMultipleChoiceOption,
     problemID: string,
 }
-export function multipleChoiceOptionAdded(problemID: string, option: IMultipleChoiceOption) {
-    return (dispatch: Dispatch, getState) => {
+export async function multipleChoiceOptionAdded(problemID: string, option: IMultipleChoiceOption) {
+    return async (dispatch: Dispatch, getState) => {
         dispatch({
             problemID, option, type: EventTypes.OPTION_ADDED
         } as IMultipleChoiceOptionAddedAction);
-        updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+        await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
     };
 }
 export interface IMultipleChoiceOptionDeletedAction {
@@ -134,26 +129,26 @@ export interface IMultipleChoiceOptionDeletedAction {
     problemID: string,
 }
 export function multipleChoiceOptionDeleted(problemID: string, option: IMultipleChoiceOption) {
-    return (dispatch: Dispatch, getState) => {
+    return async (dispatch: Dispatch, getState) => {
         dispatch({
             problemID, option, type: EventTypes.OPTION_DELETED
         } as IMultipleChoiceOptionDeletedAction);
-        updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+        await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
     };
 }
 export function multipleChoiceOptionDescriptionChanged(problemID: string, optionID: string, description: string) {
-    return (dispatch: Dispatch, getState) => {
+    return async (dispatch: Dispatch, getState) => {
         dispatch({
             problemID, optionID, description, type: EventTypes.OPTION_DESCRIPTION_CHANGED
         });
-        updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+        await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
     };
 }
-export function multipleChoiceOptionCorrectChanged(problemID: string, optionID: string, isCorrect: boolean, dispatch, getState) {
+export async function multipleChoiceOptionCorrectChanged(problemID: string, optionID: string, isCorrect: boolean, dispatch, getState) {
     dispatch({
         problemID, optionID, isCorrect, type: EventTypes.OPTION_CORRECTNESS_CHANGED
     });
-    updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+    await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
 }
 
 export interface IMultipleChoiceSelectionTypeChangedAction {
@@ -161,27 +156,29 @@ export interface IMultipleChoiceSelectionTypeChangedAction {
     problemID: string,
     selectionType: IMultipleChoiceSelectionType
 }
-export function multipleChoiceSelectionTypeChanged(problemID: string, selectionType: IMultipleChoiceSelectionType, dispatch, getState) {
+export async function multipleChoiceSelectionTypeChanged(problemID: string, selectionType: IMultipleChoiceSelectionType, dispatch, getState) {
     dispatch({
         selectionType, problemID, type: EventTypes.MULTIPLE_CHOICE_SELECTION_TYPE_CHANGED
     } as IMultipleChoiceSelectionTypeChangedAction);
-    updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+    await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
 }
-export function multipleChoiceRevealSolutionChanged(problemID: string, revealSolution: boolean, dispatch, getState) {
+export async function multipleChoiceRevealSolutionChanged(problemID: string, revealSolution: boolean, dispatch, getState) {
     dispatch({
         index: problemID, revealSolution, type: EventTypes.MULTIPLE_CHOICE_REVEAL_SOLUTION_CHANGED
     });
-    updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+    await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
 }
 
 export function addMultipleChoiceOption(problemID: string, optionType:'fixed'='fixed') {
-    return (dispatch: Dispatch, getState) => {
+    return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
+        const aggregateDataDoc = shareDBDocs.aggregateData;
         const newOption: IMultipleChoiceOption = {
             id: uuid(), description: '(no description)', optionType, isCorrect: false
         };
-        problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'options'], newOption);
+        await problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'options'], newOption);
+        await aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'selected', newOption.id], []);
     };
 }
 
@@ -199,12 +196,15 @@ export function deleteMultipleChoiceOption(problemID: string, optionID: string) 
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
+        const aggregateDataDoc = shareDBDocs.aggregateData;
         const p = ['allProblems', problemID, 'problemDetails', 'options'];
         const options = problemsDoc.traverse(p);
         const optionIndex = getOptionIndex(options, optionID);
         if(optionIndex >= 0) {
             await problemsDoc.submitListDeleteOp([...p, optionIndex]);
-            updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+            await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+
+            await aggregateDataDoc.submitObjectDeleteOp(['userData', problemID, 'selected', optionID]);
         }
     };
 }
@@ -218,16 +218,16 @@ export function setMultipleChoiceOptionCorrect(problemID: string, optionID: stri
         const optionIndex = getOptionIndex(options, optionID);
         if(optionIndex >= 0) {
             await problemsDoc.submitObjectReplaceOp([...p, optionIndex, 'isCorrect'], correct);
-            updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+            await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
         }
     };
 }
 
 export function setMultipleChoiceSelectionEnabled(problemID: string, enabled: boolean) {
-    return (dispatch: Dispatch, getState) => {
+    return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
-        problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'selectionType'], enabled ? 'multiple' : 'single');
+        await problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'selectionType'], enabled ? 'multiple' : 'single');
     };
 }
 
@@ -259,9 +259,9 @@ export function addCodeProblem() {
         };
 
         await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
-        problemsDoc.submitListPushOp(['order'], newProblem.id);
+        await problemsDoc.submitListPushOp(['order'], newProblem.id);
 
-        aggregateDataDoc.submitObjectInsertOp([newProblem.id], {
+        await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], {
             completed: []
         });
     };
@@ -286,10 +286,11 @@ export function addMultipleChoiceProblem() {
         };
 
         await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
-        problemsDoc.submitListPushOp(['order'], newProblem.id);
+        await problemsDoc.submitListPushOp(['order'], newProblem.id);
 
-        aggregateDataDoc.submitObjectInsertOp([newProblem.id], {
-            completed: []
+        await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], {
+            completed: [],
+            selected: {}
         });
     };
 }
@@ -312,7 +313,7 @@ export function addTextResponseProblem() {
         await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
         problemsDoc.submitListPushOp(['order'], newProblem.id);
 
-        aggregateDataDoc.submitObjectInsertOp([newProblem.id], { });
+        aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], { });
     };
 }
 

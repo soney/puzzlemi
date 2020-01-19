@@ -9,7 +9,7 @@ import { IMultipleChoiceSolution } from '../../../reducers/solutions';
 import * as classNames from 'classnames';
 import { IPMState } from '../../../reducers';
 
-const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolution, optionIndex, problem, description, dispatch, problemsDoc, isAdmin, isCorrect }) => {
+const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolution, optionIndex, problem, description, dispatch, problemsDoc, isAdmin, isCorrect, numSelected }) => {
     const doDeleteOption = () => {
         dispatch(deleteMultipleChoiceOption(problem.id, option.id));
     }
@@ -49,9 +49,13 @@ const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolu
         const optionDescription = { __html: converter.makeHtml(description) };
 
         return <tr className={classNames({ 'alert-danger': revealSolution && !userCorrect })}>
-            <td colSpan={3}>
+            <td colSpan={revealSolution ? 2 : 3}>
                 <label><input disabled={revealSolution} type={selectionType === 'single' ? 'radio' : 'checkbox'} key={option.id} name={problem.id} value={option.id} checked={selectedItems.indexOf(option.id) >= 0} onChange={onSelectionChange} /> <span className='multiple-choice-option' dangerouslySetInnerHTML={optionDescription} /></label>
             </td>
+            {
+                revealSolution &&
+                <td className='selectionCount'>{numSelected}</td>
+            }
         </tr>;
     }
 }

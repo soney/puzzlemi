@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { connect } from "react-redux";
-import ProblemDescription from './ProblemDescription';
+import ProblemDescription from '../ProblemDescription';
 import update from 'immutability-helper';
-import { CodeEditor } from '../CodeEditor';
-import { setTextResponse } from '../../actions/user_actions';
-import { IPMState } from '../../reducers';
-import { ITextResponseSolution } from '../../reducers/solutions';
+import { CodeEditor } from '../../CodeEditor';
+import { setTextResponse } from '../../../actions/user_actions';
+import { IPMState } from '../../../reducers';
+import { ITextResponseSolution } from '../../../reducers/solutions';
+import SolutionView from '../SolutionView';
 
 const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin }) => {
     const { response } = userSolution;
@@ -17,6 +18,9 @@ const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin }) => {
             <div className="col">
                 <ProblemDescription problem={problem} />
             </div>
+            { isAdmin &&
+                <SolutionView problem={problem} />
+            }
             {   !isAdmin &&
                 <div className="col">
                     <CodeEditor value={response} onChange={doSetResponse} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true }} />

@@ -77,6 +77,11 @@ html {
                 display: inline;
             }
         }
+
+        .selectionCount {
+            text-align: right;
+            color: #999;
+        }
     }
 }
 .CodeMirror {
@@ -94,6 +99,31 @@ html {
 
     &.no-error {
         border: 1px solid #EEE;
+    }
+}
+
+nav {
+    .users {
+        // line-break: strict;
+        // white-space: pre;
+        word-wrap: break-word;
+        // overflow-wrap: break-word;
+        // height: 100px;
+        // overflow-x: hidden;
+        overflow-y: scroll;
+        max-height: 200px;
+        font-size: 0.75em;
+
+        border: 1px solid #EEE;
+        
+        color: #666;
+        a.user {
+            color: #999;
+            &.selected {
+                color: royalblue;
+                text-decoration: underline;
+            }
+        }
     }
 }
 

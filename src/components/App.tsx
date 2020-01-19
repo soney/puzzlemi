@@ -69,7 +69,8 @@ function mapDispatchToProps(dispatch, ownProps) {
         debugMode: DEBUG_MODE,
         websocketLocation: DEBUG_MODE ? `ws://localhost:8000` : `${window.location.protocol === 'http:' ? 'ws' : 'wss'}://${window.location.host}`,
         channel: DEBUG_MODE ? 'p' : window.location.pathname.slice(1).split('/')[1],
-        postBase: DEBUG_MODE ? `http://localhost:8000` : ''
+        postBase: DEBUG_MODE ? `http://localhost:8000` : '',
+        selectedUserForSolutionsView: false
     };
     dispatch(setAppState(appState));
 
@@ -102,6 +103,8 @@ function mapDispatchToProps(dispatch, ownProps) {
             const usersDoc: SDBDoc<any> = sdbClient.get(appState.channel, 'users');
             dispatch(setSolutionsDoc(solutionsDoc));
             dispatch(setUsersDoc(usersDoc));
+            solutionsDoc.subscribe();
+            usersDoc.subscribe();
         }
         return myInfo;
     });

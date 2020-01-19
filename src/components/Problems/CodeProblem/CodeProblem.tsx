@@ -10,6 +10,7 @@ import { codeChanged } from '../../../actions/user_actions';
 import { ICodeSolution } from '../../../reducers/solutions';
 import { ISolutionState, ICodeSolutionState } from '../../../reducers/intermediateUserState';
 import { IPMState } from '../../../reducers';
+import SolutionView from '../SolutionView';
 
 const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, intermediateCodeState, output, errors }) => {
     const codeSolution = userSolution as ICodeSolution;
@@ -69,6 +70,9 @@ const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, in
                 <Tests problem={problem} />
             </div>
         </div>
+        { isAdmin &&
+            <SolutionView problem={problem} />
+        }
     </>;
 }
 

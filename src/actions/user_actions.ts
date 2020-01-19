@@ -26,14 +26,32 @@ export interface IMultipleChoiceSelectedOptionsChangedAction {
     problemID: string
 }
 export function setUserSelectedOptions(problemID: string, selectedItems: string[]) {
-    return (dispatch: Dispatch, getState) => {
+    return async (dispatch: Dispatch, getState) => {
         dispatch({
             problemID,
             selectedItems,
             type: EventTypes.MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED
         } as IMultipleChoiceSelectedOptionsChangedAction);
-        console.log(selectedItems);
+        const { shareDBDocs, users } = getState();
+        const myuid = users.myuid as string;
         updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        const aggregateData = aggregateDataDoc.getData();
+        const optionSelectedData = aggregateData.userData[problemID].selected;
+
+        for(let optionID in optionSelectedData) {
+            if(optionSelectedData.hasOwnProperty(optionID)) {
+                const usersWhoSelectedOption = optionSelectedData[optionID];
+                const mySelectedOptionIndex = usersWhoSelectedOption.indexOf(myuid);
+                const inNewSelectedOptions = selectedItems.indexOf(optionID) >= 0;
+
+                if(mySelectedOptionIndex >= 0 && !inNewSelectedOptions) {
+                    await aggregateDataDoc.submitListDeleteOp(['userData', problemID, 'selected', optionID, mySelectedOptionIndex]);
+                } else if(mySelectedOptionIndex < 0 && inNewSelectedOptions) {
+                    await aggregateDataDoc.submitListPushOp(['userData', problemID, 'selected', optionID], myuid);
+                }
+            }
+        }
     };
 }
 

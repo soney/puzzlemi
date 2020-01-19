@@ -5,13 +5,14 @@ import { addMultipleChoiceOption } from '../../../actions/sharedb_actions';
 import { IMultipleChoiceSolution } from '../../../reducers/solutions';
 import { IPMState } from '../../../reducers';
 import MultipleChoiceOption from './MultipleChoiceOption';
+import { IMultipleChoiceSolutionAggregate } from '../../../reducers/aggregateData';
 
-const MultipleChoiceOptions = ({ problem, options, dispatch, isAdmin }) => {
+const MultipleChoiceOptions = ({ problem, options, dispatch, isAdmin, aggregateData }) => {
     const doAddOption = () => {
         dispatch(addMultipleChoiceOption(problem.id));
     }
     const optionItems: JSX.Element[] = options.map((option, i) => {
-        return <MultipleChoiceOption key={`${option.id}-${i}`} problem={problem} option={option} />
+        return <MultipleChoiceOption key={`${option.id}-${i}`} problem={problem} option={option} numSelected={aggregateData[option.id]||0} />
     });
 
     return <table className="table multiple-choice-table">
@@ -39,11 +40,12 @@ const MultipleChoiceOptions = ({ problem, options, dispatch, isAdmin }) => {
         </table>;
 }
 function mapStateToProps(state: IPMState, ownProps) {
-    const { intermediateUserState, solutions, users } = state;
+    const { intermediateUserState, solutions, users, shareDBDocs } = state;
     const { isAdmin } = intermediateUserState;
 
     const { problem } = ownProps;
     const { problemDetails } = problem;
+    const { revealSolution }  = problemDetails;
     const problemID = problem.id;
 
     const myuid = users.myuid as string;
@@ -52,6 +54,21 @@ function mapStateToProps(state: IPMState, ownProps) {
 
     const optionIDs = options.map((o) => o.id); // fingerprint
 
-    return update(ownProps, { $merge: { isAdmin, userSolution, options, optionIDs } });
+    let aggregateData: {[optionID: string]: number} = {};
+    try {
+        if(revealSolution) {
+            const aggregateDataDoc = shareDBDocs.aggregateData;
+            const aggData = aggregateDataDoc!.getData();
+            const problemSelectionData = aggData.userData[problem.id] as IMultipleChoiceSolutionAggregate;
+            const optionSelectionData = problemSelectionData.selected;
+            optionIDs.forEach((optionID: string) => {
+                aggregateData[optionID] = optionSelectionData[optionID] ? optionSelectionData[optionID].length : 0;
+            });
+        }
+    } catch(e) {
+        console.error(e);
+    }
+
+    return update(ownProps, { $merge: { isAdmin, userSolution, options, optionIDs, aggregateData } });
 }
 export default connect(mapStateToProps)(MultipleChoiceOptions);

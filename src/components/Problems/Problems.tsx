@@ -40,7 +40,6 @@ function mapStateToProps(state:IPMState, givenProps) {
     const problems = problemsDoc ? problemsDoc.getData() : null;
 
     const problemsDocReady = problemsDoc && !!(problemsDoc.getData());
-    console.log(problems, problemsDocReady);
 
     let filteredProblems: IProblem[] = [];
     if(problems) {

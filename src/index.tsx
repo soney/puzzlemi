@@ -13,7 +13,7 @@ import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { PersistGate } from 'redux-persist/integration/react';
 
-const ENABLE_LOGGER = true;
+const ENABLE_LOGGER = false;
 const middleware = [thunkMiddleware];
 if(ENABLE_LOGGER) {
     const loggerMiddleware = createLogger();

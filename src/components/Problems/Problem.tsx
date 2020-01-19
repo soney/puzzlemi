@@ -5,7 +5,7 @@ import { deleteProblem, setProblemVisibility } from '../../actions/sharedb_actio
 import CodeProblem from './CodeProblem/CodeProblem';
 import MultipleChoiceProblem from './MultipleChoiceProblem/MultipleChoiceProblem';
 import * as classNames from 'classnames';
-import TextResponseProblem from './TextResponseProblem';
+import TextResponseProblem from './TextResponseProblem/TextResponseProblem';
 import { IPMState } from '../../reducers';
 
 const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSolution, isAdmin }) => {
@@ -45,11 +45,6 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
                     </div>
                     <button className="btn btn-sm btn-outline-danger float-right" onClick={doDeleteProblem}>Delete Problem</button>
                 </div>
-            </div>
-        }
-        { isAdmin &&
-            <div>
-                Solutions:
             </div>
         }
         {problemDisplay}
