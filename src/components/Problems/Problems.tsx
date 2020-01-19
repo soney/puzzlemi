@@ -4,6 +4,7 @@ import Problem from './Problem';
 import update from 'immutability-helper';
 import { addCodeProblem, addMultipleChoiceProblem, addTextResponseProblem } from '../../actions/sharedb_actions';
 import { IProblem } from '../../reducers/problems';
+import { IPMState } from '../../reducers';
 
 const Problems = ({ isAdmin, dispatch, problems }) => {
     const doAddCodeProblem = (): void => {
@@ -32,11 +33,14 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
         }
     </ul>
 }
-function mapStateToProps(state, givenProps) {
+function mapStateToProps(state:IPMState, givenProps) {
     const { intermediateUserState, shareDBDocs } = state;
     const { isAdmin } = intermediateUserState;
     const problemsDoc = shareDBDocs.problems;
-    const problems = problemsDoc.getData();
+    const problems = problemsDoc ? problemsDoc.getData() : null;
+
+    const problemsDocReady = problemsDoc && !!(problemsDoc.getData());
+    console.log(problems, problemsDocReady);
 
     let filteredProblems: IProblem[] = [];
     if(problems) {
@@ -50,7 +54,7 @@ function mapStateToProps(state, givenProps) {
         });
     }
 
-    return update(givenProps, { $merge: { problems: filteredProblems, isAdmin } });
+    return update(givenProps, { $merge: { problems: filteredProblems, isAdmin, problemsDocReady } });
 
 }
 export default connect(mapStateToProps)(Problems);

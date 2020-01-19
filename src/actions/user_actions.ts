@@ -32,6 +32,7 @@ export function setUserSelectedOptions(problemID: string, selectedItems: string[
             selectedItems,
             type: EventTypes.MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED
         } as IMultipleChoiceSelectedOptionsChangedAction);
+        console.log(selectedItems);
         updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
     };
 }
