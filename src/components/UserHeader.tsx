@@ -3,14 +3,20 @@ import * as React from 'react';
 import { setIsAdmin } from '../actions/user_actions';
 import update from 'immutability-helper';
 import { IPuzzleSet } from "./App";
+import { IPMState } from "../reducers";
 
-const PMUserHeader = ({loggedIn, username, email, isInstructor, dispatch, doc, isAdmin}) => {
+const PMUserHeader = ({users, dispatch, problemsDoc, isAdmin}) => {
+    const { myuid } = users;
+    if(!myuid) { return <nav>fetching user information...</nav> }
+
+    const { loggedIn, isInstructor, username, email } = users.allUsers[myuid];
+
     const handleEditChange = (event) => {
         const checked = event.target.checked;
         dispatch(setIsAdmin(checked));
     }
     const downloadJSON = () => {
-        const data = doc.getData();
+        const data = problemsDoc.getData();
         let newData = data;
         for(let key in data.userData) {
             if(data.hasOwnProperty(key)) {
@@ -34,7 +40,7 @@ const PMUserHeader = ({loggedIn, username, email, isInstructor, dispatch, doc, i
                 if(e.target) {
                     const result = e.target.result as string;
                     const newData: IPuzzleSet = JSON.parse(result);
-                    doc.submitObjectReplaceOp([], newData);
+                    problemsDoc.submitObjectReplaceOp([], newData);
                 }
             }
             reader.readAsText(file);
@@ -53,12 +59,12 @@ const PMUserHeader = ({loggedIn, username, email, isInstructor, dispatch, doc, i
     </nav>
 }
 
-function mapStateToProps(state, ownProps) {
-    const { user, doc } = state;
-    const { userInfo } = user;
-    const { isAdmin } = user;
+function mapStateToProps(state: IPMState, ownProps) {
+    const { users, shareDBDocs, intermediateUserState } = state;
 
-    return update(userInfo, { isAdmin: { $set: isAdmin}, doc: { $set: doc }});
+    const { isAdmin } = intermediateUserState;
+
+    return update(ownProps, { $merge: { problemsDoc: shareDBDocs.problems, isAdmin, users } });
 }
 export default connect(mapStateToProps)(PMUserHeader);
 

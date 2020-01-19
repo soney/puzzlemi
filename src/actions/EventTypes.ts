@@ -17,7 +17,7 @@ enum EventTypes {
     FILE_PART_CHANGED='file part changed',
     FILE_DELETED='file deleted',
     PROBLEM_DELETED='problem deleted',
-    PUZZLES_FETCHED='puzzles fetched',
+    PROBLEMS_FETCHED='puzzles fetched',
     SET_DOC='set doc',
     SET_IS_ADMIN='set is admin',
     CODE_CHANGED='code changed',
@@ -35,6 +35,8 @@ enum EventTypes {
     PROBLEM_VISIBILITY_CHANGED='problem visibility changed',
     SET_USER='set user',
     MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED='multiple-choice selected options changed',
-    TEXT_RESPONSE_CHANGED='text response changed'
+    TEXT_RESPONSE_CHANGED='text response changed',
+    SDB_DOC_CHANGED='sharedb doc changed',
+    APP_STATE_CHANGED='app state changed'
 };
 export default EventTypes;

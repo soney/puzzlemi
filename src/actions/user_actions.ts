@@ -1,65 +1,67 @@
 import EventTypes from "./EventTypes";
 import { Dispatch } from "redux";
-import { IUserInfo } from "../components/App";
 import { updateUserMultipleChoiceCorrectness } from "./sharedb_actions";
+import { IUserInfo } from "../reducers/users";
+import { IProblem } from "../reducers/problems";
 
-export const setIsAdmin = (isAdmin: boolean) => ({
+export interface ISetIsAdminAction {
+    type: EventTypes.SET_IS_ADMIN,
+    isAdmin: boolean
+};
+export const setIsAdmin = (isAdmin: boolean): ISetIsAdminAction => ({
     isAdmin, type: EventTypes.SET_IS_ADMIN,
 });
 
-export const setUser = (user: IUserInfo) => ({
+export interface ISetUserAction {
+    type: EventTypes.SET_USER,
+    user: IUserInfo
+}
+export const setUser = (user: IUserInfo): ISetUserAction => ({
     user, type: EventTypes.SET_USER
 });
 
-export function setUserSelectedOptions(index: number, selectedItems: number[]) {
+export interface IMultipleChoiceSelectedOptionsChangedAction {
+    type: EventTypes.MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED,
+    selectedItems: string[],
+    problemID: string
+}
+export function setUserSelectedOptions(problemID: string, selectedItems: string[]) {
     return (dispatch: Dispatch, getState) => {
-        const { problems } = getState();
-        const problemInfo = problems[index];
-        const problemId = problemInfo.id;
-
         dispatch({
-            problemId,
+            problemID,
             selectedItems,
             type: EventTypes.MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED
-        });
-        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
+        } as IMultipleChoiceSelectedOptionsChangedAction);
+        updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
     };
 }
 
-export function deleteUserFile(index: number, name: string) {
-    return (dispatch: Dispatch, getState) => {
-        const { problems } = getState();
-        const problemInfo = problems[index];
-        const problemId = problemInfo.id;
-
-        dispatch({
-            name, problemId, type: EventTypes.DELETE_USER_FILE
-        });
-    };
+export interface IDeleteUserFileAction {
+    type: EventTypes.DELETE_USER_FILE,
+    problemID: string,
+    fileID: string
 }
-export function setCode(index: number, code: string) {
-    return (dispatch: Dispatch, getState) => {
-        const { problems } = getState();
-        const problemInfo = problems[index];
-        const { id } = problemInfo;
+export const deleteUserFile = (problemID: string, fileID: string): IDeleteUserFileAction => ({
+    fileID, problemID, type: EventTypes.DELETE_USER_FILE
+});
 
-        dispatch({
-            code, id, modified: true, type: EventTypes.CODE_CHANGED
-        });
-    };
+export interface ICodeChangedAction {
+    type: EventTypes.CODE_CHANGED,
+    code: string,
+    problemID: string
 }
+export const codeChanged = (problem: IProblem, code: string): ICodeChangedAction => ({
+    code, problemID: problem.id, type: EventTypes.CODE_CHANGED
+});
 
-export function setTextResponse(index: number, response: string) {
-    return (dispatch: Dispatch, getState) => {
-        const { problems } = getState();
-        const problemInfo = problems[index];
-        const { id } = problemInfo;
-
-        dispatch({
-            response, id, type: EventTypes.TEXT_RESPONSE_CHANGED
-        });
-    };
+export interface ITextResponseChangedAction {
+    type: EventTypes.TEXT_RESPONSE_CHANGED,
+    response: string,
+    problemID: string
 }
+export const setTextResponse = (problemID: string, response: string): ITextResponseChangedAction => ({
+    response, problemID, type: EventTypes.TEXT_RESPONSE_CHANGED
+});
 
 export function resetCode(index: number) {
     return (dispatch: Dispatch, getState) => {

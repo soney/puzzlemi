@@ -4,15 +4,18 @@ import ProblemDescription from './ProblemDescription';
 import update from 'immutability-helper';
 import { CodeEditor } from '../CodeEditor';
 import { setTextResponse } from '../../actions/user_actions';
+import { IPMState } from '../../reducers';
+import { ITextResponseSolution } from '../../reducers/solutions';
 
-const TextResponseProblem = ({ index, response, dispatch, isAdmin }) => {
+const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin }) => {
+    const { response } = userSolution;
     const doSetResponse = (ev) => {
         const { value } = ev;
-        return dispatch(setTextResponse(index, value));
+        return dispatch(setTextResponse(problem.id, value));
     };
     return <>
             <div className="col">
-                <ProblemDescription index={index} />
+                <ProblemDescription problem={problem} />
             </div>
             {   !isAdmin &&
                 <div className="col">
@@ -21,13 +24,14 @@ const TextResponseProblem = ({ index, response, dispatch, isAdmin }) => {
             }
     </>;
 }
-function mapStateToProps(state, ownProps) {
-    const { index } = ownProps;
-    const { user, doc, problems } = state;
-    const { id } = problems[index];
-    const { isAdmin } = user;
-    const { response } = user.solutions[id];
+function mapStateToProps(state: IPMState, ownProps) {
+    const { intermediateUserState, shareDBDocs, solutions, users } = state;
+    const { isAdmin } = intermediateUserState;
+    const problemsDoc = shareDBDocs.problems;
 
-    return update(ownProps, { id: {$set: id}, isAdmin: { $set: isAdmin }, doc: { $set: doc }, response: { $set: response }});
+    const myuid = users.myuid as string;
+    const userSolution = solutions.allSolutions[ownProps.problem.id][myuid] as ITextResponseSolution;
+
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution } });
 }
 export default connect(mapStateToProps)(TextResponseProblem);

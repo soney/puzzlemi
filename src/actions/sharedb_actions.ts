@@ -1,64 +1,82 @@
-import { IPuzzleSet, IProblem, IMultipleChoiceOption } from '../components/App';
 import { SDBDoc } from 'sdb-ts';
 import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
 import EventTypes from './EventTypes';
-import { ListInsertOp, ListDeleteOp, ObjectInsertOp } from 'sharedb';
+import { ObjectInsertOp, ListDeleteOp } from 'sharedb';
+import { IProblem, IMultipleChoiceOption, IProblems, ICodeTest, IMultipleChoiceSelectionType } from '../reducers/problems';
+import { IAggregateData } from '../reducers/aggregateData';
+import { IUsers } from '../reducers/users';
+import { ISolutions } from '../reducers/solutions';
 
-export const puzzlesFetched = (puzzles: IPuzzleSet) => ({
-    puzzles, type: EventTypes.PUZZLES_FETCHED,
-});
-export const problemAdded = (index: number, problem: IProblem) => ({
-    index, problem, type: EventTypes.PROBLEM_ADDED,
-});
-export const descriptionChanged = (index: number, description: string) => ({
-    description, index, type: EventTypes.DESCRIPTION_CHANGED,
-});
-export const givenCodeChanged = (index: number, id: string, code: string) => ({
-    code, id, index, type: EventTypes.GIVEN_CODE_CHANGED,
-});
-export const afterCodeChanged = (index: number, code: string) => ({
-    code, index, type: EventTypes.AFTER_CODE_CHANGED,
-});
-export const problemDeleted = (index: number) => ({
-    index, type: EventTypes.PROBLEM_DELETED,
-});
-export const testAdded = (id: string, index: number, testIndex: number, test) => ({
-    id, index, test, testIndex, type: EventTypes.TEST_ADDED,
-});
-export const testDeleted = (id: string, index: number, testIndex: number) => ({
-    id, index, testIndex, type: EventTypes.TEST_DELETED,
-});
-export const fileAdded = (index: number, fileIndex: number, file) => ({
-    file, fileIndex, index, type: EventTypes.FILE_ADDED,
-});
-export const fileDeleted = (index: number, fileIndex: number) => ({
-    fileIndex, index, type: EventTypes.FILE_DELETED,
-});
-export const filePartChanged = (index: number, fileIndex: number, part: 'name'|'contents', value) => ({
-    fileIndex, index, part, type: EventTypes.FILE_PART_CHANGED, value
-});
-export const testPartChanged = (id: string, index: number, testIndex: number, part: 'actual'|'expected'|'description', value) => ({
-    id, index, part, testIndex, type: EventTypes.TEST_PART_CHANGED, value
-});
-export const setDoc = (doc: SDBDoc<IPuzzleSet>) => ({
-    doc, type: EventTypes.SET_DOC,
+export interface IProblemAddedAction {
+    type: EventTypes.PROBLEM_ADDED,
+    problem: IProblem
+};
+const problemAdded = (problem: IProblem): IProblemAddedAction => ({
+    problem, type: EventTypes.PROBLEM_ADDED,
 });
 
-export function updateUserMultipleChoiceCorrectness(index, dispatch, getState) {
-    const state = getState();
-    const { doc, problems, user } = state;
-    const problemInfo = problems[index];
-    const { id, problem } = problemInfo;
+export interface IProblemsFetchedAction {
+    type: EventTypes.PROBLEMS_FETCHED,
+    problems: IProblems
+}
+export const problemsFetched = (problems: IProblems): IProblemsFetchedAction => ({
+    problems, type: EventTypes.PROBLEMS_FETCHED,
+});
+
+export interface IGivenCodeChangedAction {
+    type: EventTypes.GIVEN_CODE_CHANGED,
+    problemID: string,
+    code: string
+}
+export const givenCodeChanged = (problemID: string, code: string): IGivenCodeChangedAction => ({
+    code, problemID, type: EventTypes.GIVEN_CODE_CHANGED,
+});
+
+export interface ISetDocAction {
+    type: EventTypes.SET_DOC,
+    docType: string,
+    doc: SDBDoc<any>
+}
+export const setProblemsDoc = (doc: SDBDoc<IProblems>): ISetDocAction => ({
+    doc, docType: 'problems', type: EventTypes.SET_DOC,
+});
+export const setSolutionsDoc = (doc: SDBDoc<ISolutions>): ISetDocAction => ({
+    doc, docType: 'solutions', type: EventTypes.SET_DOC,
+});
+export const setUsersDoc = (doc: SDBDoc<IUsers>): ISetDocAction => ({
+    doc, docType: 'users', type: EventTypes.SET_DOC,
+});
+export const setAggregateDataDoc = (doc: SDBDoc<IAggregateData>): ISetDocAction => ({
+    doc, docType: 'aggregateData', type: EventTypes.SET_DOC,
+});
+
+export interface IProblemPassedChangedAction {
+    type: EventTypes.PROBLEM_PASSED_CHANGED,
+    problemID: string,
+    passedAll: boolean
+}
+export function updateUserMultipleChoiceCorrectness(problemID, dispatch, getState) {
+    const { shareDBDocs, users, solutions } = getState();
+    const problemsDoc = shareDBDocs.problems;
+    const aggregateDataDoc = shareDBDocs.aggregateData;
+    const problem = problemsDoc.getData().allProblems[problemID];
+    const { problemDetails } = problem;
+
+    const myuid = users.myuid as string;
+
+    // const state = getState();
+    // const { doc, problems, user } = state;
+    // const problemInfo = problems[index];
+    // const { id, problem } = problemInfo;
      
-    const userID = user.id;
+    const userSolution = solutions.allSolutions[problemID][myuid];
 
-    const userSolution = state.user.solutions[id];
     if(userSolution) {
         let passedAll: boolean = true;
-        if(problem.revealSolution) {
+        if(problemDetails.revealSolution) {
             const { selectedItems } = userSolution;
-            const { options } = problem;
+            const { options } = problemDetails;
 
             options.forEach((option) => {
                 const { id, isCorrect } = option;
@@ -71,124 +89,166 @@ export function updateUserMultipleChoiceCorrectness(index, dispatch, getState) {
         } else {
             passedAll = false;
         }
-        const { userData } = doc.getData();
+        const { userData } = aggregateDataDoc.getData();
         if(passedAll) {
-            if(userData[id]) {
-                if(userData[id].completed.indexOf(userID) < 0) {
-                    doc.submitListPushOp(['userData', id, 'completed'], userID);
+            if(userData[problemID]) {
+                if(userData[problemID].completed.indexOf(myuid) < 0) {
+                    aggregateDataDoc.submitListPushOp(['userData', problemID, 'completed'], myuid);
                 }
             } else {
-                doc.submitObjectInsertOp(['userData', id], {
-                    completed: [userID],
-                    visible: true
+                aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
+                    completed: [myuid]
                 });
             }
         } else {
-            if(userData[id]) {
-                const completedIndex = userData[id].completed.indexOf(userID);
+            if(userData[problemID]) {
+                const completedIndex = userData[problemID].completed.indexOf(myuid);
             
                 if(completedIndex >= 0) {
-                    doc.submitListDeleteOp(['userData', id, 'completed', completedIndex]);
+                    aggregateDataDoc.submitListDeleteOp(['userData', problemID, 'completed', completedIndex]);
                 }
             }
         }
         dispatch({
-            index, problemId: id, passedAll, type: EventTypes.PROBLEM_PASSED_CHANGED
-        });
+            problemID, passedAll, type: EventTypes.PROBLEM_PASSED_CHANGED
+        } as IProblemPassedChangedAction);
     }
 }
 
-export function multipleChoiceOptionAdded(index: number, optionIndex: number, option: IMultipleChoiceOption) {
+export interface IMultipleChoiceOptionAddedAction {
+    type: EventTypes.OPTION_ADDED,
+    option: IMultipleChoiceOption,
+    problemID: string,
+}
+export function multipleChoiceOptionAdded(problemID: string, option: IMultipleChoiceOption) {
     return (dispatch: Dispatch, getState) => {
         dispatch({
-            index, option, optionIndex, type: EventTypes.OPTION_ADDED
-        });
-        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
+            problemID, option, type: EventTypes.OPTION_ADDED
+        } as IMultipleChoiceOptionAddedAction);
+        updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
     };
 }
-export function multipleChoiceOptionDeleted(index: number, optionIndex: number) {
+export interface IMultipleChoiceOptionDeletedAction {
+    type: EventTypes.OPTION_DELETED,
+    option: IMultipleChoiceOption,
+    problemID: string,
+}
+export function multipleChoiceOptionDeleted(problemID: string, option: IMultipleChoiceOption) {
     return (dispatch: Dispatch, getState) => {
         dispatch({
-            index, optionIndex, type: EventTypes.OPTION_DELETED
-        });
-        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
+            problemID, option, type: EventTypes.OPTION_DELETED
+        } as IMultipleChoiceOptionDeletedAction);
+        updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
     };
 }
-export function multipleChoiceOptionDescriptionChanged(index: number, optionIndex: number, description: string) {
+export function multipleChoiceOptionDescriptionChanged(problemID: string, optionID: string, description: string) {
     return (dispatch: Dispatch, getState) => {
         dispatch({
-            index, optionIndex, description, type: EventTypes.OPTION_DESCRIPTION_CHANGED
+            problemID, optionID, description, type: EventTypes.OPTION_DESCRIPTION_CHANGED
         });
-        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
+        updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
     };
 }
-export function multipleChoiceOptionCorrectChanged(index: number, optionIndex: number, isCorrect: boolean) {
-    return (dispatch: Dispatch, getState) => {
-        dispatch({
-            index, optionIndex, isCorrect, type: EventTypes.OPTION_CORRECTNESS_CHANGED
-        });
-        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
-    };
+export function multipleChoiceOptionCorrectChanged(problemID: string, optionID: string, isCorrect: boolean, dispatch, getState) {
+    dispatch({
+        problemID, optionID, isCorrect, type: EventTypes.OPTION_CORRECTNESS_CHANGED
+    });
+    updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
 }
-export function multipleChoiceSelectionTypeChanged(index: number, selectionType: 'single'|'multiple', problemId: string) {
-    return (dispatch: Dispatch, getState) => {
-        dispatch({
-            index, selectionType, problemId, type: EventTypes.MULTIPLE_CHOICE_SELECTION_TYPE_CHANGED
-        });
-        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
-    };
+
+export interface IMultipleChoiceSelectionTypeChangedAction {
+    type: EventTypes.MULTIPLE_CHOICE_SELECTION_TYPE_CHANGED,
+    problemID: string,
+    selectionType: IMultipleChoiceSelectionType
 }
-export function multipleChoiceRevealSolutionChanged(index: number, revealSolution: boolean) {
-    return (dispatch: Dispatch, getState) => {
-        dispatch({
-            index, revealSolution, type: EventTypes.MULTIPLE_CHOICE_REVEAL_SOLUTION_CHANGED
-        });
-        updateUserMultipleChoiceCorrectness(index, dispatch, getState);
-    };
+export function multipleChoiceSelectionTypeChanged(problemID: string, selectionType: IMultipleChoiceSelectionType, dispatch, getState) {
+    dispatch({
+        selectionType, problemID, type: EventTypes.MULTIPLE_CHOICE_SELECTION_TYPE_CHANGED
+    } as IMultipleChoiceSelectionTypeChangedAction);
+    updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
 }
-export function addMultipleChoiceOption(index: number, optionType:'fixed'|'free-response'='fixed') {
+export function multipleChoiceRevealSolutionChanged(problemID: string, revealSolution: boolean, dispatch, getState) {
+    dispatch({
+        index: problemID, revealSolution, type: EventTypes.MULTIPLE_CHOICE_REVEAL_SOLUTION_CHANGED
+    });
+    updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+}
+
+export function addMultipleChoiceOption(problemID: string, optionType:'fixed'='fixed') {
     return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
         const newOption: IMultipleChoiceOption = {
             id: uuid(), description: '(no description)', optionType, isCorrect: false
         };
-        doc.submitListPushOp(['problems', index, 'problem', 'options'], newOption);
-    };
-}
-export function deleteMultipleChoiceOption(index: number, optionIndex: number) {
-    return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
-        doc.submitListDeleteOp(['problems', index, 'problem', 'options', optionIndex]);
+        problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'options'], newOption);
     };
 }
 
-export function setMultipleChoiceOptionCorrect(index: number, optionIndex: number, correct: boolean) {
-    return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
-        doc.submitObjectReplaceOp(['problems', index, 'problem', 'options', optionIndex, 'isCorrect'], correct);
+function getOptionIndex(options: IMultipleChoiceOption[], optionID: string): number {
+    for(let i: number = 0, len=options.length; i<len; i++) {
+        const option = options[i];
+        if(option.id === optionID) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+export function deleteMultipleChoiceOption(problemID: string, optionID: string) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        const p = ['allProblems', problemID, 'problemDetails', 'options'];
+        const options = problemsDoc.traverse(p);
+        const optionIndex = getOptionIndex(options, optionID);
+        if(optionIndex >= 0) {
+            await problemsDoc.submitListDeleteOp([...p, optionIndex]);
+            updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+        }
     };
 }
 
-export function setMultipleChoiceSelectionEnabled(index: number, enabled: boolean) {
-    return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
-        doc.submitObjectReplaceOp(['problems', index, 'problem', 'selectionType'], enabled ? 'multiple' : 'single');
+export function setMultipleChoiceOptionCorrect(problemID: string, optionID: string, correct: boolean) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        const p = ['allProblems', problemID, 'problemDetails', 'options'];
+        const options = problemsDoc.traverse(p);
+        const optionIndex = getOptionIndex(options, optionID);
+        if(optionIndex >= 0) {
+            await problemsDoc.submitObjectReplaceOp([...p, optionIndex, 'isCorrect'], correct);
+            updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+        }
     };
 }
 
-export function setRevealSolution(index: number, reveal: boolean) {
+export function setMultipleChoiceSelectionEnabled(problemID: string, enabled: boolean) {
     return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
-        doc.submitObjectReplaceOp(['problems', index, 'problem', 'revealSolution'], reveal);
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'selectionType'], enabled ? 'multiple' : 'single');
+    };
+}
+
+export function setRevealSolution(problemID: number, reveal: boolean) {
+    return (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'revealSolution'], reveal);
     };
 }
 
 export function addCodeProblem() {
-    return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+
         const newProblem: IProblem = {
             id: uuid(),
-            problem: {
+            visible: true,
+            problemDetails: {
                 problemType: 'code',
                 tests: [],
                 givenCode: `# code here`,
@@ -198,20 +258,25 @@ export function addCodeProblem() {
             }
         };
 
-        doc.submitObjectInsertOp(['userData', newProblem.id], {
-            completed: [],
-            visible: true
+        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
+        problemsDoc.submitListPushOp(['order'], newProblem.id);
+
+        aggregateDataDoc.submitObjectInsertOp([newProblem.id], {
+            completed: []
         });
-        doc.submitListPushOp(['problems'], newProblem);
     };
 }
 
 export function addMultipleChoiceProblem() {
-    return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+
         const newProblem: IProblem = {
             id: uuid(),
-            problem: {
+            visible: true,
+            problemDetails: {
                 problemType: 'multiple-choice',
                 description: '*no description*',
                 options: [],
@@ -220,91 +285,121 @@ export function addMultipleChoiceProblem() {
             }
         };
 
-        doc.submitObjectInsertOp(['userData', newProblem.id], {
-            completed: [],
-            visible: true
+        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
+        problemsDoc.submitListPushOp(['order'], newProblem.id);
+
+        aggregateDataDoc.submitObjectInsertOp([newProblem.id], {
+            completed: []
         });
-        doc.submitListPushOp(['problems'], newProblem);
     };
 }
 
 export function addTextResponseProblem() {
-    return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+
         const newProblem: IProblem = {
             id: uuid(),
-            problem: {
+            visible: true,
+            problemDetails: {
                 problemType: 'text-response',
                 description: '*no description*',
             }
         };
 
-        doc.submitObjectInsertOp(['userData', newProblem.id], {
-            completed: [],
-            visible: true
-        });
-        doc.submitListPushOp(['problems'], newProblem);
+        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
+        problemsDoc.submitListPushOp(['order'], newProblem.id);
+
+        aggregateDataDoc.submitObjectInsertOp([newProblem.id], { });
     };
 }
 
-export function deleteProblem(index: number) {
-    return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
-        return doc.submitListDeleteOp(['problems', index]);
+export function deleteProblem(problemID: string) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        const problemsData = problemsDoc.getData();
+        const { order } = problemsData;
+        const index = order.indexOf(problemID);
+        if(index >= 0) {
+            await problemsDoc.submitListDeleteOp(['order', index]);
+        }
+        problemsDoc.submitObjectDeleteOp(['allProblems', problemID]);
     };
 }
 
-export function addTest(index: number) {
+export function addTest(problemID: string) {
     return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
-        const newTest = {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        const newTest: ICodeTest = {
             actual: 'True',
             description: '*no description*',
             expected: 'True',
             id: uuid(),
         };
-        return doc.submitListPushOp(['problems', index, 'problem', 'tests'], newTest);
+
+        return problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'tests'], newTest);
     };
 }
 
-export function deleteTest(index: number, testIndex: number) {
+export function deleteTest(problemID: string, testID: string) {
     return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
-        return doc.submitListDeleteOp(['problems', index, 'problem', 'tests', testIndex]);
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        const testsP = ['allProblems', problemID, 'problemDetails', 'tests'];
+        const existingTests = problemsDoc.traverse(testsP);
+
+        for(let i: number = 0, len=existingTests.length; i<len; i++) {
+            const eti = existingTests[i];
+            if(eti.id === testID) {
+                return problemsDoc.submitListDeleteOp([...testsP, i]);
+            }
+        }
     };
 }
 
-export function addFile(index: number) {
+export function addFileToProblem(problemID: string) {
     return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
         const newFile = {
             contents: 'file contents',
             id: uuid(),
             name: 'file.txt',
         };
-        return doc.submitListPushOp(['problems', index, 'problem', 'files'], newFile);
+        return problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'files'], newFile);
     };
 }
 
-export function deleteFile(index: number, fileIndex: number) {
+export function deleteProblemFile(problemID: string, fileID: string) {
     return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
-        return doc.submitListDeleteOp(['problems', index, 'problem', 'files', fileIndex]);
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        const filesP = ['allProblems', problemID, 'problemDetails', 'files'];
+        const existingFiles = problemsDoc.traverse(filesP);
+
+        for(let i: number = 0, len=existingFiles.length; i<len; i++) {
+            const efi = existingFiles[i];
+            if(efi.id === fileID) {
+                return problemsDoc.submitListDeleteOp([...filesP, i]);
+            }
+        }
     };
 }
 
 export function setProblemVisibility(id: string, visible: boolean) {
     return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
-        const { userData } = doc.getData();
-        if(userData[id]) {
-            doc.submitObjectReplaceOp(['userData', id, 'visible'], visible);
-        } else {
-            doc.submitObjectInsertOp(['userData', id], {
-                completed: [],
-                visible
-            });
-        }
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        problemsDoc.submitObjectReplaceOp(['allProblems', id, 'visible'], visible);
     };
 }
 
@@ -315,162 +410,94 @@ function scrollToBottom(): void {
     window.scrollTo(0, document.body.scrollHeight);
 }
 
-export function beginListeningOnDoc(doc: SDBDoc<IPuzzleSet>) {
+export interface ISDBDocChangedAction {
+    type: EventTypes.SDB_DOC_CHANGED,
+    doc: SDBDoc<any>
+}
+export function beginListeningOnAggregateDataDoc(doc: SDBDoc<IAggregateData>) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {
             if(type === null) {
-                dispatch(puzzlesFetched(doc.getData()));
+                // dispatch(aggregateDataFetched(doc.getData()));
             } else if (type === 'op') {
+                dispatch({
+                    type: EventTypes.SDB_DOC_CHANGED,
+                    doc
+                } as ISDBDocChangedAction);
+            }
+        });
+    };
+}
+export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
+    return (dispatch: Dispatch, getState) => {
+        doc.subscribe((type, ops) => {
+            if(type === null) {
+                dispatch(problemsFetched(doc.getData()));
+            } else if (type === 'op') {
+                const wasAtBottom = isNearBottom();
+                dispatch({
+                    type: EventTypes.SDB_DOC_CHANGED,
+                    doc
+                } as ISDBDocChangedAction);
                 ops!.forEach((op) => {
                     const { p } = op;
-                    const { li } = op as ListInsertOp;
-                    const { ld } = op as ListDeleteOp;
 
-                    const problemRelPath = SDBDoc.relative(['problems'], p);
-                    const userDataRelPath = SDBDoc.relative(['userData'], p);
-                    if(problemRelPath) {
-                        if(problemRelPath.length === 1) {
-                            const index = problemRelPath[0] as number;
-                            if(ld) { dispatch(problemDeleted(index)); }
-                            if(li) {
-                                const wasAtBottom = isNearBottom();
-                                dispatch(problemAdded(index, li));
-                                if(wasAtBottom) {
-                                    scrollToBottom();
-                                }
-                            }
-                        } else if(problemRelPath.length === 4 && problemRelPath[1] === 'problem') {
-                            const index = problemRelPath[0] as number;
-                            const item = problemRelPath[2];
-                            const problemP = ['problems', index];
-                            const problem = doc.traverse(problemP);
-                            if(item === 'description') {
-                                const newDescription = doc.traverse([...problemP, 'problem', item]);
-                                dispatch(descriptionChanged(index, newDescription));
-                            } else if(item === 'givenCode') {
-                                const id = doc.traverse([...problemP, 'id']);
-                                const newCode = doc.traverse([...problemP, 'problem', item]);
-                                dispatch(givenCodeChanged(index, id, newCode));
-                            } else if(item === 'afterCode') {
-                                const newCode = doc.traverse([...problemP, 'problem', item]);
-                                dispatch(afterCodeChanged(index, newCode));
-                            } else if(item === 'tests') {
-                                const testIndex = problemRelPath[3] as number;
-                                if(li) {
-                                    dispatch(testAdded(problem.id, index, testIndex, li));
-                                } else if(ld) {
-                                    dispatch(testDeleted(problem.id, index, testIndex));
-                                }
-                            } else if(item === 'files') {
-                                const fileIndex = problemRelPath[3] as number;
-                                if(li) {
-                                    dispatch(fileAdded(index, fileIndex, li));
-                                } else if(ld) {
-                                    dispatch(fileDeleted(index, fileIndex));
-                                }
-                            } else if(item === 'options') {
-                                const optionIndex = problemRelPath[3] as number;
-                                if(li) {
-                                    multipleChoiceOptionAdded(index, optionIndex, li)(dispatch, getState);
-                                } else if(ld) {
-                                    multipleChoiceOptionDeleted(index, optionIndex)(dispatch, getState);
-                                }
-                            }
-                        } else if(problemRelPath.length === 5) {
-                            const index = problemRelPath[0] as number;
-                            const item = problemRelPath[2];
+                    console.log(op);
 
-                            if(item === 'options') {
-                                const optionIndex = problemRelPath[3] as number;
-                                const { oi } = op as ObjectInsertOp;
-                                if(problemRelPath[4] === 'isCorrect') {
-                                    multipleChoiceOptionCorrectChanged(index, optionIndex, oi)(dispatch, getState);
-                                }
-                            }
-                        } else if(problemRelPath.length === 6) {
-                            const index = problemRelPath[0] as number;
-                            const item = problemRelPath[2];
-
-                            const problemP = ['problems', index];
-                            const problem = doc.traverse(problemP);
-                            if(item === 'tests') {
-                                const testIndex = problemRelPath[3] as number;
-                                const testP = ['problems', index, 'problem', item, testIndex];
-                                const testPart = problemRelPath[4] as 'actual'|'expected'|'description';
-                                const value = doc.traverse([...testP, testPart]);
-
-                                dispatch(testPartChanged(problem.id, index, testIndex, testPart, value));
-                            } else if(item === 'files') {
-                                const fileIndex = problemRelPath[3] as number;
-                                const fileP = ['problems', index, 'problem', item, fileIndex];
-                                const filePart = problemRelPath[4] as 'name'|'contents';
-                                const value = doc.traverse([...fileP, filePart]);
-
-                                dispatch(filePartChanged(index, fileIndex, filePart, value));
-                            } else if(item === 'options') {
-                                const optionIndex = problemRelPath[3] as number;
-                                const optionP = ['problems', index, 'problem', item, optionIndex]
-                                const value = doc.traverse([...optionP, 'description']);
-
-                                multipleChoiceOptionDescriptionChanged(index, optionIndex, value)(dispatch, getState);
-                            }
-                        } else if(problemRelPath.length === 3) {
-                            const index = problemRelPath[0] as number;
-                            const { oi } = op as ObjectInsertOp;
-                            if(problemRelPath[2] === 'selectionType') {
-                                const problemId = doc.traverse(['problems', index, 'id']);
-                                multipleChoiceSelectionTypeChanged(index, oi, problemId)(dispatch, getState);
-                            } else if(problemRelPath[2] === 'revealSolution') {
-                                multipleChoiceRevealSolutionChanged(index, oi)(dispatch, getState);
-                            }
+                    const addProblemMatches = SDBDoc.matches(p, ['allProblems', true]);
+                    if(addProblemMatches) {
+                        const { oi } = op as ObjectInsertOp;
+                        if(oi) {
+                            dispatch(problemAdded(oi))
                         }
-                    } else if(userDataRelPath && userDataRelPath.length >= 1) {
-                        const problemID = userDataRelPath[0];
-                        if(userDataRelPath.length === 3 && userDataRelPath[1] === 'completed') {
-                            if(li) {
-                                const userID = li;
-                                const index = userDataRelPath[2];
-                                dispatch({
-                                    index,
-                                    problemID,
-                                    type: EventTypes.USER_COMPLETED_PROBLEM,
-                                    userID,
-                                    completed: true
-                                });
-                            } else if(ld) {
-                                const userID = li;
-                                const index = userDataRelPath[2];
-                                dispatch({
-                                    index,
-                                    problemID,
-                                    type: EventTypes.USER_COMPLETED_PROBLEM,
-                                    userID,
-                                    completed: false
-                                });
-                            }
-                        } else if(userDataRelPath.length === 2 && userDataRelPath[1] === 'visible') {
-                            const { oi } = op as ObjectInsertOp;
-                            const wasAtBottom = isNearBottom();
-                            dispatch({
-                                problemID,
-                                type: EventTypes.PROBLEM_VISIBILITY_CHANGED,
-                                visible: oi as boolean,
-                            });
-                            if(wasAtBottom) {
-                                scrollToBottom();
-                            }
-                        } else if(userDataRelPath.length === 1) {
-                            const { oi } = op as ObjectInsertOp;
-                            dispatch({
-                                completionInfo: oi,
-                                problemID,
-                                type: EventTypes.PROBLEM_COMPLETION_INFO_FETCHED,
-                            });
+                        if(wasAtBottom) {
+                            scrollToBottom();
                         }
-                    } else if(p.length === 0) { // full replacement
-                        dispatch(puzzlesFetched(doc.getData()));
                     }
-                    // console.log(op);
+
+                    const visibilityChangeMatches = SDBDoc.matches(p, ['allProblems', true, 'visible'])
+                    if(visibilityChangeMatches) {
+                        if(wasAtBottom) {
+                            scrollToBottom();
+                        }
+                    }
+
+                    const selectionTypeMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'selectionType'])
+                    if(selectionTypeMatches) {
+                        const { oi } = op as ObjectInsertOp;
+                        const problemID = p[1] as string;
+                        multipleChoiceSelectionTypeChanged(problemID, oi, dispatch, getState);
+                    }
+
+                    const givenCodeMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'givenCode', true]);
+                    if(givenCodeMatches) {
+                        const problemID = p[1] as string;
+                        const givenCode = doc.traverse(['allProblems', problemID, 'problemDetails', 'givenCode']);
+                        dispatch(givenCodeChanged(problemID, givenCode));
+                    }
+
+                    const optionCorrectnessMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'options', true, 'isCorrect']);
+                    if(optionCorrectnessMatches) {
+                        const { oi } = op as ObjectInsertOp;
+                        const problemID = p[1] as string;
+                        const optionIndex = p[4] as number;
+                        const option = doc.traverse(['allProblems', problemID, 'problemDetails', 'options', optionIndex]);
+                        multipleChoiceOptionCorrectChanged(problemID, option.id, oi, dispatch, getState);
+                    }
+
+                    const revealSolutionMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'revealSolution']);
+                    if(revealSolutionMatches) {
+                        const problemID = p[1] as string;
+                        const { oi } = op as ObjectInsertOp;
+                        multipleChoiceRevealSolutionChanged(problemID, oi, dispatch, getState);
+                    }
+
+                    const optionDeletedMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'options', true]);
+                    if(optionDeletedMatches) {
+                        const problemID = p[1] as string;
+                        const { ld } = op as ListDeleteOp;
+                        multipleChoiceOptionDeleted(problemID, ld);
+                    }
                 });
             }
         });

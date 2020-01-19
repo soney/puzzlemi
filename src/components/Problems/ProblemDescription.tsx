@@ -3,11 +3,12 @@ import { connect } from "react-redux";
 import * as showdown from 'showdown';
 import { CodeEditor } from '../CodeEditor';
 import update from 'immutability-helper';
+import { IPMState } from '../../reducers';
 
-const ProblemDescription = ({ index, problem, isAdmin, doc }) => {
+const ProblemDescription = ({ problem, isAdmin, problemsDoc, description }) => {
     if(isAdmin) {
-        const p = ['problems', index, 'problem', 'description'];
-        const subDoc = doc.subDoc(p);
+        const p = ['allProblems', problem.id, 'problemDetails', 'description'];
+        const subDoc = problemsDoc.subDoc(p);
         return <div className="row">
             <div className="col">
                 <h4>Description:</h4>
@@ -16,7 +17,7 @@ const ProblemDescription = ({ index, problem, isAdmin, doc }) => {
         </div>;
     } else {
         const converter = new showdown.Converter();
-        const problemDescription = { __html: converter.makeHtml(problem.description) };
+        const problemDescription = { __html: converter.makeHtml(description) };
         return <div className="row">
             <div className="col">
                 <p className="problem-description" dangerouslySetInnerHTML={problemDescription} />
@@ -24,12 +25,15 @@ const ProblemDescription = ({ index, problem, isAdmin, doc }) => {
         </div>;
     }
 }
-function mapStateToProps(state, ownProps) {
-    const { user, problems, doc } = state;
-    const { isAdmin } = user;
-    const problemInfo = problems[ownProps.index];
-    const { problem } = problemInfo;
 
-    return update(ownProps, { isAdmin: {$set: isAdmin}, problem: {$set: problem}, doc: {$set: doc} });
+function mapStateToProps(state: IPMState, ownProps) {
+    const { intermediateUserState, shareDBDocs } = state;
+    const { isAdmin } = intermediateUserState;
+    const problemsDoc = shareDBDocs.problems;
+
+    const description = problemsDoc!.traverse(['allProblems', ownProps.problem.id, 'problemDetails', 'description']);
+
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, description } })
 }
+
 export default connect(mapStateToProps)(ProblemDescription);

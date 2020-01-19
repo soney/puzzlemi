@@ -1,15 +1,16 @@
+import { ICodeTest } from "../reducers/problems";
+
 export interface ISerializedAssertion {
     type: string,
-    description: string,
-    data: any
+    data: ICodeTest
 }
 
 export abstract class PMAssertion {
     public static deserialize(sa: ISerializedAssertion): PMAssertion | null {
-        const { type, data, description } = sa;
+        const { type, data } = sa;
         if(type === 'equal') {
-            const { actual, expected } = data;
-            return new PMAssertEqual(actual, expected, description);
+            const { actual, expected, description, id } = data;
+            return new PMAssertEqual(id, actual, expected, description);
         }
         return null;
     }
@@ -29,8 +30,11 @@ export abstract class PMAssertion {
     }
 }
 export class PMAssertEqual extends PMAssertion {
-    constructor(private actualExpression: string, private expectedExpression: string, description: string) {
+    constructor(private id: string, private actualExpression: string, private expectedExpression: string, description: string) {
         super(description);
+    }
+    public getID(): string {
+        return this.id;
     }
     public getExpectedExpression(): string { return this.expectedExpression; }
     public setExpectedExpression(expected: string): void {
@@ -46,10 +50,11 @@ export class PMAssertEqual extends PMAssertion {
     public serialize(): ISerializedAssertion {
         return {
             data: {
+                id: this.getID(),
+                description: this.getDescription(),
                 actual: this.getActualExpression(),
                 expected: this.getExpectedExpression()
             },
-            description: this.getDescription(),
             type: 'equal'
         };
     }
