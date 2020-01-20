@@ -61,9 +61,8 @@ const MySolution = ({ index, uid, doc, id, testResults, failedTest, userInfo, ve
     }
 
     const doSubmitTest = () => {
-        dispatch(newTest(index, myTest)).then(
-            dispatch(runVerifyTest(index, myTest.id))
-        );
+        dispatch(newTest(index, myTest));
+        dispatch(runVerifyTest(index, myTest.id));
         doResetTest();
     }
 
