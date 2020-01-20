@@ -1,18 +1,19 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import * as showdown from 'showdown';
-import { CodeEditor } from './CodeEditor';
+import { CodeEditor } from '../../CodeEditor';
 import update from 'immutability-helper';
-import { deleteTest } from '../actions/sharedb_actions';
+import { deleteTest } from '../../../actions/sharedb_actions';
+import { IPMState } from '../../../reducers';
 
-const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc }) => {
+const Test = ({ testResult, dispatch, problem, testIndex, test, isAdmin, description, problemsDoc }) => {
     const doDeleteTest = () => {
-        dispatch(deleteTest(index, testIndex));
+        dispatch(deleteTest(problem.id, test.id));
     };
-    const p = ['problems', index, 'tests', testIndex];
-    const actualSubDoc = doc.subDoc([...p, 'actual']);
-    const expectedSubDoc = doc.subDoc([...p, 'expected']);
-    const descriptionSubDoc = doc.subDoc([...p, 'description']);
+    const p = ['allProblems', problem.id, 'problemDetails', 'tests', testIndex];
+    const actualSubDoc = problemsDoc.subDoc([...p, 'actual']);
+    const expectedSubDoc = problemsDoc.subDoc([...p, 'expected']);
+    const descriptionSubDoc = problemsDoc.subDoc([...p, 'description']);
     if(isAdmin) {
         return <tr>
             <td>
@@ -30,7 +31,7 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc }) =>
         </tr>;
     } else {
         const converter = new showdown.Converter();
-        const testDescription = { __html: converter.makeHtml(test.description) };
+        const testDescription = { __html: converter.makeHtml(description) };
         const passedStatusClass = testResult ? ( testResult.passed ? 'alert-success' : 'alert-danger') : 'alert-secondary';
         const passFailMessage = testResult ? ( testResult.passed ? 'Passed' : 'Failed') : '';
         return <tr className={['test', passedStatusClass].join(' ')}>
@@ -41,15 +42,16 @@ const Test = ({ testResult, dispatch, index, testIndex, test, isAdmin, doc }) =>
         </tr>;
     }
 }
-function mapStateToProps(state, ownProps) {
-    const { index, testIndex } = ownProps;
-    const { user, problems, doc } = state;
-    const { isAdmin } = user;
-    const problem = problems[index];
-    const test = problem.tests[testIndex];
-    const userSolution = user.solutions[problem.id];
-    const testResult = userSolution.testResults[test.id]; 
+function mapStateToProps(state: IPMState, ownProps) {
+    const { problem, test } = ownProps;
+    const { intermediateUserState, shareDBDocs } = state;
+    const { isAdmin, intermediateSolutionState } = intermediateUserState;
+    const problemsDoc = shareDBDocs.problems;
+    const intermediateProblemState = intermediateSolutionState[problem.id];
+    const testResult = intermediateProblemState!.testResults[test.id]; 
 
-    return update(ownProps, { testResult: {$set: testResult}, isAdmin: {$set: isAdmin}, test: {$set: test}, doc: {$set: doc} });
+    const description = test.description;
+
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, testResult, description } });
 }
 export default connect(mapStateToProps)(Test); 

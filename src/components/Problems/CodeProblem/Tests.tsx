@@ -2,15 +2,17 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 import Test from './Test';
-import { addTest } from '../actions/sharedb_actions';
+import { addTest } from '../../../actions/sharedb_actions';
+import { IPMState } from '../../../reducers';
 
-const Tests = ({ index, tests, isAdmin, doc, dispatch }) => {
+const Tests = ({ problem, tests, isAdmin, dispatch }) => {
     const doAddTest = () => {
-        dispatch(addTest(index));
+        dispatch(addTest(problem.id));
     }
     if (isAdmin) {
         return <div className='tests'>
             <h4>Tests:</h4>
+            <i>Note: <code>self.getEditorText()</code> refers to the source code and <code>self.getOutput()</code> refers to the output.</i>
             <table className="table">
                 <thead>
                     <tr>
@@ -22,7 +24,7 @@ const Tests = ({ index, tests, isAdmin, doc, dispatch }) => {
                 </thead>
                 <tbody>
                     {tests && tests.length
-                    ? tests.map((test, i) => <Test key={test.id+`${i}`} index={index} testIndex={i} />)
+                    ? tests.map((test, i) => <Test problem={problem} test={test} key={test.id+`${i}`} testIndex={i} />)
                     : <tr><td colSpan={4} className='no-tests'>(no tests)</td></tr>
                     }
                     <tr>
@@ -38,7 +40,7 @@ const Tests = ({ index, tests, isAdmin, doc, dispatch }) => {
             return <div className='tests'>
                 <table className="table">
                     <tbody>
-                        { tests.map((test, i) => <Test key={test.id+`${i}`} index={index} testIndex={i} />) }
+                        { tests.map((test, i) => <Test problem={problem} test={test} key={`${test.id}-${i}`}  testIndex={i} />) }
                     </tbody>
                 </table>
             </div>;
@@ -47,12 +49,17 @@ const Tests = ({ index, tests, isAdmin, doc, dispatch }) => {
         }
     }
 }
-function mapStateToProps(state, ownProps) {
-    const { user, problems, doc } = state;
-    const { isAdmin } = user;
-    const problem = problems[ownProps.index];
-    const { tests } = problem;
+function mapStateToProps(state: IPMState, ownProps) {
+    const { problem } = ownProps;
+    const problemID = problem.id;
+    const { intermediateUserState } = state;
+    const { isAdmin } = intermediateUserState;
 
-    return update(ownProps, { isAdmin: {$set: isAdmin}, tests: {$set: tests}, doc: {$set: doc} });
+    const { problemDetails } = problem;
+    const { tests } = problemDetails;
+
+    const testIDs = tests.map((t) => t.id); // fingerprint
+
+    return update(ownProps, { $merge: { isAdmin, problem, problemID, tests, testIDs }});
 }
 export default connect(mapStateToProps)(Tests); 

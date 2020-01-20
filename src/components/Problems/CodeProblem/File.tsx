@@ -1,21 +1,22 @@
 import * as React from 'react';
 import { connect } from "react-redux";
-import { CodeEditor } from './CodeEditor';
+import { CodeEditor } from '../../CodeEditor';
 import update from 'immutability-helper';
-import { deleteUserFile } from '../actions/user_actions';
-import { deleteFile } from '../actions/sharedb_actions';
+import { deleteUserFile } from '../../../actions/user_actions';
+import { deleteProblemFile } from '../../../actions/sharedb_actions';
+import { IPMState } from '../../../reducers';
 
-const File = ({ dispatch, index, fileIndex, file, isAdmin, doc, isUserFile }) => {
+const File = ({ dispatch, problem, fileIndex, file, name, contents, isAdmin, problemsDoc, isUserFile }) => {
     const doDeleteFile = () => {
         if(isUserFile) {
-            dispatch(deleteUserFile(index, file.name));
+            dispatch(deleteUserFile(problem.id, file.id));
         } else {
-            dispatch(deleteFile(index, fileIndex));
+            dispatch(deleteProblemFile(problem.id, file.id));
         }
     };
-    const p = ['problems', index, 'files', fileIndex];
-    const nameSubDoc = doc.subDoc([...p, 'name']);
-    const contentsSubDoc = doc.subDoc([...p, 'contents']);
+    const p = ['allProblems', problem.id, 'problemDetails', 'files', fileIndex];
+    const nameSubDoc = problemsDoc.subDoc([...p, 'name']);
+    const contentsSubDoc = problemsDoc.subDoc([...p, 'contents']);
     if(isAdmin) {
         return <div>
             <div className='clearfix'>
@@ -27,31 +28,24 @@ const File = ({ dispatch, index, fileIndex, file, isAdmin, doc, isUserFile }) =>
     } else {
         return <div className='file'>
             <div className='fileInfo clearfix'>
-                <code className='filename'>{file.name}</code>
+                <code className='filename'>{name}</code>
                 { isUserFile &&
                     <button className="btn btn-outline-danger btn-sm float-right" onClick={doDeleteFile}>Delete</button>
                 }
             </div>
             <pre className='fileData'>
-                {file.contents}
+                {contents}
             </pre>
         </div>;
     }
 }
-function mapStateToProps(state, ownProps) {
-    const { index, fileIndex, isUserFile } = ownProps;
-    const { user, problems, doc } = state;
-    const { isAdmin, solutions } = user;
-    const problem = problems[index]
+function mapStateToProps(state: IPMState, ownProps) {
+    const { file } = ownProps;
+    const { name, contents } = file;
+    const { intermediateUserState, shareDBDocs } = state;
+    const { isAdmin } = intermediateUserState;
+    const problemsDoc = shareDBDocs.problems;
 
-    let file;
-    if(isUserFile) {
-        const solution = solutions[problem.id];
-        file = solution.files[fileIndex]
-    } else {
-        file = problem.files[fileIndex]
-    }
-
-    return update(ownProps, { isAdmin: {$set: isAdmin}, file: {$set: file}, doc: {$set: doc} });
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, name, contents } });
 }
 export default connect(mapStateToProps)(File); 

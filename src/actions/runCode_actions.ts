@@ -2,12 +2,15 @@ import { Dispatch } from "redux";
 import '../js/skulpt/skulpt.min.js';
 import '../js/skulpt/skulpt-stdlib.js';
 import { PMAssertion, PMAssertEqual } from "../pyTests/PMTest";
-import { PMTestSuite } from "../pyTests/PMTestSuite";
+import { PMTestSuite, IPMTestResult } from "../pyTests/PMTestSuite";
 import EventTypes from "./EventTypes";
 import { SDBDoc } from "sdb-ts";
-import { IPuzzleSet } from "../components/App.js";
+import { ICodeSolution } from "../reducers/solutions.js";
+import { IProblem, ICodeProblem } from "../reducers/problems";
+import { IAggregateData, ICodeSolutionAggregate } from "../reducers/aggregateData.js";
+import { ICodeSolutionState } from "../reducers/intermediateUserState.js";
 
-declare var Sk;
+declare const Sk;
 
 Sk.configure({
     inputfunTakesPrompt: true,
@@ -29,33 +32,69 @@ if (Sk.externalLibraries) {
     };
 }
 
-export function runCode(index: number) {
+export interface IDoneRunningCodeAction {
+    type: EventTypes.DONE_RUNNING_CODE,
+    hasError: boolean,
+    problemID: string,
+    passedAll: boolean,
+    testResults: {
+        [testID: string]: IPMTestResult
+    }
+}
+
+export interface IOutputChangedAction {
+    type: EventTypes.OUTPUT_CHANGED,
+    problemID: string,
+    output: string
+}
+
+export interface IFileWrittenAction {
+    type: EventTypes.FILE_WRITTEN,
+    contents: string,
+    problemID: string,
+    name: string
+}
+
+export interface IBeginRunningCodeAction {
+    type: EventTypes.BEGIN_RUN_CODE,
+    problemID: string
+}
+
+export interface IErrorChangedAction {
+    type: EventTypes.ERROR_CHANGED,
+    problemID: string
+    errors: string[]
+}
+
+export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermediateSolutionState: ICodeSolutionState, graphics: HTMLDivElement|null) {
     return (dispatch: Dispatch, getState) => {
-        const { user, problems } = getState();
-        const problem = problems[index];
-        const { id, afterCode, tests } = problem;
-        const solution = user.solutions[id];
-        const { code } = solution;
-        const testSuite = new PMTestSuite();
-
+        const { id: problemID } = problem;
+        const problemDetails = problem.problemDetails as ICodeProblem;
+        // const { user, problems } = getState();
+        // const problemInfo = ;//problems[index];
+        // const { id, problem } = problemInfo;
+        const { afterCode, tests } = problemDetails;
+        // const solution = user.solutions[id];
+        const { code } = codeSolution;
         let output: string = '';
-
         const outputs: string[] = [];
+
+        const testSuite = new PMTestSuite(code, outputs);
         const outf = (outValue: string): void => {
             if(!testSuite.currentlyRunning()) {
                 outputs.push(outValue);
                 output = outputs.join('');
                 dispatch({
-                    id,
+                    problemID,
                     output,
                     type: EventTypes.OUTPUT_CHANGED
-                });
+                } as IOutputChangedAction);
             }
         };
 
         const readf = (fname: string): string => {
-            const problemFiles = problem.files;
-            const userFiles = solution.files;
+            const problemFiles = problemDetails.files;
+            const userFiles = codeSolution.files;
 
             if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][fname] === undefined) {
                 let file;
@@ -77,27 +116,30 @@ export function runCode(index: number) {
         }
         const writef = (contents: string, fname: string, pos: number): void => {
             dispatch({
-                contents,
-                id,
+                contents: contents+'\n',
+                problemID,
                 name: fname,
                 type: EventTypes.FILE_WRITTEN
-            })
+            } as IFileWrittenAction);
         };
 
         // this.setState({ hasError: true, output: '' });
         dispatch({
-            id,
+            problemID,
             type: EventTypes.BEGIN_RUN_CODE
-        });
-        const assertions: PMAssertion[] = tests.map((t) => new PMAssertEqual(t.actual, t.expected, t.description));
+        } as IBeginRunningCodeAction);
+
+        const assertions: PMAssertion[] = tests.map((t) => new PMAssertEqual(t.id, t.actual, t.expected, t.description));
         testSuite.setBeforeTests(afterCode);
         testSuite.setAssertions(assertions);
         testSuite.onBeforeRunningTests();
         Sk.configure({
             filewriter: writef,
             output: outf,
-            read: readf
+            read: readf,
+            inputfunTakesPrompt: true
         });
+        (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = graphics;
         const myPromise = Sk.misceval.asyncToPromise(() => {
             return Sk.importMainWithBody("<stdin>", false, `${code}\n${testSuite.getString()}`, true);
         });
@@ -105,7 +147,7 @@ export function runCode(index: number) {
             testSuite.onAfterRanTests();
             const testSuiteResults = testSuite.getTestResults();
             const { passedAll, results } = testSuiteResults;
-            const problemTests = getState().problems[index].tests;
+            const problemTests = tests;
             const testResults = { };
             results.forEach((result, i) => {
                 const test = problemTests[i];
@@ -114,24 +156,27 @@ export function runCode(index: number) {
             });
             dispatch({
                 hasError: true,
-                id,
+                problemID,
                 passedAll,
                 testResults,
                 type: EventTypes.DONE_RUNNING_CODE
-            });
+            } as IDoneRunningCodeAction);
             if(passedAll) {
                 const currentState = getState();
-                const userID = currentState.user.id;
-                const doc: SDBDoc<IPuzzleSet> = currentState.doc;
-                const { userData } = doc.getData();
-                if(userData[id]) {
-                    if(userData[id].completed.indexOf(userID) < 0) {
-                        doc.submitListPushOp(['userData', id, 'completed'], userID);
+                const { shareDBDocs } = currentState;
+                const uid = currentState.users.myuid;
+
+                const aggregateDataDoc: SDBDoc<IAggregateData> = shareDBDocs.aggregateData;
+
+                const { userData } = aggregateDataDoc.getData();
+
+                if(userData[problemID]) {
+                    if((userData[problemID] as ICodeSolutionAggregate).completed.indexOf(uid) < 0) {
+                        aggregateDataDoc.submitListPushOp(['userData', problemID, 'completed'], uid);
                     }
                 } else {
-                    doc.submitObjectInsertOp(['userData', id], {
-                        completed: [userID],
-                        visible: true
+                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
+                        completed: [uid]
                     });
                 }
             }
@@ -166,9 +211,9 @@ export function runCode(index: number) {
 
             dispatch({
                 errors: [errString],
-                id,
+                problemID,
                 type: EventTypes.ERROR_CHANGED
-            });
+            } as IErrorChangedAction);
             onFinally();
         });
     };
