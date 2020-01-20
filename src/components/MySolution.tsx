@@ -62,7 +62,7 @@ const MySolution = ({ index, uid, doc, id, testResults, failedTest, userInfo, ve
 
     const doSubmitTest = () => {
         dispatch(newTest(index, myTest));
-        dispatch(runVerifyTest(index, myTest.id));
+        if (config.autoVerify) dispatch(runVerifyTest(index, myTest.id));
         doResetTest();
     }
 
