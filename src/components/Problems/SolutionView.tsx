@@ -29,10 +29,9 @@ function mapStateToProps(state: IPMState, ownProps) {
 
     const currentUser = app.selectedUserForSolutionsView;
     if(currentUser) {
-        const solutionsDoc = shareDBDocs.solutions;
-        const solutionsData = solutionsDoc!.getData();
+        const solutionsData = shareDBDocs.i.solutions;
         const { problem } = ownProps;
-        const problemSolutions = solutionsData.allSolutions[problem.id];
+        const problemSolutions = solutionsData!.allSolutions[problem.id];
         const currentSolution = problemSolutions[currentUser];
         if(currentSolution && currentSolution.hasOwnProperty('response')) {
             solutionText = (currentSolution as ITextResponseSolution).response;

@@ -1,4 +1,4 @@
-import { SDBDoc } from 'sdb-ts';
+import { SDBDoc, ImmutabilityWrapper } from 'sdb-ts';
 import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
 import { IAggregateData } from './aggregateData';
@@ -12,18 +12,36 @@ export interface ISDBDocsState {
     aggregateData: SDBDoc<IAggregateData>|null,
     solutions: SDBDoc<ISolutions>|null,
     users: SDBDoc<IUsers>|null,
-    updateCount: number
+    immutable: {
+        problems: ImmutabilityWrapper<IProblems>|null,
+        aggregateData: ImmutabilityWrapper<IAggregateData>|null,
+        solutions: ImmutabilityWrapper<ISolutions>|null,
+        users: ImmutabilityWrapper<IUsers>|null,
+    },
+    i: {
+        problems: IProblems|null,
+        aggregateData: IAggregateData|null,
+        solutions: ISolutions|null,
+        users: IUsers|null
+    }
 }
 
-export const shareDBDocs = (state: ISDBDocsState={problems: null, solutions: null, users: null, aggregateData: null, updateCount: 1}, action: ISetDocAction | ISDBDocChangedAction | IProblemsFetchedAction) => {
+export const shareDBDocs = (state: ISDBDocsState={
+                     problems: null, aggregateData: null, solutions: null, users: null,
+        immutable: { problems: null, aggregateData: null, solutions: null, users: null},
+        i:         { problems: null, aggregateData: null, solutions: null, users: null} }
+    , action: ISetDocAction | ISDBDocChangedAction | IProblemsFetchedAction) => {
     const { type } = action;
     if(type === EventTypes.SET_DOC) {
         const { docType, doc } = action as ISetDocAction;
-        return update(state, { [docType]: { $set: doc }});
+        state = update(state, { [docType]: { $set: doc }});
+        return update(state, { immutable: { [docType]: { $set: new ImmutabilityWrapper<any>(doc) }}});
     } else if(type === EventTypes.PROBLEMS_FETCHED) {
-        return update(state, { updateCount: { $set: state.updateCount+1 } });
+        return state;
     } else if(type === EventTypes.SDB_DOC_CHANGED) {
-        return update(state, { updateCount: { $set: state.updateCount+1 } });
+        const { docType } = action as ISDBDocChangedAction;
+        const immutableDoc = state.immutable[docType];
+        return update(state, { i : { [docType]: { $set: immutableDoc.getData() }}});
     } else {
         return state;
     }

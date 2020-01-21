@@ -101,10 +101,9 @@ function mapStateToProps(state: IPMState, ownProps) {
     let allUsers: string[] = [];
     if(isAdmin) {
         try {
-            const usersDoc = shareDBDocs.users;
-            if(usersDoc) {
-                const data = usersDoc!.getData();
-                const dataUsers = data!.allUsers;
+            const usersDocData = shareDBDocs.i.users;
+            if(usersDocData) {
+                const dataUsers = usersDocData.allUsers;
                 allUsers = Object.keys(dataUsers!);
             }
         } catch(e) {

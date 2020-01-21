@@ -38,6 +38,7 @@ enum EventTypes {
     TEXT_RESPONSE_CHANGED='text response changed',
     SDB_DOC_CHANGED='sharedb doc changed',
     APP_STATE_CHANGED='app state changed',
-    SELECT_USER_FOR_SOLUTION_VIEW='select user for solution view'
+    SELECT_USER_FOR_SOLUTION_VIEW='select user for solution view',
+    SDB_DOC_FETCHED='sharedb doc fetched',
 };
 export default EventTypes;

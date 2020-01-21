@@ -6,6 +6,7 @@ import { IMultipleChoiceSolution } from '../../../reducers/solutions';
 import { IPMState } from '../../../reducers';
 import MultipleChoiceOption from './MultipleChoiceOption';
 import { IMultipleChoiceSolutionAggregate } from '../../../reducers/aggregateData';
+import { IMultipleChoiceOption } from '../../../reducers/problems';
 
 const MultipleChoiceOptions = ({ problem, options, dispatch, isAdmin, aggregateData }) => {
     const doAddOption = () => {
@@ -52,16 +53,15 @@ function mapStateToProps(state: IPMState, ownProps) {
     const userSolution = solutions.allSolutions[problemID][myuid] as IMultipleChoiceSolution;
     const { options } = problemDetails;
 
-    const optionIDs = options.map((o) => o.id); // fingerprint
-
     let aggregateData: {[optionID: string]: number} = {};
     try {
         if(revealSolution) {
-            const aggregateDataDoc = shareDBDocs.aggregateData;
-            const aggData = aggregateDataDoc!.getData();
-            const problemSelectionData = aggData.userData[problem.id] as IMultipleChoiceSolutionAggregate;
+            const aggData = shareDBDocs.i.aggregateData;
+            const problemSelectionData = aggData!.userData[problem.id] as IMultipleChoiceSolutionAggregate;
             const optionSelectionData = problemSelectionData.selected;
-            optionIDs.forEach((optionID: string) => {
+
+            options.forEach((o: IMultipleChoiceOption) => {
+                const optionID = o.id;
                 aggregateData[optionID] = optionSelectionData[optionID] ? optionSelectionData[optionID].length : 0;
             });
         }
@@ -69,6 +69,6 @@ function mapStateToProps(state: IPMState, ownProps) {
         console.error(e);
     }
 
-    return update(ownProps, { $merge: { isAdmin, userSolution, options, optionIDs, aggregateData } });
+    return update(ownProps, { $merge: { isAdmin, userSolution, options, aggregateData } });
 }
 export default connect(mapStateToProps)(MultipleChoiceOptions);

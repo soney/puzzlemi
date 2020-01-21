@@ -36,10 +36,7 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
 function mapStateToProps(state:IPMState, givenProps) {
     const { intermediateUserState, shareDBDocs } = state;
     const { isAdmin } = intermediateUserState;
-    const problemsDoc = shareDBDocs.problems;
-    const problems = problemsDoc ? problemsDoc.getData() : null;
-
-    const problemsDocReady = problemsDoc && !!(problemsDoc.getData());
+    const problems = shareDBDocs.i.problems;
 
     let filteredProblems: IProblem[] = [];
     if(problems) {
@@ -53,7 +50,7 @@ function mapStateToProps(state:IPMState, givenProps) {
         });
     }
 
-    return update(givenProps, { $merge: { problems: filteredProblems, isAdmin, problemsDocReady } });
+    return update(givenProps, { $merge: { problems: filteredProblems, isAdmin } });
 
 }
 export default connect(mapStateToProps)(Problems);

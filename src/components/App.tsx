@@ -3,7 +3,7 @@ import '../css/App.scss';
 import * as reactRedux from 'react-redux';
 import { ReconnectingWebsocket, SDBClient, SDBDoc } from 'sdb-ts';
 import Problems from './Problems/Problems';
-import { setProblemsDoc, beginListeningOnProblemsDoc, setSolutionsDoc, setUsersDoc, setAggregateDataDoc, beginListeningOnAggregateDataDoc } from '../actions/sharedb_actions';
+import { setProblemsDoc, beginListeningOnProblemsDoc, setSolutionsDoc, setUsersDoc, setAggregateDataDoc, beginListeningOnAggregateDataDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
 import { setUser } from '../actions/user_actions';
 import UserHeader from './UserHeader';
 import { IProblem, IProblems } from '../reducers/problems';
@@ -80,6 +80,7 @@ function mapDispatchToProps(dispatch, ownProps) {
     const problemsDoc: SDBDoc<IProblems> = sdbClient.get(appState.channel, 'problems');
     dispatch(setProblemsDoc(problemsDoc));
     problemsDoc.createIfEmpty(emptyProblemsDoc).then(() => {
+        dispatch(beginListeningOnDoc(problemsDoc, 'problems'));
         dispatch(beginListeningOnProblemsDoc(problemsDoc));
         return problemsDoc;
     });
@@ -87,7 +88,7 @@ function mapDispatchToProps(dispatch, ownProps) {
     const aggregateDataDoc: SDBDoc<IAggregateData> = sdbClient.get(appState.channel, 'aggregateData');
     dispatch(setAggregateDataDoc(aggregateDataDoc));
     aggregateDataDoc.createIfEmpty(emptyAggregateDataDoc).then(() => {
-        dispatch(beginListeningOnAggregateDataDoc(aggregateDataDoc));
+        dispatch(beginListeningOnDoc(aggregateDataDoc, 'aggregateData'));
         return aggregateDataDoc;
     });
 
@@ -100,11 +101,12 @@ function mapDispatchToProps(dispatch, ownProps) {
         dispatch(setUser(myInfo));
         if(myInfo.isInstructor) {
             const solutionsDoc: SDBDoc<any> = sdbClient.get(appState.channel, 'solutions');
-            const usersDoc: SDBDoc<any> = sdbClient.get(appState.channel, 'users');
             dispatch(setSolutionsDoc(solutionsDoc));
+            dispatch(beginListeningOnDoc(solutionsDoc, 'solutions'));
+
+            const usersDoc: SDBDoc<any> = sdbClient.get(appState.channel, 'users');
             dispatch(setUsersDoc(usersDoc));
-            solutionsDoc.subscribe();
-            usersDoc.subscribe();
+            dispatch(beginListeningOnDoc(usersDoc, 'users'));
         }
         return myInfo;
     });

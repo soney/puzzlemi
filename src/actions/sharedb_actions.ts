@@ -411,20 +411,47 @@ function scrollToBottom(): void {
     window.scrollTo(0, document.body.scrollHeight);
 }
 
+export interface ISDBDocFetchedAction {
+    type: EventTypes.SDB_DOC_FETCHED,
+    doc: SDBDoc<any>,
+    docType: string
+}
 export interface ISDBDocChangedAction {
     type: EventTypes.SDB_DOC_CHANGED,
-    doc: SDBDoc<any>
+    doc: SDBDoc<any>,
+    docType: string
+}
+export function beginListeningOnDoc(doc: SDBDoc<any>, docType: string) {
+    return (dispatch: Dispatch, getState) => {
+        doc.subscribe((type, ops) => {
+            if(type === null || type === 'create') {
+                // dispatch(aggregateDataFetched(doc.getData()));
+                dispatch({
+                    type: EventTypes.SDB_DOC_FETCHED,
+                    doc,
+                    docType
+                } as ISDBDocFetchedAction);
+            } else if (type === 'op') {
+                dispatch({
+                    type: EventTypes.SDB_DOC_CHANGED,
+                    doc,
+                    docType
+                } as ISDBDocChangedAction);
+            }
+        });
+    };
 }
 export function beginListeningOnAggregateDataDoc(doc: SDBDoc<IAggregateData>) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {
-            if(type === null) {
+            if(type === null || type === 'create') {
                 // dispatch(aggregateDataFetched(doc.getData()));
             } else if (type === 'op') {
-                dispatch({
-                    type: EventTypes.SDB_DOC_CHANGED,
-                    doc
-                } as ISDBDocChangedAction);
+                // dispatch({
+                //     type: EventTypes.SDB_DOC_CHANGED,
+                //     doc,
+                //     docType: 'aggregateData'
+                // } as ISDBDocChangedAction);
             }
         });
     };
@@ -432,18 +459,14 @@ export function beginListeningOnAggregateDataDoc(doc: SDBDoc<IAggregateData>) {
 export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {
-            if(type === null) {
+            if(type === null || type === 'create') {
                 dispatch(problemsFetched(doc.getData()));
             } else if (type === 'op') {
                 const wasAtBottom = isNearBottom();
-                dispatch({
-                    type: EventTypes.SDB_DOC_CHANGED,
-                    doc
-                } as ISDBDocChangedAction);
                 ops!.forEach((op) => {
                     const { p } = op;
 
-                    console.log(op);
+                    // console.log(op);
 
                     const addProblemMatches = SDBDoc.matches(p, ['allProblems', true]);
                     if(addProblemMatches) {
