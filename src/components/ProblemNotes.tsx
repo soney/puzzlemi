@@ -14,7 +14,7 @@ const ProblemNotes = ({ index, problem, isRender, isAdmin, doc }) => {
             return <div>
              <div className="row">
                 <div className="col">
-                    <p className="problem-notes" dangerouslySetInnerHTML={problemNotes} />
+                    <p id='problem-notes' className={"problem-notes"+((isAdmin)?' problem-notes-admin':'')} dangerouslySetInnerHTML={problemNotes} />
                     <SketchOverlay index={index} />
                 </div>
             </div>
@@ -32,7 +32,7 @@ const ProblemNotes = ({ index, problem, isRender, isAdmin, doc }) => {
         const converter = new showdown.Converter();
         const problemNotes = { __html: converter.makeHtml(problem.notes) };
         return <div className="row">
-            <div className="col" style={{height: '300px', overflowY: 'auto', border: 'solid 1px #eeeeee', marginLeft:'15px', marginRight: '15px'}}>
+            <div className="col" style={{overflowY: 'auto', border: 'solid 1px #eeeeee', marginLeft:'15px', marginRight: '15px'}}>
                 <p className="problem-notes" dangerouslySetInnerHTML={problemNotes} />
                 <SketchOverlay index={index} />
             </div>
