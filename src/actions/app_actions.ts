@@ -24,10 +24,44 @@ export function selectRandomUserForSolutionView(problemID: string) {
         const solutionsData = solutionsDoc!.getData();
         const problemSolutions = solutionsData.allSolutions[problemID];
 
-        const users = Object.keys(problemSolutions);
-        const randomUser = randomItem(users) || false;
+        if(problemSolutions) {
+            const users = Object.keys(problemSolutions);
+            const randomUser = randomItem(users) || false;
 
-        dispatch(selectUserForSolutionView(randomUser));
+            dispatch(selectUserForSolutionView(randomUser));
+        }
+    };
+}
+
+export function selectRandomCorrectUserForSolutionView(problemID: string) {
+    return (dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const solutionsDoc = shareDBDocs.solutions;
+        const solutionsData = solutionsDoc!.getData();
+        const problemSolutions = solutionsData.allSolutions[problemID];
+
+        if(problemSolutions) {
+            const users = Object.keys(problemSolutions);
+            const randomUser = randomItem(users) || false;
+
+            dispatch(selectUserForSolutionView(randomUser));
+        }
+    };
+}
+
+export function selectRandomIncorrectUserForSolutionView(problemID: string) {
+    return (dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const solutionsDoc = shareDBDocs.solutions;
+        const solutionsData = solutionsDoc!.getData();
+        const problemSolutions = solutionsData.allSolutions[problemID];
+
+        if(problemSolutions) {
+            const users = Object.keys(problemSolutions);
+            const randomUser = randomItem(users) || false;
+
+            dispatch(selectUserForSolutionView(randomUser));
+        }
     };
 }
 

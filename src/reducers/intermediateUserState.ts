@@ -3,7 +3,7 @@ import update from 'immutability-helper';
 import { ISetIsAdminAction, ICodeChangedAction } from '../actions/user_actions';
 import { IOutputChangedAction, IErrorChangedAction, IDoneRunningCodeAction, IBeginRunningCodeAction } from '../actions/runCode_actions';
 import { IPMTestResult } from '../pyTests/PMTestSuite';
-import { IProblemAddedAction, IProblemsFetchedAction } from '../actions/sharedb_actions';
+import { IProblemAddedAction, ISDBDocFetchedAction } from '../actions/sharedb_actions';
 import { IProblem, ICodeFile } from './problems';
 
 export interface IIntermediateUserState {
@@ -28,7 +28,7 @@ export interface ICodeSolutionTestResultsState {
 
 export type ISolutionState = ICodeSolutionState | null;
 
-export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: false, intermediateSolutionState: {} }, action: ISetIsAdminAction|IOutputChangedAction|IErrorChangedAction|IDoneRunningCodeAction|IBeginRunningCodeAction|IProblemAddedAction|IProblemsFetchedAction|ICodeChangedAction) => {
+export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: false, intermediateSolutionState: {} }, action: ISetIsAdminAction|IOutputChangedAction|IErrorChangedAction|IDoneRunningCodeAction|IBeginRunningCodeAction|IProblemAddedAction|ISDBDocFetchedAction|ICodeChangedAction) => {
     const { type } = action;
     if(type === EventTypes.SET_IS_ADMIN) {
         const { isAdmin } = action as ISetIsAdminAction;
@@ -61,22 +61,26 @@ export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: f
                 }
             }
         });
-    } else if(type === EventTypes.PROBLEMS_FETCHED) {
-        const { problems } = action as IProblemsFetchedAction;
-        const { allProblems } = problems;
-        const intermediateSolutionStates = {};
+    } else if(type === EventTypes.SDB_DOC_FETCHED) {
+        const { doc, docType } = action as ISDBDocFetchedAction;
+        if(docType === 'problems') {
+            const { allProblems } = doc.getData();
+            const intermediateSolutionStates = {};
 
-        for(let problemID in allProblems) {
-            if(allProblems.hasOwnProperty(problemID)) {
-                const problem = allProblems[problemID];
-                if(!intermediateSolutionStates.hasOwnProperty(problemID)) {
-                    intermediateSolutionStates[problemID] = getIntermediateSolutionState(problem);
+            for(let problemID in allProblems) {
+                if(allProblems.hasOwnProperty(problemID)) {
+                    const problem = allProblems[problemID];
+                    if(!intermediateSolutionStates.hasOwnProperty(problemID)) {
+                        intermediateSolutionStates[problemID] = getIntermediateSolutionState(problem);
+                    }
                 }
             }
+            return update(state, {
+                intermediateSolutionState: { $merge: intermediateSolutionStates }
+            });
+        } else {
+            return state;
         }
-        return update(state, {
-            intermediateSolutionState: { $merge: intermediateSolutionStates }
-        });
     } else if(type === EventTypes.PROBLEM_ADDED) {
         const { problem } = action as IProblemAddedAction;
         const { id } = problem;

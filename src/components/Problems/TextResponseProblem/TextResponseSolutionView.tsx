@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
-import { IPMState } from '../../reducers';
-import { ITextResponseSolution, ICodeSolution } from '../../reducers/solutions';
-import { selectRandomUserForSolutionView } from '../../actions/app_actions';
+import { IPMState } from '../../../reducers';
+import { ITextResponseSolution, ICodeSolution } from '../../../reducers/solutions';
+import { selectRandomUserForSolutionView } from '../../../actions/app_actions';
 
-const SolutionView = ({ dispatch, problem, currentUser, solutionText }) => {
+const TextResponseSolutionView = ({ dispatch, problem, currentUser, solutionText }) => {
     const selectRandomUser = () => {
         dispatch(selectRandomUserForSolutionView(problem.id));
     };
@@ -35,11 +35,9 @@ function mapStateToProps(state: IPMState, ownProps) {
         const currentSolution = problemSolutions[currentUser];
         if(currentSolution && currentSolution.hasOwnProperty('response')) {
             solutionText = (currentSolution as ITextResponseSolution).response;
-        } else if(currentSolution && currentSolution.hasOwnProperty('code')) {
-            solutionText = (currentSolution as ICodeSolution).code;
         }
     }
 
     return update(ownProps, { $merge: { currentUser, solutionText } })
 }
-export default connect(mapStateToProps)(SolutionView);
+export default connect(mapStateToProps)(TextResponseSolutionView);

@@ -72,7 +72,7 @@ function mapStateToProps(state: IPMState, ownProps) {
     const problemID = problem.id;
     const { visible } = ownProps.problem;
     const aggregateData = shareDBDocs.i.aggregateData;
-    const problemAggregateData = aggregateData && aggregateData!.userData[problemID];
+    const problemAggregateData = aggregateData && aggregateData.userData[problemID];
 
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
     // console.log(myuid, completed);

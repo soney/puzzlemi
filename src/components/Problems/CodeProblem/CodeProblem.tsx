@@ -10,7 +10,7 @@ import { codeChanged } from '../../../actions/user_actions';
 import { ICodeSolution } from '../../../reducers/solutions';
 import { ISolutionState, ICodeSolutionState } from '../../../reducers/intermediateUserState';
 import { IPMState } from '../../../reducers';
-import SolutionView from '../SolutionView';
+import TextResponseSolutionView from '../TextResponseProblem/TextResponseSolutionView';
 
 const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, intermediateCodeState, output, errors }) => {
     const codeSolution = userSolution as ICodeSolution;
@@ -71,7 +71,7 @@ const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, in
             </div>
         </div>
         { isAdmin &&
-            <SolutionView problem={problem} />
+            <TextResponseSolutionView problem={problem} />
         }
     </>;
 }
@@ -85,7 +85,7 @@ function mapStateToProps(state: IPMState, ownProps) {
 
     const userSolution = solutions.allSolutions[ownProps.problem.id][myuid];
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
-    const { output, errors } = intermediateCodeState as ICodeSolutionState;
+    const { output, errors } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { output: '', errors: []};
 
     return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, output, errors, intermediateCodeState } });
 }

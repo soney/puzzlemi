@@ -18,7 +18,3 @@ export interface IMultipleChoiceSolutionAggregate {
 export interface ITextResponseSolutionAggregate {
     completed: null
 }
-
-export const aggregateData = (state: IAggregateData={ userData: {} }, action: any) => {
-    return state;
-}
