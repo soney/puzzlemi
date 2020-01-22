@@ -16,13 +16,13 @@ const problemAdded = (problem: IProblem): IProblemAddedAction => ({
     problem, type: EventTypes.PROBLEM_ADDED,
 });
 
-export interface IProblemsFetchedAction {
-    type: EventTypes.PROBLEMS_FETCHED,
-    problems: IProblems
-}
-export const problemsFetched = (problems: IProblems): IProblemsFetchedAction => ({
-    problems, type: EventTypes.PROBLEMS_FETCHED,
-});
+// export interface IProblemsFetchedAction {
+//     type: EventTypes.PROBLEMS_FETCHED,
+//     problems: IProblems
+// }
+// export const problemsFetched = (problems: IProblems): IProblemsFetchedAction => ({
+//     problems, type: EventTypes.PROBLEMS_FETCHED,
+// });
 
 export interface IGivenCodeChangedAction {
     type: EventTypes.GIVEN_CODE_CHANGED,
@@ -460,7 +460,7 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {
             if(type === null || type === 'create') {
-                dispatch(problemsFetched(doc.getData()));
+                // dispatch(problemsFetched(doc.getData()));
             } else if (type === 'op') {
                 const wasAtBottom = isNearBottom();
                 ops!.forEach((op) => {

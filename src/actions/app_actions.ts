@@ -41,7 +41,14 @@ export function selectRandomCorrectUserForSolutionView(problemID: string) {
         const problemSolutions = solutionsData.allSolutions[problemID];
 
         if(problemSolutions) {
-            const users = Object.keys(problemSolutions);
+            const aggregateDataDoc = shareDBDocs.aggregateData;
+            const aggregateData = aggregateDataDoc!.getData();
+            const problemAggregateData = aggregateData.userData[problemID];
+            const { completed } = problemAggregateData;
+
+            const correctSolutions = problemSolutions.filter((solution, userID) => ( completed.includes(userID) ))
+
+            const users = Object.keys(correctSolutions);
             const randomUser = randomItem(users) || false;
 
             dispatch(selectUserForSolutionView(randomUser));
@@ -57,7 +64,14 @@ export function selectRandomIncorrectUserForSolutionView(problemID: string) {
         const problemSolutions = solutionsData.allSolutions[problemID];
 
         if(problemSolutions) {
-            const users = Object.keys(problemSolutions);
+            const aggregateDataDoc = shareDBDocs.aggregateData;
+            const aggregateData = aggregateDataDoc!.getData();
+            const problemAggregateData = aggregateData.userData[problemID];
+            const { completed } = problemAggregateData;
+
+            const incorrectSolutions = problemSolutions.filter((solution, userID) => ( !completed.includes(userID) ))
+
+            const users = Object.keys(incorrectSolutions);
             const randomUser = randomItem(users) || false;
 
             dispatch(selectUserForSolutionView(randomUser));

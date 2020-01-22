@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 import { IPMState } from '../../../reducers';
-import { ITextResponseSolution, ICodeSolution } from '../../../reducers/solutions';
+import { ITextResponseSolution } from '../../../reducers/solutions';
 import { selectRandomUserForSolutionView } from '../../../actions/app_actions';
 
 const TextResponseSolutionView = ({ dispatch, problem, currentUser, solutionText }) => {
@@ -11,11 +11,11 @@ const TextResponseSolutionView = ({ dispatch, problem, currentUser, solutionText
     };
     return <div className="row">
         <div className="col">
-            <button className="btn btn-secondary btn-sm" onClick={selectRandomUser}>Show random solution</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={selectRandomUser}>Show random solution</button>
             {
                 currentUser && 
                 <div>
-                    <h4>Solution ({currentUser}):</h4>
+                    <h4>Solution:</h4>
                     <pre> {solutionText} </pre>
                 </div>
             }

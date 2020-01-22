@@ -6,18 +6,18 @@
 
 /*! showdown v 1.9.1 - 02-11-2019 */
 
+/*
+object-assign
+(c) Sindre Sorhus
+@license MIT
+*/
+
 /*!
  * The buffer module from node.js, for the browser.
  *
  * @author   Feross Aboukhadijeh <http://feross.org>
  * @license  MIT
  */
-
-/*
-object-assign
-(c) Sindre Sorhus
-@license MIT
-*/
 
 /*!
  * async

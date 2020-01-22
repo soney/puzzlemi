@@ -12,6 +12,9 @@ import { IPMState } from '../reducers';
 import { IAppState } from '../reducers/app';
 import { setAppState } from '../actions/app_actions';
 import update from 'immutability-helper';
+import { appState } from '..';
+import { ISolutions } from '../reducers/solutions';
+import { IUsers } from '../reducers/users';
 
 export interface IPuzzleSet {
     problems: IProblem[];
@@ -61,17 +64,9 @@ function mapStateToProps(state: IPMState, ownProps) {
 }
 
 function mapDispatchToProps(dispatch, ownProps) {
-    const DEBUG_MODE = window.location.host === 'localhost:3000';
     const emptyProblemsDoc: IProblems = { allProblems: {}, order: [] };
     const emptyAggregateDataDoc: IAggregateData = { userData: {} };
 
-    const appState:IAppState = {
-        debugMode: DEBUG_MODE,
-        websocketLocation: DEBUG_MODE ? `ws://localhost:8000` : `${window.location.protocol === 'http:' ? 'ws' : 'wss'}://${window.location.host}`,
-        channel: DEBUG_MODE ? 'p' : window.location.pathname.slice(1).split('/')[1],
-        postBase: DEBUG_MODE ? `http://localhost:8000` : '',
-        selectedUserForSolutionsView: false
-    };
     dispatch(setAppState(appState));
 
     const ws: ReconnectingWebsocket = new ReconnectingWebsocket(appState.websocketLocation);
@@ -100,11 +95,11 @@ function mapDispatchToProps(dispatch, ownProps) {
         }
         dispatch(setUser(myInfo));
         if(myInfo.isInstructor) {
-            const solutionsDoc: SDBDoc<any> = sdbClient.get(appState.channel, 'solutions');
+            const solutionsDoc: SDBDoc<ISolutions> = sdbClient.get(appState.channel, 'solutions');
             dispatch(setSolutionsDoc(solutionsDoc));
             dispatch(beginListeningOnDoc(solutionsDoc, 'solutions'));
 
-            const usersDoc: SDBDoc<any> = sdbClient.get(appState.channel, 'users');
+            const usersDoc: SDBDoc<IUsers> = sdbClient.get(appState.channel, 'users');
             dispatch(setUsersDoc(usersDoc));
             dispatch(beginListeningOnDoc(usersDoc, 'users'));
         }

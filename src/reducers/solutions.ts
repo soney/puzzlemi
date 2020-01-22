@@ -1,6 +1,6 @@
 import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
-import { IProblemAddedAction, IProblemsFetchedAction, IGivenCodeChangedAction, IMultipleChoiceSelectionTypeChangedAction, IMultipleChoiceOptionDeletedAction } from '../actions/sharedb_actions';
+import { IProblemAddedAction, IGivenCodeChangedAction, IMultipleChoiceSelectionTypeChangedAction, IMultipleChoiceOptionDeletedAction, ISDBDocFetchedAction } from '../actions/sharedb_actions';
 import { IPMState } from '.';
 import { IProblem, ICodeProblem, ICodeFile } from './problems';
 import { ICodeChangedAction, ITextResponseChangedAction, IDeleteUserFileAction, IMultipleChoiceSelectedOptionsChangedAction } from '../actions/user_actions';
@@ -26,8 +26,7 @@ export interface ISolutions {
         [problemID: string]: {
             [userID: string]: IProblemSolution
         }
-    },
-    mirrorsShareDBDoc: boolean
+    }
 }
 
 const solutionSubmissionQueue: {[problemID: string]: IProblemSolution} = {};
@@ -66,7 +65,7 @@ function doSubmitSolutions(appState: IAppState, uid: string) {
     solutionSubmissionTimer = null;
 }
 
-export const solutions = (state: ISolutions={ allSolutions: {}, mirrorsShareDBDoc: false }, action: IProblemAddedAction) => {
+export const solutions = (state: ISolutions={ allSolutions: {} }, action: IProblemAddedAction) => {
     const { type } = action;
     if(type === EventTypes.PROBLEM_ADDED) {
         const { problem } = action as IProblemAddedAction;
@@ -82,7 +81,7 @@ export const solutions = (state: ISolutions={ allSolutions: {}, mirrorsShareDBDo
     }
 }
 
-export const crossSliceSolutionsReducer = (state: IPMState, action: IProblemAddedAction|IProblemsFetchedAction|ICodeChangedAction|IGivenCodeChangedAction|ITextResponseChangedAction|IFileWrittenAction|IDeleteUserFileAction|IMultipleChoiceSelectedOptionsChangedAction|IMultipleChoiceSelectionTypeChangedAction|IMultipleChoiceOptionDeletedAction): IPMState => {
+export const crossSliceSolutionsReducer = (state: IPMState, action: IProblemAddedAction|ICodeChangedAction|IGivenCodeChangedAction|ITextResponseChangedAction|IFileWrittenAction|IDeleteUserFileAction|IMultipleChoiceSelectedOptionsChangedAction|IMultipleChoiceSelectionTypeChangedAction|IMultipleChoiceOptionDeletedAction|ISDBDocFetchedAction): IPMState => {
     const { type } = action;
     if(type === EventTypes.PROBLEM_ADDED) {
         const { problem } = action as IProblemAddedAction;
@@ -95,46 +94,65 @@ export const crossSliceSolutionsReducer = (state: IPMState, action: IProblemAdde
                 }
             }
         });
-    } else if(type === EventTypes.PROBLEMS_FETCHED) {
-        const { problems } = action as IProblemsFetchedAction;
-        const { allProblems } = problems;
-        const solutions = {};
-        const myuid = state.users.myuid as string;
+    } else if(type === EventTypes.SDB_DOC_FETCHED) {
+        const { doc, docType } = action as ISDBDocFetchedAction;
+        if(docType === 'problems') {
+            const problems = doc.getData();
+            const { allProblems } = problems;
+            const solutions = {};
+            const myuid = state.users.myuid as string;
 
-        const { allSolutions } = state.solutions;
-        for(let problemID in allProblems) {
-            if(allProblems.hasOwnProperty(problemID)) {
-                const problem = allProblems[problemID];
-                if(!allSolutions.hasOwnProperty(problemID)) {
-                    solutions[problemID] = {
-                        [myuid]: getDefaultSolution(problem)
-                    };
+            const { allSolutions } = state.solutions;
+            for(let problemID in allProblems) {
+                if(allProblems.hasOwnProperty(problemID)) {
+                    const problem = allProblems[problemID];
+                    if(!allSolutions.hasOwnProperty(problemID)) {
+                        solutions[problemID] = {
+                            [myuid]: getDefaultSolution(problem)
+                        };
+                    }
                 }
             }
-        }
-        const fixedProblemsWithNoSolutions = update(state, {
-            solutions: {
-                allSolutions: { $merge: solutions }
-            }
-        });
+            const fixedProblemsWithNoSolutions = update(state, {
+                solutions: {
+                    allSolutions: { $merge: solutions }
+                }
+            });
 
-        const mySolutions = {};
-        for(let problemID in allProblems) {
-            if(allProblems.hasOwnProperty(problemID)) {
-                const problem = allProblems[problemID];
-                if(!fixedProblemsWithNoSolutions.solutions.allSolutions[problemID].hasOwnProperty(myuid)) {
-                    mySolutions[problemID] = update(fixedProblemsWithNoSolutions.solutions.allSolutions[problemID], {
-                        [myuid]: {$set: getDefaultSolution(problem) }
-                    });
+            const mySolutions = {};
+            for(let problemID in allProblems) {
+                if(allProblems.hasOwnProperty(problemID)) {
+                    const problem = allProblems[problemID];
+                    if(!fixedProblemsWithNoSolutions.solutions.allSolutions[problemID].hasOwnProperty(myuid)) {
+                        mySolutions[problemID] = update(fixedProblemsWithNoSolutions.solutions.allSolutions[problemID], {
+                            [myuid]: {$set: getDefaultSolution(problem) }
+                        });
+                    }
                 }
             }
-        }
 
-        return update(fixedProblemsWithNoSolutions, {
-            solutions: {
-                allSolutions: { $merge: mySolutions }
-            }
-        })
+            return update(fixedProblemsWithNoSolutions, {
+                solutions: {
+                    allSolutions: { $merge: mySolutions }
+                }
+            })
+            // const { allProblems } = doc.getData();
+            // const intermediateSolutionStates = {};
+
+            // for(let problemID in allProblems) {
+            //     if(allProblems.hasOwnProperty(problemID)) {
+            //         const problem = allProblems[problemID];
+            //         if(!intermediateSolutionStates.hasOwnProperty(problemID)) {
+            //             intermediateSolutionStates[problemID] = getIntermediateSolutionState(problem);
+            //         }
+            //     }
+            // }
+            // return update(state, {
+            //     intermediateSolutionState: { $merge: intermediateSolutionStates }
+            // });
+        } else {
+            return state;
+        }
     } else if(type === EventTypes.CODE_CHANGED) {
         const { problemID, code } = action as ICodeChangedAction;
         const myuid = state.users.myuid as string;
