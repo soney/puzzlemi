@@ -9,7 +9,6 @@ import UserHeader from './UserHeader';
 import { IProblem, IProblems } from '../reducers/problems';
 import { IAggregateData } from '../reducers/aggregateData';
 import { IPMState } from '../reducers';
-import { IAppState } from '../reducers/app';
 import { setAppState } from '../actions/app_actions';
 import update from 'immutability-helper';
 import { appState } from '..';

@@ -19,17 +19,7 @@ const PMUserHeader = ({users, selectedUserForSolutionsView, dispatch, problemsDo
     }
     const downloadJSON = () => {
         const data = problemsDoc.getData();
-        let newData = data;
-        for(let key in data.userData) {
-            if(data.hasOwnProperty(key)) {
-                newData = update(newData, { userData: {
-                    [key]: {
-                        completed: { $set: [] }
-                    }
-                }})
-            }
-        }
-        const stringifiedData = JSON.stringify(newData);
+        const stringifiedData = JSON.stringify(data);
         download('puzzlemi-saved.json', stringifiedData);
     };
     const handleFile = (event) => {
