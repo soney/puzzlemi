@@ -2,10 +2,11 @@ import { connect } from "react-redux";
 import * as React from 'react';
 import { setIsAdmin } from '../actions/user_actions';
 import update from 'immutability-helper';
-import { IPuzzleSet } from "./App";
 import { IPMState } from "../reducers";
 import { selectUserForSolutionView } from "../actions/app_actions";
 import * as classNames from 'classnames';
+import { replaceProblems } from "../actions/sharedb_actions";
+import { IProblems } from "../reducers/problems";
 
 const PMUserHeader = ({users, selectedUserForSolutionsView, dispatch, problemsDoc, isAdmin, allUsers}) => {
     const { myuid } = users;
@@ -31,8 +32,8 @@ const PMUserHeader = ({users, selectedUserForSolutionsView, dispatch, problemsDo
             reader.onload = function(e) {
                 if(e.target) {
                     const result = e.target.result as string;
-                    const newData: IPuzzleSet = JSON.parse(result);
-                    problemsDoc.submitObjectReplaceOp([], newData);
+                    const newData: IProblems = JSON.parse(result);
+                    dispatch(replaceProblems(newData));
                 }
             }
             reader.readAsText(file);

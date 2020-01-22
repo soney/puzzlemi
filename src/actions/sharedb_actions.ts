@@ -239,6 +239,32 @@ export function setRevealSolution(problemID: number, reveal: boolean) {
     };
 }
 
+export function replaceProblems(newProblems: IProblems) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        for(let problemID in newProblems.allProblems) {
+            if(newProblems.allProblems.hasOwnProperty(problemID)) {
+                const { problemDetails } = newProblems.allProblems[problemID];
+                if(problemDetails.problemType === 'code') {
+                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
+                        completed: []
+                    });
+                } else if(problemDetails.problemType === 'multiple-choice') {
+                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
+                        completed: [],
+                        selected: {}
+                    });
+                } else if(problemDetails.problemType === 'text-response') {
+                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], { });
+                }
+            }
+        }
+        problemsDoc.submitObjectReplaceOp([], newProblems);
+    };
+}
+
 export function addCodeProblem() {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
@@ -258,12 +284,12 @@ export function addCodeProblem() {
             }
         };
 
-        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
-        await problemsDoc.submitListPushOp(['order'], newProblem.id);
-
         await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], {
             completed: []
         });
+
+        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
+        await problemsDoc.submitListPushOp(['order'], newProblem.id);
     };
 }
 
@@ -285,13 +311,12 @@ export function addMultipleChoiceProblem() {
             }
         };
 
-        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
-        await problemsDoc.submitListPushOp(['order'], newProblem.id);
-
         await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], {
             completed: [],
             selected: {}
         });
+        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
+        await problemsDoc.submitListPushOp(['order'], newProblem.id);
     };
 }
 
@@ -310,10 +335,10 @@ export function addTextResponseProblem() {
             }
         };
 
-        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
-        problemsDoc.submitListPushOp(['order'], newProblem.id);
+        await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], { });
 
-        aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], { });
+        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
+        await problemsDoc.submitListPushOp(['order'], newProblem.id);
     };
 }
 
@@ -441,21 +466,6 @@ export function beginListeningOnDoc(doc: SDBDoc<any>, docType: string) {
         });
     };
 }
-export function beginListeningOnAggregateDataDoc(doc: SDBDoc<IAggregateData>) {
-    return (dispatch: Dispatch, getState) => {
-        doc.subscribe((type, ops) => {
-            if(type === null || type === 'create') {
-                // dispatch(aggregateDataFetched(doc.getData()));
-            } else if (type === 'op') {
-                // dispatch({
-                //     type: EventTypes.SDB_DOC_CHANGED,
-                //     doc,
-                //     docType: 'aggregateData'
-                // } as ISDBDocChangedAction);
-            }
-        });
-    };
-}
 export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {
@@ -467,6 +477,13 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                     const { p } = op;
 
                     // console.log(op);
+                    if(SDBDoc.matches(p, [])) { // total replacement
+                        dispatch({
+                            type: EventTypes.SDB_DOC_FETCHED,
+                            doc,
+                            docType: 'problems'
+                        } as ISDBDocFetchedAction);
+                    }
 
                     const addProblemMatches = SDBDoc.matches(p, ['allProblems', true]);
                     if(addProblemMatches) {

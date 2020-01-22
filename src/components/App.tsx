@@ -15,38 +15,6 @@ import { appState } from '..';
 import { ISolutions } from '../reducers/solutions';
 import { IUsers } from '../reducers/users';
 
-export interface IPuzzleSet {
-    problems: IProblem[];
-    userData: {
-        [problemID: string]: IProblemUserInfo;
-    };
-}
-
-export interface IProblemUserInfo {
-    completed: string[];
-    hidden: boolean;
-}
-
-
-export interface IUsersDoc {
-    users: {
-        [uid: string]: {
-            uid: string,
-            name: string,
-            email: string
-        }
-    }
-}
-
-export interface ISolutionsDoc {
-    solutions: {
-        [uid: string]: {
-            [problemid: string]: {
-
-            }
-        }
-    }
-}
 
 const PMApplication = ({ isAdmin, dispatch }) => {
     return <div>

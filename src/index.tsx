@@ -15,7 +15,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { IAppState } from './reducers/app';
 import { Helmet } from "react-helmet";
 
-const ENABLE_LOGGER = false;
+const ENABLE_LOGGER = true;
 const middleware = [thunkMiddleware];
 if(ENABLE_LOGGER) {
     const loggerMiddleware = createLogger();
@@ -47,7 +47,7 @@ render(
     <Provider store={store}>
         <PersistGate loading={null} persistor={finalStore}>
             <Helmet>
-                <title>PuzzleMI ({appState.channel})</title>
+                <title>PuzzleMI [{appState.channel}]</title>
             </Helmet>
             <App isAdmin={false} />
         </PersistGate>
