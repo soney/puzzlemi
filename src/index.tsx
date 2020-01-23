@@ -15,14 +15,14 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { IAppState } from './reducers/app';
 import { Helmet } from "react-helmet";
 
-const ENABLE_LOGGER = true;
+const DEBUG_MODE = window.location.host === 'localhost:3000';
+const ENABLE_LOGGER = DEBUG_MODE;
 const middleware = [thunkMiddleware];
 if(ENABLE_LOGGER) {
     const loggerMiddleware = createLogger();
     middleware.push(loggerMiddleware);
 }
 
-const DEBUG_MODE = window.location.host === 'localhost:3000';
 export const appState:IAppState = {
     debugMode: DEBUG_MODE,
     websocketLocation: DEBUG_MODE ? `ws://localhost:8000` : `${window.location.protocol === 'http:' ? 'ws' : 'wss'}://${window.location.host}`,

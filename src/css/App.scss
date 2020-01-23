@@ -102,7 +102,20 @@ html {
     }
 }
 
+.import-export {
+}
+
 nav {
+    input[type="file"] {
+        display: none;
+    }
+    label.file-upload {
+        margin-bottom: 0px;
+        margin-right: 5px;
+    }
+}
+.allUsers{
+    font-size: 0.75em;
     .users {
         // line-break: strict;
         // white-space: pre;
@@ -112,7 +125,6 @@ nav {
         // overflow-x: hidden;
         overflow-y: scroll;
         max-height: 200px;
-        font-size: 0.75em;
 
         border: 1px solid #EEE;
         

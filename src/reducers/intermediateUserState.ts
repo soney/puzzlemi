@@ -3,7 +3,7 @@ import update from 'immutability-helper';
 import { ISetIsAdminAction, ICodeChangedAction } from '../actions/user_actions';
 import { IOutputChangedAction, IErrorChangedAction, IDoneRunningCodeAction, IBeginRunningCodeAction } from '../actions/runCode_actions';
 import { IPMTestResult } from '../pyTests/PMTestSuite';
-import { IProblemAddedAction, ISDBDocFetchedAction } from '../actions/sharedb_actions';
+import { IProblemAddedAction, ISDBDocFetchedAction, ITestAddedAction, ITestPartChangedAction } from '../actions/sharedb_actions';
 import { IProblem, ICodeFile } from './problems';
 
 export interface IIntermediateUserState {
@@ -28,7 +28,7 @@ export interface ICodeSolutionTestResultsState {
 
 export type ISolutionState = ICodeSolutionState | null;
 
-export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: false, intermediateSolutionState: {} }, action: ISetIsAdminAction|IOutputChangedAction|IErrorChangedAction|IDoneRunningCodeAction|IBeginRunningCodeAction|IProblemAddedAction|ISDBDocFetchedAction|ICodeChangedAction) => {
+export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: false, intermediateSolutionState: {} }, action: ISetIsAdminAction|IOutputChangedAction|IErrorChangedAction|IDoneRunningCodeAction|IBeginRunningCodeAction|IProblemAddedAction|ISDBDocFetchedAction|ICodeChangedAction|ITestAddedAction|ITestPartChangedAction) => {
     const { type } = action;
     if(type === EventTypes.SET_IS_ADMIN) {
         const { isAdmin } = action as ISetIsAdminAction;
@@ -51,6 +51,37 @@ export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: f
                 }
             }
         });
+    } else if(type === EventTypes.TEST_ADDED) {
+        const { problemID } = action as ITestAddedAction;
+
+        return update(state, {
+            intermediateSolutionState: {
+                [problemID]: {
+                    passedAll: { $set: false },
+                }
+            }
+        });
+    } else if(type === EventTypes.TEST_PART_CHANGED) {
+        const { problemID } = action as ITestPartChangedAction;
+        state = update(state, {
+            intermediateSolutionState: {
+                [problemID]: {
+                    passedAll: { $set: false },
+                }
+            }
+        });
+        // state = update(state, {
+        //         intermediateSolutionState: {
+        //             [problemID]: {
+        //                 testResults: {
+        //                     [test.id]: {
+        //                         passed: { $set: false}
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     });
+        return state;
     } else if(type === EventTypes.DONE_RUNNING_CODE) {
         const { problemID, passedAll, testResults } = action as IDoneRunningCodeAction;
         return update(state, {

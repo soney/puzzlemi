@@ -17,21 +17,25 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
         dispatch(addTextResponseProblem());
     };
 
-    return <ul className='problems'>
-        {problems && problems.length
-        ? problems.map((problem, i) => {
-                return <Problem key={`${problem.id}-${i}`} problem={problem} />;
-            })
-        : <li className='container no-problems'>(no problems yet)</li>}
+    return <>
+        <ul className='problems'>
+            {problems && problems.length
+            ? problems.map((problem, i) => {
+                    return <Problem key={`${problem.id}-${i}`} problem={problem} />;
+                })
+            : <li className='container no-problems'>(no problems yet)</li>}
+        </ul>
         {
             isAdmin &&
-            <li className="container">
-                <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddCodeProblem}>+ Code Problem</button>
-                <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddMultipleChoiceProblem}>+ Multiple Choice Problem</button>
-                <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTextResponseProblem}>+ Text Response Problem</button>
-            </li>
+            <div className="row">
+                <div className="btn-group btn-block" role="group">
+                    <button className="btn btn-outline-success btn-sm" onClick={doAddCodeProblem}>+ Code</button>
+                    <button className="btn btn-outline-success btn-sm" onClick={doAddMultipleChoiceProblem}>+ Multiple Choice</button>
+                    <button className="btn btn-outline-success btn-sm" onClick={doAddTextResponseProblem}>+ Text Response</button>
+                </div>
+            </div>
         }
-    </ul>
+    </>
 }
 function mapStateToProps(state:IPMState, givenProps) {
     const { intermediateUserState, shareDBDocs } = state;

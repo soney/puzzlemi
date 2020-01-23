@@ -6,7 +6,7 @@ import Problems from './Problems/Problems';
 import { setProblemsDoc, beginListeningOnProblemsDoc, setSolutionsDoc, setUsersDoc, setAggregateDataDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
 import { setUser } from '../actions/user_actions';
 import UserHeader from './UserHeader';
-import { IProblem, IProblems } from '../reducers/problems';
+import { IProblems } from '../reducers/problems';
 import { IAggregateData } from '../reducers/aggregateData';
 import { IPMState } from '../reducers';
 import { setAppState } from '../actions/app_actions';
@@ -17,12 +17,9 @@ import { IUsers } from '../reducers/users';
 
 
 const PMApplication = ({ isAdmin, dispatch }) => {
-    return <div>
-        <div className="container"><UserHeader /></div>
+    return <div className="container">
+        <UserHeader />
         <Problems />
-        <div className='contact'>
-            {/* Contact: <a href='http://from.so/' target='_blank' rel='noopener noreferrer'>Steve Oney</a> (University of Michigan) */}
-        </div>
     </div>;
 };
 
@@ -42,8 +39,8 @@ function mapDispatchToProps(dispatch, ownProps) {
     const problemsDoc: SDBDoc<IProblems> = sdbClient.get(appState.channel, 'problems');
     dispatch(setProblemsDoc(problemsDoc));
     problemsDoc.createIfEmpty(emptyProblemsDoc).then(() => {
-        dispatch(beginListeningOnDoc(problemsDoc, 'problems'));
         dispatch(beginListeningOnProblemsDoc(problemsDoc));
+        dispatch(beginListeningOnDoc(problemsDoc, 'problems'));
         return problemsDoc;
     });
 

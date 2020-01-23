@@ -2,7 +2,7 @@ import { SDBDoc } from 'sdb-ts';
 import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
 import EventTypes from './EventTypes';
-import { ObjectInsertOp, ListDeleteOp } from 'sharedb';
+import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
 import { IProblem, IMultipleChoiceOption, IProblems, ICodeTest, IMultipleChoiceSelectionType } from '../reducers/problems';
 import { IAggregateData } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
@@ -358,9 +358,10 @@ export function deleteProblem(problemID: string) {
 }
 
 export function addTest(problemID: string) {
-    return (dispatch: Dispatch, getState) => {
+    return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
+        const aggregateDataDoc = shareDBDocs.aggregateData;
 
         const newTest: ICodeTest = {
             actual: 'True',
@@ -369,9 +370,29 @@ export function addTest(problemID: string) {
             id: uuid(),
         };
 
-        return problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'tests'], newTest);
+        await problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'tests'], newTest);
+        await aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'completed'], []);
     };
 }
+
+export interface ITestAddedAction {
+    type: EventTypes.TEST_ADDED,
+    problemID: string,
+    test: ICodeTest
+}
+export const testAdded = (problemID: string, test: ICodeTest): ITestAddedAction => ({
+    type: EventTypes.TEST_ADDED, problemID, test
+});
+
+export interface ITestPartChangedAction {
+    type: EventTypes.TEST_PART_CHANGED,
+    problemID: string,
+    test: ICodeTest,
+    part: string
+}
+export const testPartChanged = (problemID: string, test: ICodeTest, part: string): ITestPartChangedAction => ({
+    type: EventTypes.TEST_PART_CHANGED, problemID, test, part
+});
 
 export function deleteTest(problemID: string, testID: string) {
     return (dispatch: Dispatch, getState) => {
@@ -439,7 +460,9 @@ function scrollToBottom(): void {
 export interface ISDBDocFetchedAction {
     type: EventTypes.SDB_DOC_FETCHED,
     doc: SDBDoc<any>,
-    docType: string
+    data: any,
+    docType: string,
+    ops: ReadonlyArray<sharedb.Op>
 }
 export interface ISDBDocChangedAction {
     type: EventTypes.SDB_DOC_CHANGED,
@@ -450,17 +473,18 @@ export function beginListeningOnDoc(doc: SDBDoc<any>, docType: string) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {
             if(type === null || type === 'create') {
-                // dispatch(aggregateDataFetched(doc.getData()));
                 dispatch({
                     type: EventTypes.SDB_DOC_FETCHED,
                     doc,
+                    data: doc.getData(),
                     docType
                 } as ISDBDocFetchedAction);
             } else if (type === 'op') {
                 dispatch({
                     type: EventTypes.SDB_DOC_CHANGED,
                     doc,
-                    docType
+                    docType,
+                    ops
                 } as ISDBDocChangedAction);
             }
         });
@@ -538,6 +562,24 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                         const problemID = p[1] as string;
                         const { ld } = op as ListDeleteOp;
                         multipleChoiceOptionDeleted(problemID, ld);
+                    }
+
+                    const changeTestPartMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'tests', true, /actual|expected/, true])
+                    if(changeTestPartMatches) {
+                        const problemID = p[1] as string;
+                        const testPart = p[5] as string;
+                        const test = doc.traverse(['allProblems', problemID, 'problemDetails', 'tests', p[4]])
+                        dispatch(testPartChanged(problemID, test, testPart));
+
+                        const { shareDBDocs } = getState();
+                        const aggregateDataDoc = shareDBDocs.aggregateData;
+                        aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'completed'], []);
+                    }
+                    const addTestMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'tests', true]);
+                    if(addTestMatches) {
+                        const problemID = p[1] as string;
+                        const { li } = op as ListInsertOp;
+                        dispatch(testAdded(problemID, li));
                     }
                 });
             }
