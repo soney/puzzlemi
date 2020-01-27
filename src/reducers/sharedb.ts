@@ -1,10 +1,10 @@
-import { SDBDoc } from 'sdb-ts';
+import { SDBDoc, ImmutabilityWrapper } from 'sdb-ts';
 import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
 import { IAggregateData } from './aggregateData';
 import { ISolutions } from './solutions';
 import { IUsers } from './users';
-import { ISetDocAction, ISDBDocChangedAction, IProblemsFetchedAction } from '../actions/sharedb_actions';
+import { ISetDocAction, ISDBDocChangedAction, ISDBDocFetchedAction } from '../actions/sharedb_actions';
 import { IProblems } from './problems';
 
 export interface ISDBDocsState {
@@ -12,18 +12,41 @@ export interface ISDBDocsState {
     aggregateData: SDBDoc<IAggregateData>|null,
     solutions: SDBDoc<ISolutions>|null,
     users: SDBDoc<IUsers>|null,
-    updateCount: number
+    immutable: {
+        problems: ImmutabilityWrapper<IProblems>|null,
+        aggregateData: ImmutabilityWrapper<IAggregateData>|null,
+        solutions: ImmutabilityWrapper<ISolutions>|null,
+        users: ImmutabilityWrapper<IUsers>|null,
+    },
+    i: {
+        problems: IProblems|null,
+        aggregateData: IAggregateData|null,
+        solutions: ISolutions|null,
+        users: IUsers|null
+    }
 }
 
-export const shareDBDocs = (state: ISDBDocsState={problems: null, solutions: null, users: null, aggregateData: null, updateCount: 1}, action: ISetDocAction | ISDBDocChangedAction | IProblemsFetchedAction) => {
+export const shareDBDocs = (state: ISDBDocsState={
+                     problems: null, aggregateData: null, solutions: null, users: null,
+        immutable: { problems: null, aggregateData: null, solutions: null, users: null},
+        i:         { problems: null, aggregateData: null, solutions: null, users: null} }
+    , action: ISetDocAction | ISDBDocChangedAction | ISDBDocFetchedAction) => {
     const { type } = action;
     if(type === EventTypes.SET_DOC) {
         const { docType, doc } = action as ISetDocAction;
-        return update(state, { [docType]: { $set: doc }});
-    } else if(type === EventTypes.PROBLEMS_FETCHED) {
-        return update(state, { updateCount: { $set: state.updateCount+1 } });
+        const immutableDoc = new ImmutabilityWrapper<any>(doc);
+        state = update(state, { [docType]: { $set: doc }});
+        state = update(state, { immutable: { [docType]: { $set: immutableDoc }}});
+        state = update(state, { i        : { [docType]: { $set: immutableDoc.getData() }}});
+        return state;
+    } else if(type === EventTypes.SDB_DOC_FETCHED) {
+        const { docType } = action as ISDBDocFetchedAction;
+        const immutableDoc = state.immutable[docType];
+        return update(state, { i : { [docType]: { $set: immutableDoc.getData() }}});
     } else if(type === EventTypes.SDB_DOC_CHANGED) {
-        return update(state, { updateCount: { $set: state.updateCount+1 } });
+        const { docType } = action as ISDBDocChangedAction;
+        const immutableDoc = state.immutable[docType];
+        return update(state, { i : { [docType]: { $set: immutableDoc.getData() }}});
     } else {
         return state;
     }

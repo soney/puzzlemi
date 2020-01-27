@@ -6,7 +6,7 @@ import { CodeEditor } from '../../CodeEditor';
 import { setTextResponse } from '../../../actions/user_actions';
 import { IPMState } from '../../../reducers';
 import { ITextResponseSolution } from '../../../reducers/solutions';
-import SolutionView from '../SolutionView';
+import TextResponseSolutionView from './TextResponseSolutionView';
 
 const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin }) => {
     const { response } = userSolution;
@@ -19,7 +19,7 @@ const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin }) => {
                 <ProblemDescription problem={problem} />
             </div>
             { isAdmin &&
-                <SolutionView problem={problem} />
+                <TextResponseSolutionView problem={problem} />
             }
             {   !isAdmin &&
                 <div className="col">

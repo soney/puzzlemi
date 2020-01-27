@@ -2,12 +2,13 @@ import { connect } from "react-redux";
 import * as React from 'react';
 import { setIsAdmin } from '../actions/user_actions';
 import update from 'immutability-helper';
-import { IPuzzleSet } from "./App";
 import { IPMState } from "../reducers";
 import { selectUserForSolutionView } from "../actions/app_actions";
 import * as classNames from 'classnames';
+import { replaceProblems } from "../actions/sharedb_actions";
+import { IProblems } from "../reducers/problems";
 
-const PMUserHeader = ({users, selectedUserForSolutionsView, dispatch, problemsDoc, isAdmin, allUsers}) => {
+const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, problemsDoc, isAdmin, allUsers}) => {
     const { myuid } = users;
     if(!myuid) { return <nav>fetching user information...</nav> }
 
@@ -19,17 +20,7 @@ const PMUserHeader = ({users, selectedUserForSolutionsView, dispatch, problemsDo
     }
     const downloadJSON = () => {
         const data = problemsDoc.getData();
-        let newData = data;
-        for(let key in data.userData) {
-            if(data.hasOwnProperty(key)) {
-                newData = update(newData, { userData: {
-                    [key]: {
-                        completed: { $set: [] }
-                    }
-                }})
-            }
-        }
-        const stringifiedData = JSON.stringify(newData);
+        const stringifiedData = JSON.stringify(data);
         download('puzzlemi-saved.json', stringifiedData);
     };
     const handleFile = (event) => {
@@ -41,8 +32,8 @@ const PMUserHeader = ({users, selectedUserForSolutionsView, dispatch, problemsDo
             reader.onload = function(e) {
                 if(e.target) {
                     const result = e.target.result as string;
-                    const newData: IPuzzleSet = JSON.parse(result);
-                    problemsDoc.submitObjectReplaceOp([], newData);
+                    const newData: IProblems = JSON.parse(result);
+                    dispatch(replaceProblems(newData));
                 }
             }
             reader.readAsText(file);
@@ -68,13 +59,7 @@ const PMUserHeader = ({users, selectedUserForSolutionsView, dispatch, problemsDo
     }
 
     const editButton = isInstructor ? <label className='float-right'><input type="checkbox" onChange={handleEditChange} /> Admin Mode</label> : null;
-    const adminRow = isAdmin ? <>
-        <div className="row">
-            <div className="col">
-                <button onClick={downloadJSON} className='btn btn-sm btn-primary'>Export problems</button>
-                <label>Import problems: <input type="file" onChange={handleFile} className="form-control-file" /></label>
-            </div>
-        </div>
+    const usersRow = isAdmin ? <div className="allUsers container">
         <div className="row">
             <div className='col'>
                 Users:
@@ -85,26 +70,41 @@ const PMUserHeader = ({users, selectedUserForSolutionsView, dispatch, problemsDo
                 {allUserDisplays}
             </div>
         </div>
-    </>: null;
+    </div>: null;
     const userInfo = loggedIn ? <span>Logged in as {username} ({email})</span> : <span>Not logged in.</span>
-    return <nav>
-        {userInfo} {editButton}
-        {adminRow}
-    </nav>
+    return <>
+        <nav className="navbar navbar-light navbar-expand-lg bg-light">
+            <span className='navbar-brand nav-item'>PuzzleMI [{channel}]</span>
+            <ul className='navbar-nav mr-auto'>
+                <li className='nav-item'>{userInfo}</li>
+            </ul>
+            {isAdmin && 
+                <form className="form-inline">
+                    <div className="btn-group">
+                        <button onClick={downloadJSON} className='btn btn-sm btn-outline-secondary'>Export problems</button>
+                        <label className="file-upload btn btn-sm btn-outline-secondary">Import problems <input type="file" onChange={handleFile} className="form-control-file" /></label>
+                    </div>
+                </form>
+            }
+            <form className="form-inline">
+                <span className='nav-item'>{editButton}</span>
+            </form>
+        </nav>
+        {usersRow}
+    </>;
 }
 
 function mapStateToProps(state: IPMState, ownProps) {
     const { app, users, shareDBDocs, intermediateUserState } = state;
     const { isAdmin } = intermediateUserState;
-    const { selectedUserForSolutionsView } = app;
+    const { channel, selectedUserForSolutionsView } = app;
 
     let allUsers: string[] = [];
     if(isAdmin) {
         try {
-            const usersDoc = shareDBDocs.users;
-            if(usersDoc) {
-                const data = usersDoc!.getData();
-                const dataUsers = data!.allUsers;
+            const usersDocData = shareDBDocs.i.users;
+            if(usersDocData) {
+                const dataUsers = usersDocData.allUsers;
                 allUsers = Object.keys(dataUsers!);
             }
         } catch(e) {
@@ -112,7 +112,7 @@ function mapStateToProps(state: IPMState, ownProps) {
         }
     }
 
-    return update(ownProps, { $merge: { problemsDoc: shareDBDocs.problems, selectedUserForSolutionsView, isAdmin, users, allUsers } });
+    return update(ownProps, { $merge: { problemsDoc: shareDBDocs.problems, selectedUserForSolutionsView, isAdmin, users, allUsers, channel } });
 }
 export default connect(mapStateToProps)(PMUserHeader);
 

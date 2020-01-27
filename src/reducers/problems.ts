@@ -1,7 +1,3 @@
-import EventTypes from '../actions/EventTypes';
-import update from 'immutability-helper';
-import { IProblemsFetchedAction, ISDBDocChangedAction } from '../actions/sharedb_actions';
-
 export interface IProblem {
     id: string;
     visible: boolean;

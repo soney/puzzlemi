@@ -30,8 +30,9 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { intermediateUserState, shareDBDocs } = state;
     const { isAdmin } = intermediateUserState;
     const problemsDoc = shareDBDocs.problems;
+    const problems = shareDBDocs.i.problems;
 
-    const description = problemsDoc!.traverse(['allProblems', ownProps.problem.id, 'problemDetails', 'description']);
+    const description = problems!.allProblems[ownProps.problem.id].problemDetails.description;
 
     return update(ownProps, { $merge: { isAdmin, problemsDoc, description } })
 }

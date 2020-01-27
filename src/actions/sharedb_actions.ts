@@ -2,7 +2,7 @@ import { SDBDoc } from 'sdb-ts';
 import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
 import EventTypes from './EventTypes';
-import { ObjectInsertOp, ListDeleteOp } from 'sharedb';
+import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
 import { IProblem, IMultipleChoiceOption, IProblems, ICodeTest, IMultipleChoiceSelectionType } from '../reducers/problems';
 import { IAggregateData } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
@@ -16,13 +16,13 @@ const problemAdded = (problem: IProblem): IProblemAddedAction => ({
     problem, type: EventTypes.PROBLEM_ADDED,
 });
 
-export interface IProblemsFetchedAction {
-    type: EventTypes.PROBLEMS_FETCHED,
-    problems: IProblems
-}
-export const problemsFetched = (problems: IProblems): IProblemsFetchedAction => ({
-    problems, type: EventTypes.PROBLEMS_FETCHED,
-});
+// export interface IProblemsFetchedAction {
+//     type: EventTypes.PROBLEMS_FETCHED,
+//     problems: IProblems
+// }
+// export const problemsFetched = (problems: IProblems): IProblemsFetchedAction => ({
+//     problems, type: EventTypes.PROBLEMS_FETCHED,
+// });
 
 export interface IGivenCodeChangedAction {
     type: EventTypes.GIVEN_CODE_CHANGED,
@@ -239,6 +239,32 @@ export function setRevealSolution(problemID: number, reveal: boolean) {
     };
 }
 
+export function replaceProblems(newProblems: IProblems) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        for(let problemID in newProblems.allProblems) {
+            if(newProblems.allProblems.hasOwnProperty(problemID)) {
+                const { problemDetails } = newProblems.allProblems[problemID];
+                if(problemDetails.problemType === 'code') {
+                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
+                        completed: []
+                    });
+                } else if(problemDetails.problemType === 'multiple-choice') {
+                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
+                        completed: [],
+                        selected: {}
+                    });
+                } else if(problemDetails.problemType === 'text-response') {
+                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], { });
+                }
+            }
+        }
+        problemsDoc.submitObjectReplaceOp([], newProblems);
+    };
+}
+
 export function addCodeProblem() {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
@@ -258,12 +284,12 @@ export function addCodeProblem() {
             }
         };
 
-        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
-        await problemsDoc.submitListPushOp(['order'], newProblem.id);
-
         await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], {
             completed: []
         });
+
+        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
+        await problemsDoc.submitListPushOp(['order'], newProblem.id);
     };
 }
 
@@ -285,13 +311,12 @@ export function addMultipleChoiceProblem() {
             }
         };
 
-        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
-        await problemsDoc.submitListPushOp(['order'], newProblem.id);
-
         await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], {
             completed: [],
             selected: {}
         });
+        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
+        await problemsDoc.submitListPushOp(['order'], newProblem.id);
     };
 }
 
@@ -310,10 +335,10 @@ export function addTextResponseProblem() {
             }
         };
 
-        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
-        problemsDoc.submitListPushOp(['order'], newProblem.id);
+        await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], { });
 
-        aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], { });
+        await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
+        await problemsDoc.submitListPushOp(['order'], newProblem.id);
     };
 }
 
@@ -333,9 +358,10 @@ export function deleteProblem(problemID: string) {
 }
 
 export function addTest(problemID: string) {
-    return (dispatch: Dispatch, getState) => {
+    return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
+        const aggregateDataDoc = shareDBDocs.aggregateData;
 
         const newTest: ICodeTest = {
             actual: 'True',
@@ -344,9 +370,29 @@ export function addTest(problemID: string) {
             id: uuid(),
         };
 
-        return problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'tests'], newTest);
+        await problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'tests'], newTest);
+        await aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'completed'], []);
     };
 }
+
+export interface ITestAddedAction {
+    type: EventTypes.TEST_ADDED,
+    problemID: string,
+    test: ICodeTest
+}
+export const testAdded = (problemID: string, test: ICodeTest): ITestAddedAction => ({
+    type: EventTypes.TEST_ADDED, problemID, test
+});
+
+export interface ITestPartChangedAction {
+    type: EventTypes.TEST_PART_CHANGED,
+    problemID: string,
+    test: ICodeTest,
+    part: string
+}
+export const testPartChanged = (problemID: string, test: ICodeTest, part: string): ITestPartChangedAction => ({
+    type: EventTypes.TEST_PART_CHANGED, problemID, test, part
+});
 
 export function deleteTest(problemID: string, testID: string) {
     return (dispatch: Dispatch, getState) => {
@@ -411,19 +457,34 @@ function scrollToBottom(): void {
     window.scrollTo(0, document.body.scrollHeight);
 }
 
+export interface ISDBDocFetchedAction {
+    type: EventTypes.SDB_DOC_FETCHED,
+    doc: SDBDoc<any>,
+    data: any,
+    docType: string,
+    ops: ReadonlyArray<sharedb.Op>
+}
 export interface ISDBDocChangedAction {
     type: EventTypes.SDB_DOC_CHANGED,
-    doc: SDBDoc<any>
+    doc: SDBDoc<any>,
+    docType: string
 }
-export function beginListeningOnAggregateDataDoc(doc: SDBDoc<IAggregateData>) {
+export function beginListeningOnDoc(doc: SDBDoc<any>, docType: string) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {
-            if(type === null) {
-                // dispatch(aggregateDataFetched(doc.getData()));
+            if(type === null || type === 'create') {
+                dispatch({
+                    type: EventTypes.SDB_DOC_FETCHED,
+                    doc,
+                    data: doc.getData(),
+                    docType
+                } as ISDBDocFetchedAction);
             } else if (type === 'op') {
                 dispatch({
                     type: EventTypes.SDB_DOC_CHANGED,
-                    doc
+                    doc,
+                    docType,
+                    ops
                 } as ISDBDocChangedAction);
             }
         });
@@ -432,18 +493,21 @@ export function beginListeningOnAggregateDataDoc(doc: SDBDoc<IAggregateData>) {
 export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {
-            if(type === null) {
-                dispatch(problemsFetched(doc.getData()));
+            if(type === null || type === 'create') {
+                // dispatch(problemsFetched(doc.getData()));
             } else if (type === 'op') {
                 const wasAtBottom = isNearBottom();
-                dispatch({
-                    type: EventTypes.SDB_DOC_CHANGED,
-                    doc
-                } as ISDBDocChangedAction);
                 ops!.forEach((op) => {
                     const { p } = op;
 
-                    console.log(op);
+                    // console.log(op);
+                    if(SDBDoc.matches(p, [])) { // total replacement
+                        dispatch({
+                            type: EventTypes.SDB_DOC_FETCHED,
+                            doc,
+                            docType: 'problems'
+                        } as ISDBDocFetchedAction);
+                    }
 
                     const addProblemMatches = SDBDoc.matches(p, ['allProblems', true]);
                     if(addProblemMatches) {
@@ -498,6 +562,24 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                         const problemID = p[1] as string;
                         const { ld } = op as ListDeleteOp;
                         multipleChoiceOptionDeleted(problemID, ld);
+                    }
+
+                    const changeTestPartMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'tests', true, /actual|expected/, true])
+                    if(changeTestPartMatches) {
+                        const problemID = p[1] as string;
+                        const testPart = p[5] as string;
+                        const test = doc.traverse(['allProblems', problemID, 'problemDetails', 'tests', p[4]])
+                        dispatch(testPartChanged(problemID, test, testPart));
+
+                        const { shareDBDocs } = getState();
+                        const aggregateDataDoc = shareDBDocs.aggregateData;
+                        aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'completed'], []);
+                    }
+                    const addTestMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'tests', true]);
+                    if(addTestMatches) {
+                        const problemID = p[1] as string;
+                        const { li } = op as ListInsertOp;
+                        dispatch(testAdded(problemID, li));
                     }
                 });
             }

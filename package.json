@@ -30,6 +30,7 @@
     "immutability-helper": "^3.0.1",
     "react": "^16.10.1",
     "react-dom": "^16.10.1",
+    "react-helmet": "^5.2.1",
     "react-redux": "^7.1.1",
     "react-scripts": "^3.3.0",
     "reduce-reducers": "^1.0.4",
@@ -37,7 +38,7 @@
     "redux-logger": "^3.0.6",
     "redux-persist": "^6.0.0",
     "redux-thunk": "^2.3.0",
-    "sdb-ts": "^0.3.4",
+    "sdb-ts": "^0.3.8",
     "showdown": "^1.9.1"
   },
   "devDependencies": {

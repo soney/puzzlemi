@@ -4,11 +4,9 @@ import { users, IUsers } from './users';
 import { solutions, ISolutions, crossSliceSolutionsReducer } from './solutions';
 import { shareDBDocs, ISDBDocsState } from './sharedb';
 import { intermediateUserState, IIntermediateUserState } from './intermediateUserState';
-import { aggregateData, IAggregateData } from './aggregateData';
 import { app, IAppState } from './app';
 
 export interface IPMState {
-    aggregateData: IAggregateData,
     shareDBDocs: ISDBDocsState,
     intermediateUserState: IIntermediateUserState,
     solutions: ISolutions,
@@ -17,7 +15,6 @@ export interface IPMState {
 }
 
 const combinedReducers = combineReducers({
-    aggregateData,
     shareDBDocs,
     intermediateUserState,
     solutions,
