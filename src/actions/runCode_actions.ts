@@ -6,7 +6,7 @@ import { PMTestSuite, IPMTestResult } from "../pyTests/PMTestSuite";
 import EventTypes from "./EventTypes";
 import { SDBDoc } from "sdb-ts";
 import { ICodeSolution } from "../reducers/solutions.js";
-import { IProblem, ICodeProblem } from "../reducers/problems";
+import { IProblem, ICodeProblem, ICodeVariableTest } from "../reducers/problems";
 import { IAggregateData, ICodeSolutionAggregate } from "../reducers/aggregateData.js";
 import { ICodeSolutionState } from "../reducers/intermediateUserState.js";
 
@@ -66,20 +66,36 @@ export interface IErrorChangedAction {
     errors: string[]
 }
 
-export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermediateSolutionState: ICodeSolutionState, graphics: HTMLDivElement|null) {
+export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermediateSolutionState: ICodeSolutionState, graphics: HTMLDivElement|null, variableTest: ICodeVariableTest) {
     return (dispatch: Dispatch, getState) => {
         const { id: problemID } = problem;
         const problemDetails = problem.problemDetails as ICodeProblem;
-        // const { user, problems } = getState();
-        // const problemInfo = ;//problems[index];
-        // const { id, problem } = problemInfo;
         const { afterCode, tests } = problemDetails;
-        // const solution = user.solutions[id];
         const { code } = codeSolution;
         let output: string = '';
         const outputs: string[] = [];
 
-        const testSuite = new PMTestSuite(code, outputs);
+        let beforeCode = "";
+        variableTest.input.forEach(variable=>{
+            const snippet: string = variable.name + "=" + variable.value + ";\n";
+            beforeCode = beforeCode.concat(snippet);
+        })
+        const fullCode = beforeCode.concat(code);
+
+        let afterTest: any[] = [];
+        variableTest.output.forEach((variable, i)=>{
+            const t = {
+                id: 'variable-'+i,
+                actual: variable.name,
+                expected: variable.value,
+                description: 'expected variable ' + variable.name + ' = ' + variable.value
+            }
+            afterTest.push(t)
+        });
+
+        const fullTests = afterTest.concat(tests);
+
+        const testSuite = new PMTestSuite(fullCode, outputs);
         const outf = (outValue: string): void => {
             if(!testSuite.currentlyRunning()) {
                 outputs.push(outValue);
@@ -128,8 +144,7 @@ export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermed
             problemID,
             type: EventTypes.BEGIN_RUN_CODE
         } as IBeginRunningCodeAction);
-
-        const assertions: PMAssertion[] = tests.map((t) => new PMAssertEqual(t.id, t.actual, t.expected, t.description));
+        const assertions: PMAssertion[] = fullTests.map((t) => new PMAssertEqual(t.id, t.actual, t.expected, t.description));
         testSuite.setBeforeTests(afterCode);
         testSuite.setAssertions(assertions);
         testSuite.onBeforeRunningTests();
@@ -141,14 +156,15 @@ export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermed
         });
         (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = graphics;
         const myPromise = Sk.misceval.asyncToPromise(() => {
-            return Sk.importMainWithBody("<stdin>", false, `${code}\n${testSuite.getString()}`, true);
+            return Sk.importMainWithBody("<stdin>", false, `${fullCode}\n${testSuite.getString()}`, true);
         });
         const onFinally = () => {
             testSuite.onAfterRanTests();
             const testSuiteResults = testSuite.getTestResults();
             const { passedAll, results } = testSuiteResults;
-            const problemTests = tests;
+            const problemTests = fullTests;
             const testResults = { };
+            console.log(results)
             results.forEach((result, i) => {
                 const test = problemTests[i];
                 const testId = test.id;

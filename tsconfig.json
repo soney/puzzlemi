@@ -26,8 +26,11 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": [
+      "node"
+    ],
+    "isolatedModules": true
   },
   "exclude": [
     "node_modules",

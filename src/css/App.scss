@@ -106,6 +106,9 @@ html {
         border: 1px solid #EEE;
     }
 }
+.quit-help-button {
+    margin-top: 20px;
+}
 
 .import-export {
 }
@@ -208,4 +211,121 @@ nav {
         text-decoration: none;
         color: #AAA;
     }
+}
+
+.test-template {
+    margin-top: 20px;
+}
+
+.config-panel {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.test-head {
+    margin:auto;
+}
+
+.test-btn {
+    margin-top:10px;
+}
+
+.variable-value {
+    display: inline-block;
+    width: 80%;
+}
+
+.problem-notes {
+    word-wrap: break-word;
+    position: absolute;
+    h1 {
+        font-weight: bold;
+        font-size: 24px;
+      }
+      
+    h2 {
+        font-weight: bold;
+        font-size: 22px;
+    }
+    h3 {
+        font-weight: bold;
+        font-size: 20px;
+    }
+    h4 {
+        font-weight: bold;
+        font-size: 18px;
+    }
+    h5 {
+        font-weight: bold;
+        font-size: 16px;
+    }
+}
+
+.progress {
+    background-color: #909090
+}
+.result-badge {
+    margin-left: 10px;
+}
+.student-tab {
+    margin-bottom:20px;
+}
+
+.instructor-tab {
+    margin-top: 20px;
+}
+.result-success {
+    color: green
+}
+.result-fail {
+    color: #ca0000;
+}
+
+.testResult {
+    margin-top: 10px;
+}
+
+.sketchAdmin {
+    position: absolute;
+    left: 15px;
+    width: calc(100% - 30px);
+    height: 300px;
+}
+
+.sketchStudent{
+    position: absolute;
+    width: calc(100% - 30px);
+    height: 300px;
+}
+.sketchMode{
+    z-index: 99;
+}
+
+.colorSwatch {
+    padding: 5px;
+    background-color: #fff;
+    border-radius: 1px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.1);
+    display: inline-block;
+    cursor: pointer;
+}
+
+.colorBox {
+    width: 36px;
+    height: 22px;
+    border-radius: 2px;
+}
+
+.popoverColor{
+    top: 32px;
+    position: absolute;
+    z-index: 999;
+}
+
+.coverColor{
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
 }

@@ -13,9 +13,6 @@ const Files = ({ problem, problemFiles, isAdmin, dispatch, userFiles }) => {
     const hasProblemFiles = !!(problemFiles && problemFiles.length);
     const hasUserFiles = !!(userFiles && userFiles.length);
     return <div>
-        {   isAdmin &&
-            <h4>Files:</h4>
-        }
         {   (hasProblemFiles || hasUserFiles) &&
             <hr />
         }

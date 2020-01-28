@@ -3,10 +3,11 @@ import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
 import EventTypes from './EventTypes';
 import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
-import { IProblem, IMultipleChoiceOption, IProblems, ICodeTest, IMultipleChoiceSelectionType } from '../reducers/problems';
+import { IProblem, IMultipleChoiceOption, IProblems, ICodeTest, IMultipleChoiceSelectionType, ICodeVariableTest } from '../reducers/problems';
 import { IAggregateData } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
 import { ISolutions } from '../reducers/solutions';
+import { IVariable } from '../utils/types';
 
 export interface IProblemAddedAction {
     type: EventTypes.PROBLEM_ADDED,
@@ -67,9 +68,9 @@ export async function updateUserMultipleChoiceCorrectness(problemID, dispatch, g
 
     const userSolution = solutions.allSolutions[problemID][myuid];
 
-    if(userSolution) {
+    if (userSolution) {
         let passedAll: boolean = true;
-        if(problemDetails.revealSolution) {
+        if (problemDetails.revealSolution) {
             const { selectedItems } = userSolution;
             const { options } = problemDetails;
 
@@ -77,7 +78,7 @@ export async function updateUserMultipleChoiceCorrectness(problemID, dispatch, g
                 const { id, isCorrect } = option;
                 const userSelected = selectedItems.indexOf(id) >= 0;
 
-                if(userSelected !== isCorrect) {
+                if (userSelected !== isCorrect) {
                     passedAll = false;
                 }
             });
@@ -85,9 +86,9 @@ export async function updateUserMultipleChoiceCorrectness(problemID, dispatch, g
             passedAll = false;
         }
         const { userData } = aggregateDataDoc.getData();
-        if(passedAll) {
-            if(userData[problemID]) {
-                if(userData[problemID].completed.indexOf(myuid) < 0) {
+        if (passedAll) {
+            if (userData[problemID]) {
+                if (userData[problemID].completed.indexOf(myuid) < 0) {
                     await aggregateDataDoc.submitListPushOp(['userData', problemID, 'completed'], myuid);
                 }
             } else {
@@ -96,10 +97,10 @@ export async function updateUserMultipleChoiceCorrectness(problemID, dispatch, g
                 });
             }
         } else {
-            if(userData[problemID]) {
+            if (userData[problemID]) {
                 const completedIndex = userData[problemID].completed.indexOf(myuid);
-            
-                if(completedIndex >= 0) {
+
+                if (completedIndex >= 0) {
                     await aggregateDataDoc.submitListDeleteOp(['userData', problemID, 'completed', completedIndex]);
                 }
             }
@@ -169,7 +170,7 @@ export async function multipleChoiceRevealSolutionChanged(problemID: string, rev
     await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
 }
 
-export function addMultipleChoiceOption(problemID: string, optionType:'fixed'='fixed') {
+export function addMultipleChoiceOption(problemID: string, optionType: 'fixed' = 'fixed') {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
@@ -183,9 +184,9 @@ export function addMultipleChoiceOption(problemID: string, optionType:'fixed'='f
 }
 
 function getOptionIndex(options: IMultipleChoiceOption[], optionID: string): number {
-    for(let i: number = 0, len=options.length; i<len; i++) {
+    for (let i: number = 0, len = options.length; i < len; i++) {
         const option = options[i];
-        if(option.id === optionID) {
+        if (option.id === optionID) {
             return i;
         }
     }
@@ -200,7 +201,7 @@ export function deleteMultipleChoiceOption(problemID: string, optionID: string) 
         const p = ['allProblems', problemID, 'problemDetails', 'options'];
         const options = problemsDoc.traverse(p);
         const optionIndex = getOptionIndex(options, optionID);
-        if(optionIndex >= 0) {
+        if (optionIndex >= 0) {
             await problemsDoc.submitListDeleteOp([...p, optionIndex]);
             await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
 
@@ -216,7 +217,7 @@ export function setMultipleChoiceOptionCorrect(problemID: string, optionID: stri
         const p = ['allProblems', problemID, 'problemDetails', 'options'];
         const options = problemsDoc.traverse(p);
         const optionIndex = getOptionIndex(options, optionID);
-        if(optionIndex >= 0) {
+        if (optionIndex >= 0) {
             await problemsDoc.submitObjectReplaceOp([...p, optionIndex, 'isCorrect'], correct);
             await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
         }
@@ -244,20 +245,20 @@ export function replaceProblems(newProblems: IProblems) {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
         const aggregateDataDoc = shareDBDocs.aggregateData;
-        for(let problemID in newProblems.allProblems) {
-            if(newProblems.allProblems.hasOwnProperty(problemID)) {
+        for (let problemID in newProblems.allProblems) {
+            if (newProblems.allProblems.hasOwnProperty(problemID)) {
                 const { problemDetails } = newProblems.allProblems[problemID];
-                if(problemDetails.problemType === 'code') {
+                if (problemDetails.problemType === 'code') {
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
                         completed: []
                     });
-                } else if(problemDetails.problemType === 'multiple-choice') {
+                } else if (problemDetails.problemType === 'multiple-choice') {
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
                         completed: [],
                         selected: {}
                     });
-                } else if(problemDetails.problemType === 'text-response') {
-                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], { });
+                } else if (problemDetails.problemType === 'text-response') {
+                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {});
                 }
             }
         }
@@ -279,8 +280,20 @@ export function addCodeProblem() {
                 tests: [],
                 givenCode: `# code here`,
                 afterCode: '',
+                standardCode: `# standard solution`,
+                notes: '*no notes*',
                 description: '*no description*',
                 files: [],
+                variables: [],
+                variableTests: [],
+                sketch: [],
+                config: {
+                    runTests: false,
+                    addTests: false,
+                    displayInstructor: false,
+                    peerHelp: false,
+                    autoVerify: false
+                },
             }
         };
 
@@ -335,7 +348,7 @@ export function addTextResponseProblem() {
             }
         };
 
-        await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], { });
+        await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], {});
 
         await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
         await problemsDoc.submitListPushOp(['order'], newProblem.id);
@@ -350,10 +363,19 @@ export function deleteProblem(problemID: string) {
         const problemsData = problemsDoc.getData();
         const { order } = problemsData;
         const index = order.indexOf(problemID);
-        if(index >= 0) {
+        if (index >= 0) {
             await problemsDoc.submitListDeleteOp(['order', index]);
         }
         problemsDoc.submitObjectDeleteOp(['allProblems', problemID]);
+    };
+}
+
+export function updateSketch(problemID: string, sketch: any[]) {
+    return (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'sketch'], sketch);
     };
 }
 
@@ -380,9 +402,78 @@ export interface ITestAddedAction {
     problemID: string,
     test: ICodeTest
 }
+
 export const testAdded = (problemID: string, test: ICodeTest): ITestAddedAction => ({
     type: EventTypes.TEST_ADDED, problemID, test
 });
+
+export function addVariable(problemID: string) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        const newVariable: IVariable = {
+            type: 'input',
+            name: 'x',
+            value: '0'
+        }
+
+        problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'variables'], newVariable);
+    }
+}
+
+export function deleteVariable(problemID: string, variableIndex: number) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        problemsDoc.submitListDeleteOp(['allProblems', problemID, 'problemDetails', 'variables', variableIndex]);
+    }
+}
+
+export function changeVariableType(problemID: string, variableIndex: number, newType: 'input' | 'output') {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'variables', variableIndex, 'type'], newType);
+    }
+}
+
+export function addVariableTest(problemID: string, variableTest: ICodeVariableTest) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'variableTests'], variableTest);
+    };
+}
+
+export function deleteVariableTest(problemID: string, testIndex: number) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        problemsDoc.submitListDeleteOp(['allProblems', problemID, 'problemDetails', 'variableTests', testIndex]);
+    }
+}
+
+export function changeVariableTestStatus(problemID: string, testIndex: number, status: boolean) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'variableTests', testIndex, 'verified'], status);
+    }
+}
+
+export function changeProblemConfig(problemID: string, item: string, value: boolean) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+
+        problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'config', item], value);
+    }
+}
 
 export interface ITestPartChangedAction {
     type: EventTypes.TEST_PART_CHANGED,
@@ -402,9 +493,9 @@ export function deleteTest(problemID: string, testID: string) {
         const testsP = ['allProblems', problemID, 'problemDetails', 'tests'];
         const existingTests = problemsDoc.traverse(testsP);
 
-        for(let i: number = 0, len=existingTests.length; i<len; i++) {
+        for (let i: number = 0, len = existingTests.length; i < len; i++) {
             const eti = existingTests[i];
-            if(eti.id === testID) {
+            if (eti.id === testID) {
                 return problemsDoc.submitListDeleteOp([...testsP, i]);
             }
         }
@@ -432,9 +523,9 @@ export function deleteProblemFile(problemID: string, fileID: string) {
         const filesP = ['allProblems', problemID, 'problemDetails', 'files'];
         const existingFiles = problemsDoc.traverse(filesP);
 
-        for(let i: number = 0, len=existingFiles.length; i<len; i++) {
+        for (let i: number = 0, len = existingFiles.length; i < len; i++) {
             const efi = existingFiles[i];
-            if(efi.id === fileID) {
+            if (efi.id === fileID) {
                 return problemsDoc.submitListDeleteOp([...filesP, i]);
             }
         }
@@ -472,7 +563,7 @@ export interface ISDBDocChangedAction {
 export function beginListeningOnDoc(doc: SDBDoc<any>, docType: string) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {
-            if(type === null || type === 'create') {
+            if (type === null || type === 'create') {
                 dispatch({
                     type: EventTypes.SDB_DOC_FETCHED,
                     doc,
@@ -493,7 +584,7 @@ export function beginListeningOnDoc(doc: SDBDoc<any>, docType: string) {
 export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
     return (dispatch: Dispatch, getState) => {
         doc.subscribe((type, ops) => {
-            if(type === null || type === 'create') {
+            if (type === null || type === 'create') {
                 // dispatch(problemsFetched(doc.getData()));
             } else if (type === 'op') {
                 const wasAtBottom = isNearBottom();
@@ -501,7 +592,7 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                     const { p } = op;
 
                     // console.log(op);
-                    if(SDBDoc.matches(p, [])) { // total replacement
+                    if (SDBDoc.matches(p, [])) { // total replacement
                         dispatch({
                             type: EventTypes.SDB_DOC_FETCHED,
                             doc,
@@ -510,39 +601,39 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                     }
 
                     const addProblemMatches = SDBDoc.matches(p, ['allProblems', true]);
-                    if(addProblemMatches) {
+                    if (addProblemMatches) {
                         const { oi } = op as ObjectInsertOp;
-                        if(oi) {
+                        if (oi) {
                             dispatch(problemAdded(oi))
                         }
-                        if(wasAtBottom) {
+                        if (wasAtBottom) {
                             scrollToBottom();
                         }
                     }
 
                     const visibilityChangeMatches = SDBDoc.matches(p, ['allProblems', true, 'visible'])
-                    if(visibilityChangeMatches) {
-                        if(wasAtBottom) {
+                    if (visibilityChangeMatches) {
+                        if (wasAtBottom) {
                             scrollToBottom();
                         }
                     }
 
                     const selectionTypeMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'selectionType'])
-                    if(selectionTypeMatches) {
+                    if (selectionTypeMatches) {
                         const { oi } = op as ObjectInsertOp;
                         const problemID = p[1] as string;
                         multipleChoiceSelectionTypeChanged(problemID, oi, dispatch, getState);
                     }
 
                     const givenCodeMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'givenCode', true]);
-                    if(givenCodeMatches) {
+                    if (givenCodeMatches) {
                         const problemID = p[1] as string;
                         const givenCode = doc.traverse(['allProblems', problemID, 'problemDetails', 'givenCode']);
                         dispatch(givenCodeChanged(problemID, givenCode));
                     }
 
                     const optionCorrectnessMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'options', true, 'isCorrect']);
-                    if(optionCorrectnessMatches) {
+                    if (optionCorrectnessMatches) {
                         const { oi } = op as ObjectInsertOp;
                         const problemID = p[1] as string;
                         const optionIndex = p[4] as number;
@@ -551,21 +642,21 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                     }
 
                     const revealSolutionMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'revealSolution']);
-                    if(revealSolutionMatches) {
+                    if (revealSolutionMatches) {
                         const problemID = p[1] as string;
                         const { oi } = op as ObjectInsertOp;
                         multipleChoiceRevealSolutionChanged(problemID, oi, dispatch, getState);
                     }
 
                     const optionDeletedMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'options', true]);
-                    if(optionDeletedMatches) {
+                    if (optionDeletedMatches) {
                         const problemID = p[1] as string;
                         const { ld } = op as ListDeleteOp;
                         multipleChoiceOptionDeleted(problemID, ld);
                     }
 
                     const changeTestPartMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'tests', true, /actual|expected/, true])
-                    if(changeTestPartMatches) {
+                    if (changeTestPartMatches) {
                         const problemID = p[1] as string;
                         const testPart = p[5] as string;
                         const test = doc.traverse(['allProblems', problemID, 'problemDetails', 'tests', p[4]])
@@ -576,7 +667,7 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                         aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'completed'], []);
                     }
                     const addTestMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'tests', true]);
-                    if(addTestMatches) {
+                    if (addTestMatches) {
                         const problemID = p[1] as string;
                         const { li } = op as ListInsertOp;
                         dispatch(testAdded(problemID, li));
@@ -585,4 +676,26 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
             }
         });
     };
+}
+
+export function joinHelpSession(id: string, tuteeID: string, tutorID: string) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        const { userData } = doc.getData();
+        const { helpSessions } = userData[id];
+        const sessionIndex = helpSessions.findIndex(e => e.tuteeID === tuteeID);
+        doc.submitListPushOp(['userData', id, 'helpSessions', sessionIndex, 'tutorIDs'], tutorID);
+    }
+}
+
+export function quitHelpSession(id: string, sessionIndex: string, uid: string) {
+    return (dispatch: Dispatch, getState) => {
+        const { doc } = getState();
+        const { userData } = doc.getData();
+        const { helpSessions } = userData[id];
+        const session = helpSessions[sessionIndex];
+        if (session.tuteeID === uid) doc.submitListDeleteOp(['userData', id, 'helpSessions', sessionIndex]);
+        const tutorIndex = session.tutorIDs.indexOf(uid);
+        if (tutorIndex !== -1) doc.submitListDeleteOp(['userData', id, 'helpSessions', sessionIndex, 'tutorIDs', tutorIndex]);
+    }
 }

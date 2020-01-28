@@ -31,9 +31,29 @@ export interface ICodeProblem {
     afterCode: string;
     description: string;
     givenCode: string;
-    files: ICodeFile[],
+    standardCode: string;
+    notes: string;
+    files: ICodeFile[];
     tests: ICodeTest[];
+    variableTests: ICodeVariableTest[];
+    variables: ICodeVariable[];
+    config: ICodeProblemConfig;
+    sketch: any [];
     problemType: 'code';
+}
+
+export interface ICodeProblemConfig {
+    runTests: boolean;
+    addTests: boolean;
+    displayInstructor: boolean;
+    peerHelp: boolean;
+    autoVerify: boolean;
+}
+
+export interface ICodeVariable {
+    name: string;
+    value: string;
+    type: 'input'|'output';
 }
 
 export interface ICodeTest {
@@ -41,6 +61,14 @@ export interface ICodeTest {
     actual: string,
     expected: string,
     description: string
+}
+
+export interface ICodeVariableTest {
+    id?: string,
+    author?: string,
+    verified?: boolean,
+    input: ICodeVariable[],
+    output: ICodeVariable[]
 }
 
 export interface ICodeFile {

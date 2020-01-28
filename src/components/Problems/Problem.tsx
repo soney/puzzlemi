@@ -75,7 +75,6 @@ function mapStateToProps(state: IPMState, ownProps) {
     const problemAggregateData = aggregateData && aggregateData.userData[problemID];
 
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
-    // console.log(myuid, completed);
     const numCompleted = completed.length;
     const passedAll = completed.indexOf(myuid) >= 0 && !(problemType==='multiple-choice'&&!revealSolution);
 
