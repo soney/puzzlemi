@@ -6,7 +6,6 @@ import Test from './Test';
 import { addTest } from '../../../actions/sharedb_actions';
 import { IPMState } from '../../../reducers';
 import VariableTest from './UnitTest/VariableTest';
-import ConfigPanel from './ConfigPanel';
 import { ICodeSolutionState } from '../../../reducers/intermediateUserState';
 
 const Tests = ({ config, problem, tests, isAdmin, dispatch, outputVariables, validVariableTests, passedVariableTests }) => {

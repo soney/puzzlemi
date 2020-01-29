@@ -13,29 +13,12 @@ import MySolution from './MySolution';
 import LiveCode from './LiveCode';
 import PeerHelp from './PeerHelp';
 import VariableTests from './UnitTest/VariableTests';
-// import { runCode } from '../../../actions/runCode_actions';
-// import { codeChanged } from '../../../actions/user_actions';
-// import { ICodeSolution } from '../../../reducers/solutions';
 import { ISolutionState, ICodeSolutionState } from '../../../reducers/intermediateUserState';
 import { IPMState } from '../../../reducers';
 import CodeSolutionView from './CodeSolutionView';
 
 const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, intermediateCodeState, output, errors, config }) => {
-    // const codeSolution = userSolution as ICodeSolution;
-    // const graphicsRef = React.createRef<HTMLDivElement>();
     const [count, setCount] = useState(0);
-
-    // const doRunCode = () => {
-    //     const graphicsEl = graphicsRef.current;
-    //     if (graphicsEl) {
-    //         graphicsEl.innerHTML = '';
-    //     }
-    //     return dispatch(runCode(codeSolution, problem, intermediateCodeState, graphicsEl));
-    // };
-    // const doSetCode = (ev) => {
-    //     const { value } = ev;
-    //     return dispatch(codeChanged(problem, value));
-    // };
 
     const refreshCM = () => {
         setCount(count + 1);
@@ -171,84 +154,6 @@ const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, in
             </div>
         </>
     }
-    // return <>
-    //     <div className="row">
-    //         <div className="col">
-    //             <ProblemDescription problem={problem} />
-    //         </div>
-    //     </div>
-    //     <div className="row">
-    //         {isAdmin &&
-    //             <div className="col">
-    //                 <nav>
-    //                     <div className="nav nav-tabs instructor-tab" id={"nav-instructor-code-tab-" + problem.id} role="tablist">
-    //                         <a className="nav-item nav-link active" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true">Given Code</a>
-    //                         <a className="nav-item nav-link" id={"nav-after-tab-" + problem.id} data-toggle="tab" href={"#nav-after-" + problem.id} role="tab" aria-controls={"nav-after-" + problem.id} aria-selected="false" onClick={refreshCM}>Run After</a>
-    //                         <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={refreshCM}>Standard Code</a>
-    //                     </div>
-    //                 </nav>
-    //                 <div className="tab-content" id={"nav-instructor-code-tabContent-" + problem.id}>
-    //                     <div className="tab-pane fade show active" id={"nav-given-" + problem.id} role="tabpanel" aria-labelledby={"nav-given-tab-" + problem.id}>
-    //                         <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
-    //                     </div>
-    //                     <div className="tab-pane fade" id={"nav-after-" + problem.id} role="tabpanel" aria-labelledby={"nav-after-tab-" + problem.id}>
-    //                         <CodeEditor shareDBSubDoc={afterCodeSubDoc} flag={count} />
-    //                     </div>
-    //                     <div className="tab-pane fade" id={"nav-standard-" + problem.id} role="tabpanel" aria-labelledby={"nav-standard-tab-" + problem.id}>
-    //                         <CodeEditor shareDBSubDoc={standardCodeSubDoc} flag={count} />
-    //                     </div>
-    //                 </div>
-    //             </div>
-    //         }
-    //         {!isAdmin &&
-    //             <div className="col">
-    //                 <CodeEditor value={codeSolution.code} onChange={doSetCode} />
-    //                 <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
-    //             </div>
-    //         }
-    //         <div className="col">
-    //             {!isAdmin &&
-    //                 <pre className={'codeOutput' + (errors.length > 0 ? ' alert alert-danger' : ' no-error')}>
-    //                     {output}
-    //                     {errors.join('\n')}
-    //                 </pre>
-    //             }
-    //             {!isAdmin &&
-    //                 <div ref={graphicsRef} className='graphics'></div>
-    //             }
-    //             <Files problem={problem} />
-    //         </div>
-    //     </div>
-    //     <div className="row">
-    //         <div className="col">
-    //             <div>
-    //                 <nav>
-    //                     <div className="nav nav-tabs instructor-tab" id={"nav-instructor-config-tab-" + problem.id} role="tablist">
-    //                         <a className="nav-item nav-link active" id={"nav-variables-tab-" + problem.id} data-toggle="tab" href={"#nav-variables-" + problem.id} role="tab" aria-controls={"nav-variables-" + problem.id} aria-selected="true">Variables</a>
-    //                         <a className="nav-item nav-link" id={"nav-config-tab-" + problem.id} data-toggle="tab" href={"#nav-config-" + problem.id} role="tab" aria-controls={"nav-config-" + problem.id} aria-selected="false">Config</a>
-    //                         <a className="nav-item nav-link" id={"nav-tests-tab-" + problem.id} data-toggle="tab" href={"#nav-tests-" + problem.id} role="tab" aria-controls={"nav-tests-" + problem.id} aria-selected="false" onClick={refreshCM}>Tests</a>
-    //                     </div>
-    //                 </nav>
-    //                 <div className="tab-content" id="nav-instructor-config-tabContent">
-    //                     <div className="tab-pane fade show active" id={"nav-variables-" + problem.id} role="tabpanel" aria-labelledby={"nav-variables-tab-" + problem.id}>
-    //                         <Variables problem={problem} />
-    //                     </div>
-    //                     <div className="tab-pane fade" id={"nav-config-" + problem.id} role="tabpanel" aria-labelledby={"nav-config-tab-" + problem.id}>
-    //                         <ConfigPanel problem={problem} />
-    //                     </div>
-    //                     <div className="tab-pane fade" id={"nav-tests-" + problem.id} role="tabpanel" aria-labelledby={"nav-tests-tab-" + problem.id}>
-    //                         <Tests problem={problem} flag={count} />
-    //                     </div>
-    //                 </div>
-    //             </div>
-
-    //             {/* <Tests problem={problem} /> */}
-    //         </div>
-    //     </div>
-    //     {isAdmin &&
-    //         <CodeSolutionView problem={problem} />
-    //     }
-    // </>;
 }
 
 function mapStateToProps(state: IPMState, ownProps) {

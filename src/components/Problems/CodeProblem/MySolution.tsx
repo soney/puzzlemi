@@ -65,8 +65,6 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
 
     const doResetTest = () => {
         setCount(count + 1);
-        console.log('todo');
-        // dispatch(updateActiveFailedTestID(id, ''));
     }
     const doRunTests = () => {
         const graphicsEl_tmp = graphicsRef.current;
@@ -146,9 +144,6 @@ function mapStateToProps(state, ownProps) {
     const { output, errors, currentFailedVariableTest } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { output: '', errors: [], currentFailedVariableTest: '' };
     let failedT = verifiedTests.filter(i=>i.id===currentFailedVariableTest);
     const failedTest = failedT.length>0?failedT[0]:null;
-    console.log(failedTest)
-    // console.log(variableTests)
-    // console.log(currentFailedVariableTest)
     return update(ownProps, { $merge: { isAdmin, username, problemsDoc, config, variables, userSolution, intermediateCodeState, output, errors, verifiedTests, failedTest } });
 }
 export default connect(mapStateToProps)(MySolution);

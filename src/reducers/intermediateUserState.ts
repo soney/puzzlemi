@@ -5,7 +5,6 @@ import { IOutputChangedAction, IErrorChangedAction, IDoneRunningCodeAction, IBeg
 import { IPMTestResult } from '../pyTests/PMTestSuite';
 import { IProblemAddedAction, ISDBDocFetchedAction, ITestAddedAction, ITestPartChangedAction } from '../actions/sharedb_actions';
 import { IProblem, ICodeFile } from './problems';
-import { stringify } from 'querystring';
 
 export interface IIntermediateUserState {
     isAdmin: boolean
