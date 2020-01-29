@@ -2,12 +2,12 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 import Variable from './Variable';
-import { addTestVariable } from '../actions/sharedb_actions';
+import { addVariable } from '../../../../actions/sharedb_actions';
 
 
-const Variables = ({ index, isAdmin, doc, testVariable, dispatch }) => {
+const Variables = ({ index, isAdmin, problem, dispatch, variables }) => {
     const doAddTestVariable = () => {
-        dispatch(addTestVariable(index, isAdmin));
+        dispatch(addVariable(problem.id));
     }
 
     return <div className='test-template'>
@@ -22,8 +22,8 @@ const Variables = ({ index, isAdmin, doc, testVariable, dispatch }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {testVariable && testVariable.length
-                        ? testVariable.map((variable, i) => <Variable key={i} index={index} variableIndex={i} variable={variable} />)
+                    {variables && variables.length
+                        ? variables.map((variable, i) => <Variable key={i} problem={problem} variableIndex={i} variable={variable} />)
                         : <tr><td colSpan={6} className='no-tests'>(no variables)</td></tr>
                     }
 
@@ -38,11 +38,12 @@ const Variables = ({ index, isAdmin, doc, testVariable, dispatch }) => {
     </div>
 }
 function mapStateToProps(state, ownProps) {
-    const { user, problems, doc } = state;
-    const { isAdmin } = user;
-    const problem = problems[ownProps.index];
-    const { variables } = problem;
-    const testVariable = variables;
-    return update(ownProps, { isAdmin: { $set: isAdmin }, testVariable: { $set: testVariable }, doc: { $set: doc } });
+    const { intermediateUserState, shareDBDocs } = state;
+    const { isAdmin } = intermediateUserState;
+    const problemsDoc = shareDBDocs.problems;
+    const { problem } = ownProps;
+    const { problemDetails } = problem;
+    const { variables } = problemDetails;
+    return update(ownProps, { $merge: {isAdmin, problemsDoc, variables }});
 }
 export default connect(mapStateToProps)(Variables); 

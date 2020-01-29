@@ -15,6 +15,7 @@ class ShareDBCodeMirrorBinding {
     }
 
     private onSDBDocEvent = (type, ops, source): void => {
+        this.suppressChanges = true;
         if(type === null) {
             const data = this.doc.getData() as string;
             this.codeMirror.setValue(data);
@@ -23,6 +24,7 @@ class ShareDBCodeMirrorBinding {
                 ops.forEach((op) => this.applyOp(op));
             }
         }
+        this.suppressChanges = false;
     };
 
     private onCodeMirrorChange = (codeMirror: CodeMirror.Editor, change: CodeMirror.EditorChange): void => {
@@ -43,7 +45,6 @@ class ShareDBCodeMirrorBinding {
     };
 
     private applyOp(op): void {
-        this.suppressChanges = true;
         const editorDoc = this.editorDoc;
         const {si, sd, p} = op;
         const [ index ] = p;
@@ -56,7 +57,6 @@ class ShareDBCodeMirrorBinding {
             editorDoc.replaceRange('', from, to);
         }
         this.assertValue();
-        this.suppressChanges = false;
     }
 
     private createOpFromChange(change) {
@@ -69,7 +69,6 @@ class ShareDBCodeMirrorBinding {
         }
 
         textIndex += change.from.ch;
-
 
         if (change.to.line !== change.from.line || change.to.ch !== change.from.ch) {
             const removed  = change.removed.join('\n');

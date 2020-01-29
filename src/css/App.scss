@@ -9,6 +9,10 @@
     box-shadow: $top $left $blur $color;
   }
 }
+
+html {
+    scroll-behavior: smooth;
+}
 .problems {
     margin: 0px;
     padding: 0px;
@@ -42,6 +46,48 @@
         padding: 40px;
         color: #AAA;
     }
+    .multiple-choice {
+        &.isCorrect {
+        }
+        &.isIncorrect {
+        }
+        &:not(.answer-revealed) {
+            tr {
+                label:hover {
+                    background-color: #F9F9F9;
+                }
+            }
+        }
+    }
+    .multiple-choice-table {
+        border-top: 1px solid #EEE;
+        tr {
+            td {
+                padding-top: 0px;
+                padding-bottom: 0px;
+                border-top: none;
+                label {
+                    padding: 5px;
+                    display: block;
+                }
+            }
+        }
+        .multiple-choice-option {
+            > p {
+                display: inline;
+            }
+        }
+
+        .selectionCount {
+            text-align: right;
+            color: #999;
+        }
+    }
+
+    .no_solution {
+        color: #999;
+        font-style: italic;
+    }
 }
 .CodeMirror {
     border: 1px solid #EEE;
@@ -62,6 +108,47 @@
 }
 .quit-help-button {
     margin-top: 20px;
+}
+
+.import-export {
+}
+
+nav {
+    input[type="file"] {
+        display: none;
+    }
+    label.file-upload {
+        margin-bottom: 0px;
+        margin-right: 5px;
+    }
+}
+.allUsers{
+    font-size: 0.75em;
+    .users {
+        // line-break: strict;
+        // white-space: pre;
+        word-wrap: break-word;
+        // overflow-wrap: break-word;
+        // height: 100px;
+        // overflow-x: hidden;
+        overflow-y: scroll;
+        max-height: 200px;
+
+        border: 1px solid #EEE;
+        
+        color: #666;
+        a.user {
+            color: #999;
+            &.selected {
+                color: royalblue;
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+.graphics {
+    background-color: white;
 }
 
 .tests {
@@ -111,6 +198,10 @@
     }
 }
 
+.test-type-name {
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
 
 .contact {
     margin-top: 20px;
@@ -132,6 +223,7 @@
 
 .config-panel {
     margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .test-head {
@@ -173,9 +265,6 @@
     }
 }
 
-.progress {
-    background-color: #909090
-}
 .result-badge {
     margin-left: 10px;
 }

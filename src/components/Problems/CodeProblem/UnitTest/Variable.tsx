@@ -1,21 +1,21 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 // import * as showdown from 'showdown';
-import { CodeEditor } from './CodeEditor';
+import { CodeEditor } from '../../../CodeEditor';
 import update from 'immutability-helper';
-import { deleteTestVariable } from '../actions/sharedb_actions';
-import { updateVariableType } from '../actions/sharedb_actions';
+import { deleteVariable, changeVariableType } from '../../../../actions/sharedb_actions';
+// import { updateVariableType } from '../actions/sharedb_actions';
 
-const Variable = ({ dispatch, index, variableIndex, variable, isAdmin, doc, isInput }) => {
+const Variable = ({ dispatch, problem, variableIndex, variable, isAdmin, problemsDoc, isInput }) => {
     const doDeleteVariable = () => {
-        dispatch(deleteTestVariable(index, variableIndex));
+        dispatch(deleteVariable(problem.id, variableIndex));
     };
     const doChangeVariableType = (e) => {
-        dispatch(updateVariableType(index, variableIndex, e.target.value));
+        dispatch(changeVariableType(problem.id, variableIndex, e.target.value));
     };
-    const p = ['problems', index, 'variables', variableIndex];
-    const nameSubDoc = doc.subDoc([...p, 'name']);
-    const valueSubDoc = doc.subDoc([...p, 'value']);
+    const p = ['allProblems', problem.id, 'problemDetails', 'variables', variableIndex];
+    const nameSubDoc = problemsDoc.subDoc([...p, 'name']);
+    const valueSubDoc = problemsDoc.subDoc([...p, 'value']);
     return <tr>
         <td>
             <select defaultValue={variable.type} onChange={doChangeVariableType}>
@@ -35,12 +35,10 @@ const Variable = ({ dispatch, index, variableIndex, variable, isAdmin, doc, isIn
     </tr>;
 }
 function mapStateToProps(state, ownProps) {
-    const { index, variableIndex } = ownProps;
-    const { user, problems, doc } = state;
-    const { isAdmin } = user;
-    const problem = problems[index];
-    const variable = problem.variables[variableIndex];
+    const { intermediateUserState, shareDBDocs } = state;
+    const { isAdmin } = intermediateUserState;
+    const problemsDoc = shareDBDocs.problems;
 
-    return update(ownProps, { variable: { $set: variable }, isAdmin: { $set: isAdmin }, doc: { $set: doc } });
+    return update(ownProps, { $merge: {isAdmin, problemsDoc }});
 }
 export default connect(mapStateToProps)(Variable); 

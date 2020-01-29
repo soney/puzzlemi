@@ -32,8 +32,14 @@ export class PMTestSuite {
     private assertions: PMAssertion[] = [];
     private oldAppendTestResult: any;
     private oldDisableOutput: any;
+    private oldGetEditorText: any;
+    private oldGetOutput: any;
     private beforeTests: string = '';
     private isRunningTests: boolean = false;
+
+    public constructor(private editorText: string, private outputs: string[]) {
+
+    }
 
     public setBeforeTests(bt: string): void {
         this.beforeTests = bt;
@@ -43,10 +49,24 @@ export class PMTestSuite {
     }
     public onBeforeRunningTests(): void {
         this.testResults = [];
+
         this.oldAppendTestResult = window.hasOwnProperty('appendTestResult') ? window['appendTestResult'] : PMTestSuite.NONE;
         window['appendTestResult'] = this.appendTestResult;
+
         this.oldDisableOutput = window.hasOwnProperty('disableOutput') ? window['disableOutput'] : PMTestSuite.NONE;
         window['disableOutput'] = this.disableOutput;
+
+        this.oldGetEditorText = window.hasOwnProperty('getEditorText') ? window['getEditorText'] : PMTestSuite.NONE;
+        window['getEditorText'] = this.getEditorText.bind(this);
+
+        this.oldGetOutput = window.hasOwnProperty('getOutput') ? window['getOutput'] : PMTestSuite.NONE;
+        window['getOutput'] = this.getOutput.bind(this);
+    }
+    public getEditorText() {
+        return this.editorText;
+    }
+    public getOutput() {
+        return this.outputs.join('');
     }
     public onAfterRanTests(): void {
         this.isRunningTests = false;
@@ -63,6 +83,20 @@ export class PMTestSuite {
             window['appendTestResult'] = this.oldAppendTestResult;
         }
         delete this.oldAppendTestResult;
+
+        if(this.oldGetEditorText === PMTestSuite.NONE) {
+            delete window['getEditorText'];
+        } else {
+            window['getEditorText'] = this.oldGetEditorText;
+        }
+        delete this.oldGetEditorText;
+
+        if(this.oldGetOutput === PMTestSuite.NONE) {
+            delete window['getOutput'];
+        } else {
+            window['getOutput'] = this.oldGetOutput;
+        }
+        delete this.oldGetOutput;
     }
     public getTestResults(): IPMTestSuiteResults {
         return { passedAll: this.testResults.length === this.assertions.length && this.testResults.every((r) => r.passed), results: this.testResults };
@@ -104,6 +138,12 @@ ${indentedAssertionStrings.join('\n')}
 
     def appendResult(self, res, actual, expected, param):
         puzzlemi.doFNCall('appendTestResult', res, actual, expected, param)
+    
+    def getEditorText(self):
+        return puzzlemi.doFNCallReturnString('getEditorText')
+
+    def getOutput(self):
+        return puzzlemi.doFNCallReturnString('getOutput')
 
     def main(self):
         for func in self.tlist:
