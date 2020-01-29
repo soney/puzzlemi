@@ -8,6 +8,9 @@ export type ISolutionAggregate = ICodeSolutionAggregate | IMultipleChoiceSolutio
 
 export interface ICodeSolutionAggregate {
     completed: string[],
+    variableTests: {
+        [testID: string]: string[],
+    }
 }
 export interface IMultipleChoiceSolutionAggregate {
     completed: string[],

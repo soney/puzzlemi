@@ -72,6 +72,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
 
     public componentDidUpdate(prevProps: ICodeInputEditorProps): void {
         const { value, flag, variables, isEdit, failedTest } = this.props;
+ 
         if (value !== prevProps.value) {
             this.setState({ code: value as string });
             // if(value !== this.codeMirror.getValue()) {
@@ -79,31 +80,39 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
             // }
         }
         if (flag !== prevProps.flag) {
+            console.log('flag')
+            console.log(flag);
+            console.log(prevProps.flag)
             this.resetEditor();
             this.resetMarkers();
         }
         if (variables !== prevProps.variables) {
+            console.log('variables')
             this.resetEditor();
             this.resetMarkers();
         }
         if (isEdit !== prevProps.isEdit) {
+            console.log('is edit')
             this.resetEditor();
             this.resetMarkers();
         }
         if (failedTest !== prevProps.failedTest) {
+            console.log(failedTest)
+
             if (failedTest !== null) {
                 this.resetFailed();
             }
-            else {
-                this.resetEditor();
-                this.resetMarkers();
-            }
+            // else {
+            //     this.resetEditor();
+            //     this.resetMarkers();
+            // }
         }
     };
 
     private resetFailed(): void {
+        console.log('reset failed')
         this.inputVariables = this.props.failedTest.input;
-
+        
         // init static text
         let staticText = "# given variables";
         this.inputVariables.forEach(input => {
@@ -125,6 +134,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
             const total_length = doc.getLine(index + 1).length;
             doc.markText({ line: index + 1, ch: 0 }, { line: index + 1, ch: variable_length + 3 }, { readOnly: true });
             const marker = doc.markText({ line: index + 1, ch: variable_length + 3 }, { line: index + 1, ch: total_length }, { css: "background: #f8d7da" });
+            console.log(marker)
             this.VariableMarker.push(marker);
         })
     }
@@ -151,6 +161,8 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
     }
 
     private resetMarkers(): void {
+        console.log('reset markers')
+
         // init readOnly markers
         const doc = this.codeMirror.getDoc();
         doc.markText({ line: 0, ch: 0 }, { line: 1, ch: 0 }, { readOnly: true });

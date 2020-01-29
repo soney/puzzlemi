@@ -1,10 +1,11 @@
 import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
 import { ISetIsAdminAction, ICodeChangedAction } from '../actions/user_actions';
-import { IOutputChangedAction, IErrorChangedAction, IDoneRunningCodeAction, IBeginRunningCodeAction } from '../actions/runCode_actions';
+import { IOutputChangedAction, IErrorChangedAction, IDoneRunningCodeAction, IBeginRunningCodeAction, IPassedAddAction, IFailedAddAction } from '../actions/runCode_actions';
 import { IPMTestResult } from '../pyTests/PMTestSuite';
 import { IProblemAddedAction, ISDBDocFetchedAction, ITestAddedAction, ITestPartChangedAction } from '../actions/sharedb_actions';
 import { IProblem, ICodeFile } from './problems';
+import { stringify } from 'querystring';
 
 export interface IIntermediateUserState {
     isAdmin: boolean
@@ -19,7 +20,9 @@ export interface ICodeSolutionState {
     files: ICodeFile[],
     output: string,
     passedAll: boolean,
-    testResults: ICodeSolutionTestResultsState
+    testResults: ICodeSolutionTestResultsState,
+    passedVariableTests: string[],
+    currentFailedVariableTest: string,
 }
 
 export interface ICodeSolutionTestResultsState {
@@ -28,7 +31,7 @@ export interface ICodeSolutionTestResultsState {
 
 export type ISolutionState = ICodeSolutionState | null;
 
-export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: false, intermediateSolutionState: {} }, action: ISetIsAdminAction|IOutputChangedAction|IErrorChangedAction|IDoneRunningCodeAction|IBeginRunningCodeAction|IProblemAddedAction|ISDBDocFetchedAction|ICodeChangedAction|ITestAddedAction|ITestPartChangedAction) => {
+export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: false, intermediateSolutionState: {} }, action: ISetIsAdminAction|IOutputChangedAction|IErrorChangedAction|IDoneRunningCodeAction|IBeginRunningCodeAction|IProblemAddedAction|ISDBDocFetchedAction|ICodeChangedAction|ITestAddedAction|ITestPartChangedAction|IPassedAddAction|IFailedAddAction) => {
     const { type } = action;
     if(type === EventTypes.SET_IS_ADMIN) {
         const { isAdmin } = action as ISetIsAdminAction;
@@ -51,6 +54,24 @@ export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: f
                 }
             }
         });
+    } else if(type === EventTypes.ADD_PASSED_TESTS) {
+        const {problemID, passedIDs } = action as IPassedAddAction;
+        return update(state, {
+            intermediateSolutionState: {
+                [problemID]: {
+                    passedVariableTests: {$set: passedIDs},
+                }
+            }
+        })
+    } else if (type === EventTypes.ADD_FAILED_TEST) {
+        const {problemID, failedID} = action as IFailedAddAction;
+        return update(state, {
+            intermediateSolutionState: {
+                [problemID]: {
+                    currentFailedVariableTest: {$set: failedID}
+                }
+            }
+        })
     } else if(type === EventTypes.TEST_ADDED) {
         const { problemID } = action as ITestAddedAction;
 
@@ -131,7 +152,9 @@ export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: f
                         errors: [],
                         output: '',
                         passedAll: false,
-                        testResults: {}
+                        testResults: {},
+                        currentFailedVariableTest: '',
+                        passedVariableTests: [],
                     }
                 }
             }
@@ -161,7 +184,9 @@ function getIntermediateSolutionState(problem: IProblem): ISolutionState {
             errors: [],
             output: '',
             passedAll: false,
-            testResults: {}
+            testResults: {},
+            passedVariableTests: [],
+            currentFailedVariableTest: '',
         };
     } else {
         // throw new Error(`No way to get solution state object for problem type ${problemType}`)

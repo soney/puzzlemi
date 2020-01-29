@@ -7,7 +7,7 @@ import { IProblem, IMultipleChoiceOption, IProblems, ICodeTest, IMultipleChoiceS
 import { IAggregateData } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
 import { ISolutions } from '../reducers/solutions';
-import { IVariable } from '../utils/types';
+import { ICodeVariable } from '../reducers/problems';
 
 export interface IProblemAddedAction {
     type: EventTypes.PROBLEM_ADDED,
@@ -412,7 +412,7 @@ export function addVariable(problemID: string) {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
 
-        const newVariable: IVariable = {
+        const newVariable: ICodeVariable = {
             type: 'input',
             name: 'x',
             value: '0'

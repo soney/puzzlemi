@@ -38,7 +38,7 @@ const VariableTests = ({ index, problem, username, flag, variableTests, variable
                             </tr>
                         </thead>
                         <tbody>
-                            {variableTests.map((test, i) => <VariableTest key={test.id + `${i}`} problem={problem} test={test} testIndex={i} isInput={true} totalNum={variableTests.length} flag={flag}/>)}
+                            {variableTests.map((test, i) => <VariableTest key={test.id + `${i}`} problem={problem} variable={variables[0]} test={test} testIndex={i} isInput={true} totalNum={variableTests.length} flag={flag}/>)}
                         </tbody>
                     </table>
                 }

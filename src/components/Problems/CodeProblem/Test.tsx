@@ -31,7 +31,7 @@ const Test = ({ testResult, dispatch, problem, testIndex, test, isAdmin, descrip
         </tr>;
     } else {
         const converter = new showdown.Converter();
-        const testDescription = { __html: converter.makeHtml(description) };
+        const testDescription = { __html: converter.makeHtml('**Meta Test** ' + description) };
         const passedStatusClass = testResult ? ( testResult.passed ? 'alert-success' : 'alert-danger') : 'alert-secondary';
         const passFailMessage = testResult ? ( testResult.passed ? 'Passed' : 'Failed') : '';
         return <tr className={['test', passedStatusClass].join(' ')}>
@@ -49,7 +49,6 @@ function mapStateToProps(state: IPMState, ownProps) {
     const problemsDoc = shareDBDocs.problems;
     const intermediateProblemState = intermediateSolutionState[problem.id];
     const testResult = intermediateProblemState!.testResults[test.id]; 
-    
     const description = test.description;
 
     return update(ownProps, { $merge: { isAdmin, problemsDoc, testResult, description } });

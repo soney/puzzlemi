@@ -7,15 +7,15 @@ import update from 'immutability-helper';
 
 import { deleteVariableTest, changeVariableTestStatus } from '../../../../actions/sharedb_actions';
 
-const VariableTest = ({ testResult, problem, dispatch, flag, index, testUserInfo, testIndex, test, isAdmin, problemsDoc, isInput, totalNum }) => {
+const VariableTest = ({  problem, dispatch, flag, index, testUserInfo, testIndex, test, isAdmin, problemsDoc, isInput, testResult, description }) => {
     const doDeleteTest = () => {
         dispatch(deleteVariableTest(problem.id, testIndex));
     };
     const doChangeTestStatus = () => {
         dispatch(changeVariableTestStatus(problem.id, testIndex, !test.verified));
     }
-
-    const p = ['allProblems', problem.id, 'problemDetails', 'variableTests', testIndex];
+        if (isInput) {
+            const p = ['allProblems', problem.id, 'problemDetails', 'variableTests', testIndex];
     // const titleSubDoc = doc.subDoc([...p, 'title']);
     // const descriptionSubDoc = doc.subDoc([...p, 'description']);
     let inputSubDocs = [] as any[];
@@ -39,7 +39,7 @@ const VariableTest = ({ testResult, problem, dispatch, flag, index, testUserInfo
     const width_style = { width: pass_rate + "%" } as React.CSSProperties;
     // const author_name = test.author.slice(-4);
     const author_name = test.author;
-    if (isInput) {
+
         return <tr>
             <th scope="row">{test.id.slice(-4)}</th>
             {isAdmin && <td>{author_name}</td>}
@@ -76,7 +76,7 @@ const VariableTest = ({ testResult, problem, dispatch, flag, index, testUserInfo
         </tr>
     } else {
         const converter = new showdown.Converter();
-        const testDescription = { __html: converter.makeHtml(test.description) };
+        const testDescription = { __html: converter.makeHtml(description) };
         const passedStatusClass = testResult ? (testResult.passed ? 'alert-success' : 'alert-danger') : 'alert-secondary';
         const passFailMessage = testResult ? (testResult.passed ? 'Passed' : 'Failed') : '';
         return <tr className={['test', passedStatusClass].join(' ')}>
@@ -89,11 +89,15 @@ const VariableTest = ({ testResult, problem, dispatch, flag, index, testUserInfo
 }
 function mapStateToProps(state, ownProps) {
     const { intermediateUserState, shareDBDocs } = state;
-    const { isAdmin } = intermediateUserState;
+    const { isAdmin, intermediateSolutionState } = intermediateUserState;
     const problemsDoc = shareDBDocs.problems;
-    const { problem } = ownProps;
+    const { problem, variable } = ownProps;
     const { problemDetails } = problem;
     const { variableTests, variables } = problemDetails;
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, variables, variableTests } });
+    const intermediateProblemState = intermediateSolutionState[problem.id];
+    const testResult = intermediateProblemState!.testResults['variable-'+ variable.name];
+    const description = '**Expected variable** ' + variable.name
+
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, variables, variableTests, testResult, description } });
 }
 export default connect(mapStateToProps)(VariableTest); 

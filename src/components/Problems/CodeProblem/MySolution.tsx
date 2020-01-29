@@ -8,7 +8,7 @@ import { CodeOutputEditor } from '../../CodeOutputEditor';
 import { ICodeSolution } from '../../../reducers/solutions';
 import { ICodeVariableTest } from '../../../reducers/problems';
 import { ISolutionState, ICodeSolutionState } from '../../../reducers/intermediateUserState';
-import { runCode } from '../../../actions/runCode_actions';
+import { runCode, runUnitTests } from '../../../actions/runCode_actions';
 import { codeChanged } from '../../../actions/user_actions';
 import { addVariableTest } from '../../../actions/sharedb_actions';
 import Tests from './Tests';
@@ -26,13 +26,14 @@ import uuid from '../../../utils/uuid';
 // import { ITest } from '../utils/types';
 
 
-const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, problem, failedTest, output, errors, verifiedTests, config, flag, variables, dispatch }) => {
+const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, problem, output, errors, verifiedTests, config, flag, variables, dispatch, failedTest }) => {
     const codeSolution = userSolution as ICodeSolution;
     const graphicsRef = React.createRef<HTMLDivElement>();
+    
     const doRunCode = () => {
         const graphicsEl = graphicsRef.current;
         if (graphicsEl) {
-            graphicsEl.innerHTML = '';
+        graphicsEl.innerHTML = '';
         }
         return dispatch(runCode(codeSolution, problem, intermediateCodeState, graphicsEl, myTest));
     };
@@ -40,15 +41,21 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
         const { value } = ev;
         return dispatch(codeChanged(problem, value));
     };
-
     let myTest: ICodeVariableTest;
-    myTest = {
-        author: username,
-        verified: isAdmin,
-        id: uuid(),
-        input: variables.filter(i => i.type === 'input'),
-        output: variables.filter(i => i.type === 'output')
-    };
+    if(failedTest!==null){
+        myTest = JSON.parse(JSON.stringify(failedTest));
+        myTest.author = username;
+        myTest.id = uuid();
+        myTest.verified = isAdmin;
+    } else {
+        myTest = {
+            author: username,
+            verified: isAdmin,
+            id: uuid(),
+            input: variables.filter(i => i.type === 'input'),
+            output: variables.filter(i => i.type === 'output')
+        };    
+    }
 
     const [count, setCount] = useState(0);
 
@@ -56,22 +63,17 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
     //     dispatch(setHelpRequest(id, uid));
     // }
 
-    // const doSetCode = (ev) => {
-    //     const { value } = ev;
-    //     console.log('todo ' + value);
-    //     // return dispatch(setCode(index, value));
-    // };
     const doResetTest = () => {
         setCount(count + 1);
         console.log('todo');
         // dispatch(updateActiveFailedTestID(id, ''));
     }
-    // const doRunCode = () => {
-    //     doResetTest();
-    //     // return dispatch(runCode(index));
-    // };
     const doRunTests = () => {
-        // return dispatch(runUnitTests(index));
+        const graphicsEl_tmp = graphicsRef.current;
+        if (graphicsEl_tmp) {
+        graphicsEl_tmp.innerHTML = '';
+        }
+        return dispatch(runUnitTests(codeSolution, problem, intermediateCodeState, graphicsEl_tmp));
     };
     const doChangeInputVariable = (index, content) => {
         myTest.input[index].value = content;
@@ -91,11 +93,11 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
             <div className="col">
                 <div>
                     {variables &&
-                        <CodeInputEditor failedTest={failedTest} variables={variables} onVariableChange={doChangeInputVariable} flag={count} isEdit={config.addTests} />
+                        <CodeInputEditor failedTest={failedTest} variables={variables} onVariableChange={doChangeInputVariable} flag={count+flag} isEdit={config.addTests} />
                     }
                     <CodeEditor value={codeSolution.code} onChange={doSetCode} flag={flag} />
                     {variables &&
-                        <CodeOutputEditor failedTest={failedTest} variables={variables} onVariableChange={doChangeOutputVariable} flag={count} isEdit={config.addTests} />
+                        <CodeOutputEditor failedTest={failedTest} variables={variables} onVariableChange={doChangeOutputVariable} flag={count+flag} isEdit={config.addTests} />
                     }
                     <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
                     {config.runTests &&
@@ -117,14 +119,6 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
                 <div ref={graphicsRef} className='graphics'></div>
 
                 <Files problem={problem} />
-                {/* <div>
-                    {defaultResult.passedAll !== -1 &&
-                        <Result result={defaultResult} tag="default" />
-                    }
-                    {testResults.length !== 0 &&
-                        <TestResults index={index} />
-                    }
-                </div> */}
             </div>
         </div>
         <div className="row">
@@ -149,7 +143,12 @@ function mapStateToProps(state, ownProps) {
     const verifiedTests = variableTests.filter(i => i.verified === true);
     const userSolution = solutions.allSolutions[ownProps.problem.id][myuid];
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
-    const { output, errors } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { output: '', errors: [] };
-    return update(ownProps, { $merge: { isAdmin, username, problemsDoc, config, variables, userSolution, intermediateCodeState, output, errors, verifiedTests } });
+    const { output, errors, currentFailedVariableTest } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { output: '', errors: [], currentFailedVariableTest: '' };
+    let failedT = verifiedTests.filter(i=>i.id===currentFailedVariableTest);
+    const failedTest = failedT.length>0?failedT[0]:null;
+    console.log(failedTest)
+    // console.log(variableTests)
+    // console.log(currentFailedVariableTest)
+    return update(ownProps, { $merge: { isAdmin, username, problemsDoc, config, variables, userSolution, intermediateCodeState, output, errors, verifiedTests, failedTest } });
 }
 export default connect(mapStateToProps)(MySolution);

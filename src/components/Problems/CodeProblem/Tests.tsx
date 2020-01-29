@@ -5,8 +5,11 @@ import Test from './Test';
 
 import { addTest } from '../../../actions/sharedb_actions';
 import { IPMState } from '../../../reducers';
+import VariableTest from './UnitTest/VariableTest';
+import ConfigPanel from './ConfigPanel';
+import { ICodeSolutionState } from '../../../reducers/intermediateUserState';
 
-const Tests = ({ problem, tests, isAdmin, dispatch }) => {
+const Tests = ({ config, problem, tests, isAdmin, dispatch, outputVariables, validVariableTests, passedVariableTests }) => {
     const doAddTest = () => {
         dispatch(addTest(problem.id));
     }
@@ -25,8 +28,8 @@ const Tests = ({ problem, tests, isAdmin, dispatch }) => {
                 </thead>
                 <tbody>
                     {tests && tests.length
-                    ? tests.map((test, i) => <Test problem={problem} test={test} key={test.id+`${i}`} testIndex={i} />)
-                    : <tr><td colSpan={4} className='no-tests'>(no tests)</td></tr>
+                        ? tests.map((test, i) => <Test problem={problem} test={test} key={test.id + `${i}`} testIndex={i} />)
+                        : <tr><td colSpan={4} className='no-tests'>(no tests)</td></tr>
                     }
                     <tr>
                         <td colSpan={4}>
@@ -37,30 +40,53 @@ const Tests = ({ problem, tests, isAdmin, dispatch }) => {
             </table>
         </div>;
     } else {
-        if(tests && tests.length) {
+        // if (tests && tests.length) {
+            const pass_rate = validVariableTests.length === 0 ? 0 : passedVariableTests.length / validVariableTests.length * 100;
+            const width_style = { width: pass_rate + "%" } as React.CSSProperties;
             return <div className='tests'>
-                <table className="table">
-                    <tbody>
-                        { tests.map((test, i) => <Test problem={problem} test={test} key={`${test.id}-${i}`}  testIndex={i} />) }
-                    </tbody>
-                </table>
+                {config.runTests &&
+                    <div className='variable-tests-results'>
+                        <div className="progress">
+                            <div className="progress-bar bg-success" role="progressbar" style={width_style} aria-valuenow={pass_rate} aria-valuemin={0} aria-valuemax={100}>
+                                {passedVariableTests.length} / {validVariableTests.length}
+                            </div>
+                        </div>
+                    </div>
+                }
+                <div>
+                    <table className="table">
+                        <tbody>
+                            {tests.map((test, i) => <Test problem={problem} test={test} key={`${test.id}-${i}`} testIndex={i} />)}
+                        </tbody>
+                    </table>
+                    <table className="table">
+                        <tbody>
+                            {outputVariables.map((variable, i) => <VariableTest problem={problem} variable={variable} key={`${variable.name}-${i}`} />)}
+                        </tbody>
+                    </table>
+                </div>
             </div>;
-        } else {
-            return <div className='tests' />
-        }
+    //     } else {
+    //         return <div className='tests' />
+    //     }
     }
 }
 function mapStateToProps(state: IPMState, ownProps) {
     const { problem } = ownProps;
     const problemID = problem.id;
     const { intermediateUserState } = state;
-    const { isAdmin } = intermediateUserState;
+    const { isAdmin, intermediateSolutionState } = intermediateUserState;
+    const intermediateProblemState = intermediateSolutionState[problem.id] as ICodeSolutionState;
+    const { passedVariableTests, currentFailedVariableTest } = intermediateProblemState;
 
     const { problemDetails } = problem;
-    const { tests } = problemDetails;
+    const { tests, variables, config, variableTests } = problemDetails;
+
+    const outputVariables = variables.filter(i => i.type === 'output')
+    const validVariableTests = variableTests.filter(i => i.verified === true);
 
     const testIDs = tests.map((t) => t.id); // fingerprint
 
-    return update(ownProps, { $merge: { isAdmin, problem, problemID, tests, testIDs }});
+    return update(ownProps, { $merge: { isAdmin, problem, problemID, tests, testIDs, outputVariables, validVariableTests, config, passedVariableTests, currentFailedVariableTest } });
 }
 export default connect(mapStateToProps)(Tests); 
