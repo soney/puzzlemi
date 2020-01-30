@@ -72,6 +72,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
 
     public componentDidUpdate(prevProps: ICodeInputEditorProps): void {
         const { value, flag, variables, isEdit, failedTest } = this.props;
+ 
         if (value !== prevProps.value) {
             this.setState({ code: value as string });
             // if(value !== this.codeMirror.getValue()) {
@@ -94,16 +95,16 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
             if (failedTest !== null) {
                 this.resetFailed();
             }
-            else {
-                this.resetEditor();
-                this.resetMarkers();
-            }
+            // else {
+            //     this.resetEditor();
+            //     this.resetMarkers();
+            // }
         }
     };
 
     private resetFailed(): void {
         this.inputVariables = this.props.failedTest.input;
-
+        
         // init static text
         let staticText = "# given variables";
         this.inputVariables.forEach(input => {

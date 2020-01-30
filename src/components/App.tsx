@@ -2,50 +2,73 @@ import * as React from 'react';
 import '../css/App.scss';
 import * as reactRedux from 'react-redux';
 import { ReconnectingWebsocket, SDBClient, SDBDoc } from 'sdb-ts';
-import update from 'immutability-helper';
-import Problems from './Problems';
+import Problems from './Problems/Problems';
+import { setProblemsDoc, beginListeningOnProblemsDoc, setSolutionsDoc, setUsersDoc, setAggregateDataDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
+import { setUser } from '../actions/user_actions';
 import UserHeader from './UserHeader';
-import { setDoc, beginListeningOnDoc } from '../actions/sharedb_bindings';
-import { setIsAdmin, setUser } from '../actions/user_actions';
-import { IPuzzleSet } from '../utils/types';
+import { IProblems } from '../reducers/problems';
+import { IAggregateData } from '../reducers/aggregateData';
+import { IPMState } from '../reducers';
+import { setAppState } from '../actions/app_actions';
+import update from 'immutability-helper';
+import { appState } from '..';
+import { ISolutions } from '../reducers/solutions';
+import { IUsers } from '../reducers/users';
 
-const DEBUG_MODE = window.location.host === 'localhost:3000';
-const emptyDoc = { problems: [], userData: {} };
-const PMApplication = ({ dispatch }) => {
-    const wsLocation = DEBUG_MODE ? `ws://localhost:8000` : `${window.location.protocol === 'http:' ? 'ws' : 'wss'}://${window.location.host}`;
-    const puzzleName = DEBUG_MODE ? 'p' : window.location.pathname.slice(1);
 
-    const ws: ReconnectingWebsocket = new ReconnectingWebsocket(wsLocation);
-
-    const sdbClient: SDBClient = new SDBClient(ws);
-    const sdbDoc: SDBDoc<IPuzzleSet> = sdbClient.get('puzzles', puzzleName);
-    dispatch(setDoc(sdbDoc));
-    sdbDoc.createIfEmpty(emptyDoc).then(() => {
-        dispatch(beginListeningOnDoc(sdbDoc));
-    });
-    const myInfoURL = DEBUG_MODE ? `http://localhost:8000/_myInfo` : `/_myInfo`;
-    fetch(myInfoURL).then((response) => {
-        return response.json();
-    }).then((myInfo) => {
-        dispatch(setUser(myInfo));
-    })
-    window['su'] = () => {
-        dispatch(setIsAdmin(true));
-    };
-    window['toJSON'] = () => {
-        console.log(JSON.stringify(update(sdbDoc.getData(), { userData: { $set: {} } })));
-    };
-    window['fromJSON'] = (str: string) => {
-        const newData: IPuzzleSet = JSON.parse(str);
-        sdbDoc.submitObjectReplaceOp([], newData);
-    };
-    return <div>
-        <div className="container"><UserHeader /></div>
+const PMApplication = ({ isAdmin, dispatch }) => {
+    return <div className="container">
+        <UserHeader />
         <Problems />
-        <div className='contact'>
-            Contact: <a href='http://from.so/' target='_blank' rel='noopener noreferrer'>Steve Oney</a> (University of Michigan)
-        </div>
     </div>;
 };
 
-export const App = reactRedux.connect()(PMApplication);
+function mapStateToProps(state: IPMState, ownProps) {
+    return ownProps;
+}
+
+function mapDispatchToProps(dispatch, ownProps) {
+    const emptyProblemsDoc: IProblems = { allProblems: {}, order: [] };
+    const emptyAggregateDataDoc: IAggregateData = { userData: {} };
+
+    dispatch(setAppState(appState));
+
+    const ws: ReconnectingWebsocket = new ReconnectingWebsocket(appState.websocketLocation);
+    const sdbClient: SDBClient = new SDBClient(ws);
+
+    const problemsDoc: SDBDoc<IProblems> = sdbClient.get(appState.channel, 'problems');
+    dispatch(setProblemsDoc(problemsDoc));
+    problemsDoc.createIfEmpty(emptyProblemsDoc).then(() => {
+        dispatch(beginListeningOnProblemsDoc(problemsDoc));
+        dispatch(beginListeningOnDoc(problemsDoc, 'problems'));
+        return problemsDoc;
+    });
+
+    const aggregateDataDoc: SDBDoc<IAggregateData> = sdbClient.get(appState.channel, 'aggregateData');
+    dispatch(setAggregateDataDoc(aggregateDataDoc));
+    aggregateDataDoc.createIfEmpty(emptyAggregateDataDoc).then(() => {
+        dispatch(beginListeningOnDoc(aggregateDataDoc, 'aggregateData'));
+        return aggregateDataDoc;
+    });
+
+    fetch(`${appState.postBase}/_myInfo`).then((response) => {
+        return response.json();
+    }).then((myInfo) => {
+        if(appState.debugMode) {
+            myInfo = update(myInfo, { uid: { $set: 'testuid' }})
+        }
+        dispatch(setUser(myInfo));
+        if(myInfo.isInstructor) {
+            const solutionsDoc: SDBDoc<ISolutions> = sdbClient.get(appState.channel, 'solutions');
+            dispatch(setSolutionsDoc(solutionsDoc));
+            dispatch(beginListeningOnDoc(solutionsDoc, 'solutions'));
+
+            const usersDoc: SDBDoc<IUsers> = sdbClient.get(appState.channel, 'users');
+            dispatch(setUsersDoc(usersDoc));
+            dispatch(beginListeningOnDoc(usersDoc, 'users'));
+        }
+        return myInfo;
+    });
+    return ownProps;
+}
+export const App = reactRedux.connect(mapStateToProps, mapDispatchToProps)(PMApplication);

@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
-import { updateSketch } from '../actions/sharedb_actions';
+import { updateSketch } from '../../../actions/sharedb_actions';
 import { CompactPicker } from 'react-color';
 
 interface SketchOverlayProps {
     sketch?: any[];
     isAdmin: boolean;
-    index: string;
+    id: string;
     dispatch: any;
 }
 
@@ -24,7 +24,7 @@ class SketchOverlay extends React.Component<SketchOverlayProps, SketchOverlaySta
     public static defaultProps: SketchOverlayProps = {
         sketch: [],
         isAdmin: false,
-        index: '-1',
+        id: '-1',
         dispatch: undefined,
     }
 
@@ -92,7 +92,7 @@ class SketchOverlay extends React.Component<SketchOverlayProps, SketchOverlaySta
             }
             
             this.setState({ sketch: sketch_t, activated: false })
-            this.props.dispatch(updateSketch(this.props.index, this.state.sketch))
+            this.props.dispatch(updateSketch(this.props.id, this.state.sketch))
         }
     }
     toggleErase(val) {
@@ -111,9 +111,9 @@ class SketchOverlay extends React.Component<SketchOverlayProps, SketchOverlaySta
         this.setState({ color: color.hex })
     }
 
-    sketchClear(){
-        this.setState({sketch: []})
-        this.props.dispatch(updateSketch(this.props.index,[]))
+    sketchClear() {
+        this.setState({ sketch: [] })
+        this.props.dispatch(updateSketch(this.props.id,[]))
     }
 
     renderDots() {
@@ -141,8 +141,7 @@ class SketchOverlay extends React.Component<SketchOverlayProps, SketchOverlaySta
 
     public componentDidMount() {
         if (this.props.isAdmin) {
-            // console.log(this.state, )
-            this.setState({ sketch: this.props['problem']['sketch'] })
+            this.setState({ sketch: this.props['problem']['problemDetails']['sketch'] })
         }
     }
 
@@ -179,11 +178,13 @@ class SketchOverlay extends React.Component<SketchOverlayProps, SketchOverlaySta
 }
 
 function mapStateToProps(state, ownProps) {
-    const { index } = ownProps;
-    const { user, doc, problems } = state;
-    const { isAdmin } = user;
-    const problem = problems[index];
-    const { sketch } = problem;
-    return update(ownProps, { index: { $set: index }, isAdmin: {$set: isAdmin}, problem: { $set: problem }, doc: { $set: doc }, sketch: { $set: sketch } });
+    const { intermediateUserState, shareDBDocs } = state;
+    const { problem } = ownProps;
+    const { problemDetails } = problem;
+    const { sketch } = problemDetails;
+    const { isAdmin } = intermediateUserState;
+    const problemsDoc = shareDBDocs.problems;
+
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, sketch } });
 }
 export default connect(mapStateToProps)(SketchOverlay);

@@ -20,18 +20,17 @@
     "noImplicitAny": false,
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": false,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
     "noEmit": true,
     "types": [
-      // add node as an option
       "node"
-  ],
+    ],
+    "isolatedModules": true
   },
   "exclude": [
     "node_modules",

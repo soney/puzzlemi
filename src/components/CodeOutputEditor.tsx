@@ -54,7 +54,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         this.VariableMarker = [];
         this.outputVariables = [];
 
-        let staticText = "# expected variables";
+        let staticText = "# assertions";
         this.props.variables.forEach(variable => {
             if (variable.type === "output") this.outputVariables.push(variable);
         })
@@ -94,10 +94,10 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
             if (failedTest !== null) {
                 this.resetFailed();
             }
-            else {
-                this.resetEditor();
-                this.resetMarkers();
-            }
+            // else {
+            //     this.resetEditor();
+            //     this.resetMarkers();
+            // }
         }
     };
 

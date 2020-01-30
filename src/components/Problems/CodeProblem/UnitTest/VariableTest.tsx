@@ -1,31 +1,31 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import * as showdown from 'showdown';
-import { CodeEditor } from './CodeEditor';
+import { CodeEditor } from '../../../CodeEditor';
 import update from 'immutability-helper';
 // import { changeTestStatus } from '../actions/sharedb_actions';
 
-import { deleteTest, changeTestStatus } from '../actions/sharedb_actions';
+import { deleteVariableTest, changeVariableTestStatus } from '../../../../actions/sharedb_actions';
 
-const Test = ({ testResult, dispatch, flag, index, testUserInfo, testIndex, test, isAdmin, doc, isInput, totalNum }) => {
+const VariableTest = ({  problem, dispatch, flag, index, testUserInfo, testIndex, test, isAdmin, problemsDoc, isInput, testResult, description }) => {
     const doDeleteTest = () => {
-        dispatch(deleteTest(index, testIndex));
+        dispatch(deleteVariableTest(problem.id, testIndex));
     };
     const doChangeTestStatus = () => {
-        dispatch(changeTestStatus(index, testIndex, !test.verified));
+        dispatch(changeVariableTestStatus(problem.id, testIndex, !test.verified));
     }
-
-    const p = ['problems', index, 'tests', testIndex];
+        if (isInput) {
+            const p = ['allProblems', problem.id, 'problemDetails', 'variableTests', testIndex];
     // const titleSubDoc = doc.subDoc([...p, 'title']);
     // const descriptionSubDoc = doc.subDoc([...p, 'description']);
     let inputSubDocs = [] as any[];
     let outputSubDocs = [] as any[];
     test.input.forEach((variable, i) => {
-        const inputVariableSubDoc = doc.subDoc([...p, 'input', i, 'value']);
+        const inputVariableSubDoc = problemsDoc.subDoc([...p, 'input', i, 'value']);
         inputSubDocs.push(inputVariableSubDoc);
     })
     test.output.forEach((variable, i) => {
-        const outputVariableSubDoc = doc.subDoc([...p, 'output', i, 'value']);
+        const outputVariableSubDoc = problemsDoc.subDoc([...p, 'output', i, 'value']);
         outputSubDocs.push(outputVariableSubDoc);
     })
     // const isLast = totalNum===testIndex+1;
@@ -39,7 +39,7 @@ const Test = ({ testResult, dispatch, flag, index, testUserInfo, testIndex, test
     const width_style = { width: pass_rate + "%" } as React.CSSProperties;
     // const author_name = test.author.slice(-4);
     const author_name = test.author;
-    if (isInput) {
+
         return <tr>
             <th scope="row">{test.id.slice(-4)}</th>
             {isAdmin && <td>{author_name}</td>}
@@ -76,7 +76,7 @@ const Test = ({ testResult, dispatch, flag, index, testUserInfo, testIndex, test
         </tr>
     } else {
         const converter = new showdown.Converter();
-        const testDescription = { __html: converter.makeHtml(test.description) };
+        const testDescription = { __html: converter.makeHtml(description) };
         const passedStatusClass = testResult ? (testResult.passed ? 'alert-success' : 'alert-danger') : 'alert-secondary';
         const passFailMessage = testResult ? (testResult.passed ? 'Passed' : 'Failed') : '';
         return <tr className={['test', passedStatusClass].join(' ')}>
@@ -88,15 +88,16 @@ const Test = ({ testResult, dispatch, flag, index, testUserInfo, testIndex, test
     }
 }
 function mapStateToProps(state, ownProps) {
-    const { index, testIndex } = ownProps;
-    const { user, problems, doc, userData } = state;
-    const { isAdmin } = user;
-    const problem = problems[index];
-    const test = problem.tests[testIndex];
-    const testUserInfo = userData[problem.id].testData[test.id];
-    const userSolution = user.solutions[problem.id];
-    const testResult = userSolution.testResults[test.id];
-    const config = problem.config;
-    return update(ownProps, { testResult: { $set: testResult }, config: { $set: config }, testUserInfo: { $set: testUserInfo }, isAdmin: { $set: isAdmin }, test: { $set: test }, doc: { $set: doc } });
+    const { intermediateUserState, shareDBDocs } = state;
+    const { isAdmin, intermediateSolutionState } = intermediateUserState;
+    const problemsDoc = shareDBDocs.problems;
+    const { problem, variable } = ownProps;
+    const { problemDetails } = problem;
+    const { variableTests, variables } = problemDetails;
+    const intermediateProblemState = intermediateSolutionState[problem.id];
+    const testResult = intermediateProblemState!.testResults['variable-'+ variable.name];
+    const description = '**Expected variable** ' + variable.name
+
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, variables, variableTests, testResult, description } });
 }
-export default connect(mapStateToProps)(Test); 
+export default connect(mapStateToProps)(VariableTest); 

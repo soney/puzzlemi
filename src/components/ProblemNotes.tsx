@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import * as showdown from 'showdown';
 // import { CodeEditor } from './CodeEditor';
 import update from 'immutability-helper';
-import SketchOverlay from './SketchOverlay';
+import SketchOverlay from './Problems/CodeProblem/SketchOverlay';
 import {CodeEditor} from './CodeEditor';
 
 const ProblemNotes = ({ index, problem, isRender, isAdmin, doc }) => {

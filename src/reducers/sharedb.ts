@@ -1,10 +1,52 @@
-import { IPuzzleSet } from '../utils/types';
-import { SDBDoc } from 'sdb-ts';
+import { SDBDoc, ImmutabilityWrapper } from 'sdb-ts';
 import EventTypes from '../actions/EventTypes';
+import update from 'immutability-helper';
+import { IAggregateData } from './aggregateData';
+import { ISolutions } from './solutions';
+import { IUsers } from './users';
+import { ISetDocAction, ISDBDocChangedAction, ISDBDocFetchedAction } from '../actions/sharedb_actions';
+import { IProblems } from './problems';
 
-export const doc = (state: SDBDoc<IPuzzleSet>|null = null, action: any) => {
-    if(action.type === EventTypes.SET_DOC) {
-        return action.doc;
+export interface ISDBDocsState {
+    problems: SDBDoc<IProblems>|null,
+    aggregateData: SDBDoc<IAggregateData>|null,
+    solutions: SDBDoc<ISolutions>|null,
+    users: SDBDoc<IUsers>|null,
+    immutable: {
+        problems: ImmutabilityWrapper<IProblems>|null,
+        aggregateData: ImmutabilityWrapper<IAggregateData>|null,
+        solutions: ImmutabilityWrapper<ISolutions>|null,
+        users: ImmutabilityWrapper<IUsers>|null,
+    },
+    i: {
+        problems: IProblems|null,
+        aggregateData: IAggregateData|null,
+        solutions: ISolutions|null,
+        users: IUsers|null
+    }
+}
+
+export const shareDBDocs = (state: ISDBDocsState={
+                     problems: null, aggregateData: null, solutions: null, users: null,
+        immutable: { problems: null, aggregateData: null, solutions: null, users: null},
+        i:         { problems: null, aggregateData: null, solutions: null, users: null} }
+    , action: ISetDocAction | ISDBDocChangedAction | ISDBDocFetchedAction) => {
+    const { type } = action;
+    if(type === EventTypes.SET_DOC) {
+        const { docType, doc } = action as ISetDocAction;
+        const immutableDoc = new ImmutabilityWrapper<any>(doc);
+        state = update(state, { [docType]: { $set: doc }});
+        state = update(state, { immutable: { [docType]: { $set: immutableDoc }}});
+        state = update(state, { i        : { [docType]: { $set: immutableDoc.getData() }}});
+        return state;
+    } else if(type === EventTypes.SDB_DOC_FETCHED) {
+        const { docType } = action as ISDBDocFetchedAction;
+        const immutableDoc = state.immutable[docType];
+        return update(state, { i : { [docType]: { $set: immutableDoc.getData() }}});
+    } else if(type === EventTypes.SDB_DOC_CHANGED) {
+        const { docType } = action as ISDBDocChangedAction;
+        const immutableDoc = state.immutable[docType];
+        return update(state, { i : { [docType]: { $set: immutableDoc.getData() }}});
     } else {
         return state;
     }

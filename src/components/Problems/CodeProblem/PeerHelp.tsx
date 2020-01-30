@@ -1,28 +1,29 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
-import { setHelpRequest, joinHelpSession, quitHelpSession } from '../actions/sharedb_actions';
-import { setCode } from '../actions/user_actions';
-import { CodeEditor } from './CodeEditor';
-import { runSharedCode } from '../actions/runCode_actions';
+// import { setHelpRequest, joinHelpSession, quitHelpSession } from '../actions/sharedb_actions';
+// import { setCode } from '../actions/user_actions';
+import { CodeEditor } from '../../CodeEditor';
+// import { runSharedCode } from '../actions/runCode_actions';
 
 const PeerHelp = ({ index, id, helpSessions, myCompletionIndex, errors, output, currentHelpSessionIndex, currentHelpSession, passedAll, problem, uid, doc, dispatch }) => {
     const iHaveCompleted = myCompletionIndex >= 0;
     const doRequestHelp = () => {
-        dispatch(setHelpRequest(id, uid));
+        // dispatch(setHelpRequest(id, uid));
     }
 
     const doJoinHelpSession = (e) => {
         const tuteeID = e.target.getAttribute('data-user');
-        dispatch(joinHelpSession(id, tuteeID, uid));
+        console.log('todo '+tuteeID);
+        // dispatch(joinHelpSession(id, tuteeID, uid));
     }
 
     const doQuitHelpSession = () => {
-        if (currentHelpSession.tuteeID === uid) dispatch(setCode(index, currentCodeSubDoc.getData()));
-        dispatch(quitHelpSession(id, currentHelpSessionIndex, uid));
+        // if (currentHelpSession.tuteeID === uid) dispatch(setCode(index, currentCodeSubDoc.getData()));
+        // dispatch(quitHelpSession(id, currentHelpSessionIndex, uid));
     }
     const doRunSharedCode = () => {
-        return dispatch(runSharedCode(index, currentHelpSessionIndex));
+        // return dispatch(runSharedCode(index, currentHelpSessionIndex));
     }
     const userp = ['userData', id, 'helpSessions'];
     const currentCodeSubDoc = doc.subDoc([...userp, currentHelpSessionIndex, 'solution', 'code']);
