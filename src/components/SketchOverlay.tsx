@@ -148,7 +148,7 @@ class SketchOverlay extends React.Component<SketchOverlayProps, SketchOverlaySta
 
 
     public render(): React.ReactNode {
-        return <div style={{top:'0', height: '100%', position: 'absolute', width: 'calc(100% - 30px)'}} ref='sketchContainer'>
+        return <div style={{top:'0', height: '100%', position: 'absolute'}} className={((this.props.isAdmin)?'sketchContainerAdmin':'sketchContainerStudent')} ref='sketchContainer'>
             <svg
             className={((this.props.isAdmin) ? 'sketchAdmin' : 'sketchStudent') + ((this.props.isAdmin) ? ' sketchMode' : '')}
             onMouseDown={this.svgOnMouseDown.bind(this)} onMouseUp={this.svgOnMouseUp.bind(this)} onMouseMove={this.svgOnMouseMove.bind(this)}>
