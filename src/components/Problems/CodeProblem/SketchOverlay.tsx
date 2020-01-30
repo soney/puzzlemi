@@ -128,9 +128,9 @@ class SketchOverlay extends React.Component<SketchOverlayProps, SketchOverlaySta
                 
             })
         } else {
-            return this.props['problem']['sketch'].map((val, idx) => {
-                if(this.props['problem']['sketch'][idx+1]!==false && this.props['problem']['sketch'][idx+1]!==undefined){
-                    var val2 = this.props['problem']['sketch'][idx+1]
+            return this.props['problem']['problemDetails']['sketch'].map((val, idx) => {
+                if(this.props['problem']['problemDetails']['sketch'][idx+1]!==false && this.props['problem']['problemDetails']['sketch'][idx+1]!==undefined){
+                    var val2 = this.props['problem']['problemDetails']['sketch'][idx+1]
                     return <line x1={val[0]} y1={val[1]} x2={val2[0]} y2={val2[1]} stroke={val[2]} stoke-width="1" key={'line_' + idx.toString()} />
                 }else{
                     return undefined
