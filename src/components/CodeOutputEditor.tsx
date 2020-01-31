@@ -208,10 +208,12 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
     }
 
     public render(): React.ReactNode {
-        return <textarea
-            ref={(ref: HTMLTextAreaElement) => this.codeNode = ref}
-            defaultValue={this.props.value}
-            autoComplete="off"
-        />;
+        return <div className="code-editor code-output-editor">
+            <textarea
+                ref={(ref: HTMLTextAreaElement) => this.codeNode = ref}
+                defaultValue={this.props.value}
+                autoComplete="off"
+            />
+        </div>;
     };
 };

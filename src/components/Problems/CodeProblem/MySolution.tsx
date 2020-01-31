@@ -69,7 +69,7 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
     const doRunTests = () => {
         const graphicsEl_tmp = graphicsRef.current;
         if (graphicsEl_tmp) {
-        graphicsEl_tmp.innerHTML = '';
+            graphicsEl_tmp.innerHTML = '';
         }
         return dispatch(runUnitTests(codeSolution, problem, intermediateCodeState, graphicsEl_tmp));
     };

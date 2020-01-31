@@ -37,10 +37,10 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
                 <div className="col clearfix">
                     <div className="btn-group btn-group-toggle" data-toggle="buttons">
                         <label className={"btn btn-sm " + (visible ? "btn-primary" : "btn-outline-primary")}>
-                            <input type="radio" name="options" id="visible" onChange={doShowProblem} /> Visible
+                            <input type="radio" name="options" id="visible" onClick={doShowProblem} /> Visible
                         </label>
                         <label className={"btn btn-sm " + (!visible ? "btn-secondary" : "btn-outline-secondary")}>
-                            <input type="radio" name="options" id="hidden" onChange={doHideProblem} /> Hidden
+                            <input type="radio" name="options" id="hidden" onClick={doHideProblem} /> Hidden
                         </label>
                     </div>
                     <button className="btn btn-sm btn-outline-danger float-right" onClick={doDeleteProblem}>Delete Problem</button>
