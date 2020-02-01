@@ -8,7 +8,7 @@ import { IPMState } from '../../../reducers';
 import VariableTest from './UnitTest/VariableTest';
 import { ICodeSolutionState } from '../../../reducers/intermediateUserState';
 
-const Tests = ({ config, problem, tests, isAdmin, dispatch, outputVariables, validVariableTests, passedVariableTests }) => {
+const Tests = ({ config, problem, tests, isAdmin, dispatch, outputVariables, validVariableTests, passedVariableTests, currentFailedVariableTest }) => {
     const doAddTest = () => {
         dispatch(addTest(problem.id));
     }
@@ -40,34 +40,37 @@ const Tests = ({ config, problem, tests, isAdmin, dispatch, outputVariables, val
         </div>;
     } else {
         // if (tests && tests.length) {
-            const pass_rate = validVariableTests.length === 0 ? 0 : passedVariableTests.length / validVariableTests.length * 100;
-            const width_style = { width: pass_rate + "%" } as React.CSSProperties;
-            return <div className='tests'>
-                {config.runTests &&
-                    <div className='variable-tests-results'>
-                        <div className="progress">
-                            <div className="progress-bar bg-success" role="progressbar" style={width_style} aria-valuenow={pass_rate} aria-valuemin={0} aria-valuemax={100}>
-                                {passedVariableTests.length} / {validVariableTests.length}
-                            </div>
+        const pass_rate = validVariableTests.length === 0 ? 0 : passedVariableTests.length / validVariableTests.length * 100;
+        const width_style = { width: pass_rate + "%" } as React.CSSProperties;
+        return <div className='tests'>
+            {config.runTests &&
+                <div className='variable-tests-results'>
+                    {currentFailedVariableTest !== '' &&
+                        <div className="alert alert-danger" role="alert">You did not pass the test {currentFailedVariableTest.slice(-4)}.</div>
+                    }
+                    <div className="progress">
+                        <div className="progress-bar bg-success" role="progressbar" style={width_style} aria-valuenow={pass_rate} aria-valuemin={0} aria-valuemax={100}>
+                            {passedVariableTests.length} / {validVariableTests.length}
                         </div>
                     </div>
-                }
-                <div>
-                    <table className="table">
-                        <tbody>
-                            {tests.map((test, i) => <Test problem={problem} test={test} key={`${test.id}-${i}`} testIndex={i} />)}
-                        </tbody>
-                    </table>
-                    <table className="table">
-                        <tbody>
-                            {outputVariables.map((variable, i) => <VariableTest problem={problem} variable={variable} key={`${variable.name}-${i}`} />)}
-                        </tbody>
-                    </table>
                 </div>
-            </div>;
-    //     } else {
-    //         return <div className='tests' />
-    //     }
+            }
+            <div>
+                <table className="table">
+                    <tbody>
+                        {tests.map((test, i) => <Test problem={problem} test={test} key={`${test.id}-${i}`} testIndex={i} />)}
+                    </tbody>
+                </table>
+                <table className="table">
+                    <tbody>
+                        {outputVariables.map((variable, i) => <VariableTest problem={problem} variable={variable} key={`${variable.name}-${i}`} />)}
+                    </tbody>
+                </table>
+            </div>
+        </div>;
+        //     } else {
+        //         return <div className='tests' />
+        //     }
     }
 }
 function mapStateToProps(state: IPMState, ownProps) {

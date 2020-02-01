@@ -7,7 +7,7 @@ import update from 'immutability-helper';
 
 import { deleteVariableTest, changeVariableTestStatus } from '../../../../actions/sharedb_actions';
 
-const VariableTest = ({  problem, dispatch, flag, index, testUserInfo, testIndex, test, isAdmin, problemsDoc, isInput, testResult, description }) => {
+const VariableTest = ({  problem, dispatch, flag, testUserInfo, testIndex, test, isAdmin, problemsDoc, isInput, testResult, description }) => {
     const doDeleteTest = () => {
         dispatch(deleteVariableTest(problem.id, testIndex));
     };
@@ -95,8 +95,9 @@ function mapStateToProps(state, ownProps) {
     const { problemDetails } = problem;
     const { variableTests, variables } = problemDetails;
     const intermediateProblemState = intermediateSolutionState[problem.id];
+    const { currentFailedVariableTest } = intermediateProblemState;
     const testResult = intermediateProblemState!.testResults['variable-'+ variable.name];
-    const description = '**Expected variable** ' + variable.name
+    const description = currentFailedVariableTest!==''?'['+currentFailedVariableTest.slice(-4)+'] **Assertion** ' + variable.name: '**Assertion** ' + variable.name;
 
     return update(ownProps, { $merge: { isAdmin, problemsDoc, variables, variableTests, testResult, description } });
 }

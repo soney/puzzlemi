@@ -63,7 +63,6 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
             staticText += "\n" + input.name + " = " + input.value;
         });
 
-        this.props.options.height = 10 + 20 * (this.inputVariables.length + 1);
         this.props.options.readOnly = !this.props.isEdit;
         this.state = {
             code: staticText,
@@ -187,6 +186,7 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
     public componentDidMount(): void {
         this.codeMirror = CodeMirror.fromTextArea(this.codeNode, this.props.options);
         this.codeMirror.setValue(this.state.code);
+        this.props.options.height = 10 + 20 * (this.inputVariables.length + 1);
         this.codeMirror.setSize(this.props.options.width, this.props.options.height);
         this.codeMirror.setOption('extraKeys', {
             Tab: (cm) => {
