@@ -8,22 +8,12 @@ import { CodeOutputEditor } from '../../CodeOutputEditor';
 import { ICodeSolution } from '../../../reducers/solutions';
 import { ICodeVariableTest } from '../../../reducers/problems';
 import { ISolutionState, ICodeSolutionState } from '../../../reducers/intermediateUserState';
-import { runCode, runUnitTests } from '../../../actions/runCode_actions';
+import { runCode, runUnitTests, runVerifyTest } from '../../../actions/runCode_actions';
 import { codeChanged } from '../../../actions/user_actions';
 import { addVariableTest } from '../../../actions/sharedb_actions';
 import Tests from './Tests';
 import Files from './Files';
-
 import uuid from '../../../utils/uuid';
-
-
-// import { setHelpRequest } from '../actions/sharedb_actions';
-// import { setCode, updateActiveFailedTestID } from '../actions/user_actions';
-// import TestResults from './TestResults';
-// import Result from './Result';
-// import { runCode, runUnitTests, runVerifyTest } from '../actions/runCode_actions';
-// import { newTest } from '../actions/sharedb_actions';
-// import { ITest } from '../utils/types';
 
 
 const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, problem, output, errors, verifiedTests, config, flag, variables, dispatch, failedTest }) => {
@@ -52,8 +42,8 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
             author: username,
             verified: isAdmin,
             id: uuid(),
-            input: variables.filter(i => i.type === 'input'),
-            output: variables.filter(i => i.type === 'output')
+            input: JSON.parse(JSON.stringify(variables.filter(i=>i.type === 'input'))),
+            output: JSON.parse(JSON.stringify(variables.filter(i => i.type === 'output')))
         };    
     }
 
@@ -82,7 +72,7 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
 
     const doSubmitTest = () => {
         dispatch(addVariableTest(problem.id, myTest));
-        // if (config.autoVerify) dispatch(runVerifyTest(index, myTest.id));
+        if (config.autoVerify) dispatch(runVerifyTest(problem, intermediateCodeState, myTest));
         // doResetTest();
     }
 

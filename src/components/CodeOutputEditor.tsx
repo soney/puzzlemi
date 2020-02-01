@@ -60,10 +60,9 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         })
 
         this.outputVariables.forEach(output => {
-            staticText += "\n# " + output.name + " = " + output.value;
+            staticText += "\nassert(" + output.name + " == " + output.value+');';
         });
 
-        this.props.options.height = 10 + 20 * (this.outputVariables.length + 1);
         this.props.options.readOnly = !this.props.isEdit;
         this.state = {
             code: staticText,
@@ -105,10 +104,11 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         this.outputVariables = this.props.failedTest.output;
 
         // init static text
-        let staticText = "# expected variables";
+        let staticText = "# assertions";
         this.outputVariables.forEach(output => {
-            staticText += "\n# " + output.name + " = " + output.value;
+            staticText += "\nassert(" + output.name + " == " + output.value+');';
         });
+
         this.codeMirror.setValue(staticText);
 
         // init code mirror options
@@ -123,10 +123,13 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         this.VariableMarker = [];
         this.outputVariables.forEach((output, index) => {
             const variable_length = output.name.length;
+            const pos_left = variable_length + 11;
+            const pos_right = variable_length + 11 + output.value.length;
             const total_length = doc.getLine(index + 1).length;
-            doc.markText({ line: index + 1, ch: 0 }, { line: index + 1, ch: variable_length + 5 }, { readOnly: true });
-            const marker = doc.markText({ line: index + 1, ch: variable_length + 5 }, { line: index + 1, ch: total_length }, { css: "background: #f8d7da" });
+            doc.markText({ line: index + 1, ch: 0 }, { line: index + 1, ch: pos_left }, { readOnly: true });
+            const marker = doc.markText({ line: index + 1, ch: pos_left }, { line: index + 1, ch: pos_right }, { css: "background: #f8d7da" });
             this.VariableMarker.push(marker);
+            doc.markText({ line: index + 1, ch: pos_right }, { line: index + 1, ch: total_length }, { readOnly: true });
         })
     }
 
@@ -138,9 +141,9 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         })
 
         // init static text
-        let staticText = "# expected variables";
+        let staticText = "# assertions";        
         this.outputVariables.forEach(output => {
-            staticText += "\n# " + output.name + " = " + output.value;
+            staticText += "\nassert(" + output.name + " == " + output.value + ");";
         });
         this.codeMirror.setValue(staticText);
 
@@ -159,26 +162,29 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         this.VariableMarker = [];
         this.outputVariables.forEach((output, index) => {
             const variable_length = output.name.length;
+            const pos_left = variable_length + 11;
+            const pos_right = variable_length + 11 + output.value.length;
             const total_length = doc.getLine(index + 1).length;
-            doc.markText({ line: index + 1, ch: 0 }, { line: index + 1, ch: variable_length + 5 }, { readOnly: true });
-            const marker = doc.markText({ line: index + 1, ch: variable_length + 5 }, { line: index + 1, ch: total_length }, { css: "background: #baffba" });
+            doc.markText({ line: index + 1, ch: 0 }, { line: index + 1, ch: pos_left }, { readOnly: true });
+            const marker = doc.markText({ line: index + 1, ch: pos_left }, { line: index + 1, ch: pos_right }, { css: "background: #baffba" });
             this.VariableMarker.push(marker);
+            doc.markText({ line: index + 1, ch: pos_right }, { line: index + 1, ch: total_length }, { readOnly: true });
         })
-
     }
 
     private listenEditorChange = () => {
         const doc = this.codeMirror.getDoc();
         this.outputVariables.forEach((output, index) => {
             const variable_length = output.name.length;
+            const pos_left = variable_length + 11;
             const total_length = doc.getLine(index + 1).length;
-            const content = doc.getLine(index + 1).substr(variable_length + 5, total_length - variable_length - 5);
+            const content = doc.getLine(index + 1).substr(pos_left, total_length - pos_left - 2);
             if (content !== output.value) {
                 this.props.onVariableChange(index, content);
                 // update input value
                 // update marker
                 this.VariableMarker[index].clear();
-                const marker = doc.markText({ line: index + 1, ch: variable_length + 5 }, { line: index + 1, ch: total_length }, { css: "background: yellow" });
+                const marker = doc.markText({ line: index + 1, ch: pos_left }, { line: index + 1, ch: pos_left + content.length }, { css: "background: yellow" });
                 this.VariableMarker[index] = marker;
             }
         })
@@ -187,6 +193,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
     public componentDidMount(): void {
         this.codeMirror = CodeMirror.fromTextArea(this.codeNode, this.props.options);
         this.codeMirror.setValue(this.state.code);
+        this.props.options.height = 10 + 20 * (this.outputVariables.length + 1);
         this.codeMirror.setSize(this.props.options.width, this.props.options.height);
         this.codeMirror.setOption('extraKeys', {
             Tab: (cm) => {

@@ -216,7 +216,7 @@ function executeUniteTest(variableTest, codeSolution: ICodeSolution, problem: IP
         const fullTests = afterTest.concat(tests);
         executeCode(fullCode, fullTests, afterCode, files, outputChangeHandler, writeFileHandler, graphics).then(result => {
             if (result.passedAll) resolve('True');
-            else reject({test: variableTest, result});
+            else reject({ test: variableTest, result });
         });
     })
 }
@@ -233,53 +233,92 @@ export function runUnitTests(codeSolution: ICodeSolution, problem: IProblem, int
         } as IBeginRunningCodeAction);
 
         Promise.all(validVariableTests.map(test => executeUniteTest(test, codeSolution, problem, intermediateSolutionState, graphics)))
-        .then(result=>{
-            // pass all the variable
-            const passedIDs = validVariableTests.map(t=>t.id);
-            dispatch({
-                problemID,
-                passedIDs,
-                type: EventTypes.ADD_PASSED_TESTS
-            } as IPassedAddAction)
-        })
-        .catch(error=>{
-            const {test, result} = error;
-            let passedIDs: string[] = [];
-            for(let i=0; i < validVariableTests.length; i ++) {
-                if(validVariableTests[i].id !== test.id) passedIDs.push(validVariableTests[i].id as string);
-                else break;
-            }
-            dispatch({
-                problemID,
-                passedIDs,
-                type: EventTypes.ADD_PASSED_TESTS
-            } as IPassedAddAction)
-            dispatch({
-                problemID,
-                failedID: test.id,
-                type: EventTypes.ADD_FAILED_TEST
-            } as IFailedAddAction)
-            const { errString, passedAll, testResults, output } = result;
-            if (errString) {
+            .then(result => {
+                // pass all the variable
+                const passedIDs = validVariableTests.map(t => t.id);
                 dispatch({
-                    errors: [errString],
                     problemID,
-                    type: EventTypes.ERROR_CHANGED
-                } as IErrorChangedAction);
+                    passedIDs,
+                    type: EventTypes.ADD_PASSED_TESTS
+                } as IPassedAddAction)
+            })
+            .catch(error => {
+                const { test, result } = error;
+                let passedIDs: string[] = [];
+                for (let i = 0; i < validVariableTests.length; i++) {
+                    if (validVariableTests[i].id !== test.id) passedIDs.push(validVariableTests[i].id as string);
+                    else break;
+                }
+                dispatch({
+                    problemID,
+                    passedIDs,
+                    type: EventTypes.ADD_PASSED_TESTS
+                } as IPassedAddAction)
+                dispatch({
+                    problemID,
+                    failedID: test.id,
+                    type: EventTypes.ADD_FAILED_TEST
+                } as IFailedAddAction)
+                const { errString, passedAll, testResults, output } = result;
+                if (errString) {
+                    dispatch({
+                        errors: [errString],
+                        problemID,
+                        type: EventTypes.ERROR_CHANGED
+                    } as IErrorChangedAction);
+                }
+                dispatch({
+                    problemID,
+                    output,
+                    type: EventTypes.OUTPUT_CHANGED
+                } as IOutputChangedAction);
+                dispatch({
+                    hasError: true,
+                    problemID,
+                    passedAll,
+                    testResults,
+                    type: EventTypes.DONE_RUNNING_CODE
+                } as IDoneRunningCodeAction);
+            });
+    }
+}
+
+export function runVerifyTest(problem: IProblem, intermediateSolutionState: ICodeSolutionState, variableTest: ICodeVariableTest) {
+    return (dispatch: Dispatch, getState) => {
+        const { id: problemID } = problem;
+        const problemDetails = problem.problemDetails as ICodeProblem;
+        const { afterCode, standardCode, tests } = problemDetails;
+        const files = { problemFiles: problemDetails.files, userFiles: null };
+
+        let beforeCode = "";
+        variableTest.input.forEach(variable => {
+            const snippet: string = variable.name + "=" + variable.value + ";\n";
+            beforeCode = beforeCode.concat(snippet);
+        })
+        const fullCode = beforeCode.concat(standardCode);
+
+        let afterTest: any[] = [];
+        variableTest.output.forEach((variable, i) => {
+            const t = {
+                id: 'variable-' + variable.name,
+                actual: variable.name,
+                expected: variable.value,
+                description: 'expected variable ' + variable.name + ' = ' + variable.value
             }
-            dispatch({
-                problemID,
-                output,
-                type: EventTypes.OUTPUT_CHANGED
-            } as IOutputChangedAction);
-            dispatch({
-                hasError: true,
-                problemID,
-                passedAll,
-                testResults,
-                type: EventTypes.DONE_RUNNING_CODE
-            } as IDoneRunningCodeAction);
+            afterTest.push(t)
         });
+        const fullTests = afterTest.concat(tests);
+
+        const outputChangeHandler = (output) => {
+        }
+        const writeFileHandler = (contents, fname) => {
+        }
+
+        executeCode(fullCode, fullTests, afterCode, files, outputChangeHandler, writeFileHandler, null).then(result => {
+            const { errString, passedAll, testResults } = result;
+            console.log(result)
+        })
+
     }
 }
 
@@ -359,7 +398,7 @@ export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermed
                         aggregateDataDoc.submitListPushOp(['userData', problemID, 'completed'], uid);
                     }
                 } else {
-                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], { completed: [uid], variableTests: {}});
+                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], { completed: [uid], variableTests: {} });
                 }
             }
         })
