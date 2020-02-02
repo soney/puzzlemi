@@ -60,7 +60,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         })
 
         this.outputVariables.forEach(output => {
-            staticText += "\nassert(" + output.name + " == " + output.value+');';
+            staticText += "\nassert(" + output.name + " == " + output.value+')';
         });
 
         this.props.options.readOnly = !this.props.isEdit;
@@ -106,7 +106,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         // init static text
         let staticText = "# assertions";
         this.outputVariables.forEach(output => {
-            staticText += "\nassert(" + output.name + " == " + output.value+');';
+            staticText += "\nassert(" + output.name + " == " + output.value+')';
         });
 
         this.codeMirror.setValue(staticText);
@@ -143,7 +143,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
         // init static text
         let staticText = "# assertions";        
         this.outputVariables.forEach(output => {
-            staticText += "\nassert(" + output.name + " == " + output.value + ");";
+            staticText += "\nassert(" + output.name + " == " + output.value + ")";
         });
         this.codeMirror.setValue(staticText);
 
@@ -178,7 +178,7 @@ export class CodeOutputEditor extends React.Component<ICodeOutputEditorProps, IC
             const variable_length = output.name.length;
             const pos_left = variable_length + 11;
             const total_length = doc.getLine(index + 1).length;
-            const content = doc.getLine(index + 1).substr(pos_left, total_length - pos_left - 2);
+            const content = doc.getLine(index + 1).substr(pos_left, total_length - pos_left - 1);
             if (content !== output.value) {
                 this.props.onVariableChange(index, content);
                 // update input value

@@ -31,6 +31,7 @@ export interface ICodeProblem {
     afterCode: string;
     description: string;
     givenCode: string;
+    liveCode: string;
     standardCode: string;
     notes: string;
     files: ICodeFile[];
@@ -66,7 +67,7 @@ export interface ICodeTest {
 export interface ICodeVariableTest {
     id?: string,
     author?: string,
-    verified?: boolean,
+    status?: 'Unverified'|'Failed'|'Passed',
     input: ICodeVariable[],
     output: ICodeVariable[]
 }

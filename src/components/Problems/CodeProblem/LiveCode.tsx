@@ -6,12 +6,12 @@ import ProblemNotes from './ProblemNotes';
 
 const LiveCode = ({ index, problem, flag, problemsDoc }) => {
     const p = ['allProblems', problem.id];
-    const givenCodeSubDoc = problemsDoc.subDoc([...p, 'problemDetails', 'givenCode']);
+    const liveCodeSubDoc = problemsDoc.subDoc([...p, 'problemDetails', 'liveCode']);
 
     return <div>
         <div className="row">
             <div className="col">
-                <CodeEditor shareDBSubDoc={givenCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true }} />
+                <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true }} />
             </div>
             <div className="col">
                 <ProblemNotes problem={problem} />

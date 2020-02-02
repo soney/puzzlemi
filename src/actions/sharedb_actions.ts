@@ -281,6 +281,7 @@ export function addCodeProblem() {
                 givenCode: `# code here`,
                 afterCode: '',
                 standardCode: `# standard solution`,
+                liveCode: `# live code demo`,
                 notes: '*no notes*',
                 description: '*no description*',
                 files: [],
@@ -458,11 +459,11 @@ export function deleteVariableTest(problemID: string, testIndex: number) {
     }
 }
 
-export function changeVariableTestStatus(problemID: string, testIndex: number, status: boolean) {
+export function changeVariableTestStatus(problemID: string, testIndex: number, status: string) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
-        problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'variableTests', testIndex, 'verified'], status);
+        problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'variableTests', testIndex, 'status'], status);
     }
 }
 
