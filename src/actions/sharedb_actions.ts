@@ -281,6 +281,7 @@ export function addCodeProblem() {
                 givenCode: `# code here`,
                 afterCode: '',
                 standardCode: `# standard solution`,
+                liveCode: `# live code demo`,
                 notes: '*no notes*',
                 description: '*no description*',
                 files: [],

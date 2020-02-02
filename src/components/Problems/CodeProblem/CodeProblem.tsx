@@ -26,6 +26,7 @@ const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, in
     const p = ['allProblems', problem.id];
     const givenCodeSubDoc = problemsDoc.subDoc([...p, 'problemDetails', 'givenCode']);
     const afterCodeSubDoc = problemsDoc.subDoc([...p, 'problemDetails', 'afterCode']);
+    const liveCodeSubDoc = problemsDoc.subDoc([...p, 'problemDetails', 'liveCode']);
     const standardCodeSubDoc = problemsDoc.subDoc([...p, 'problemDetails', 'standardCode']);
 
     if (isAdmin) {
@@ -41,6 +42,7 @@ const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, in
                         <div className="nav nav-tabs instructor-tab" id={"nav-instructor-code-tab-" + problem.id} role="tablist">
                             <a className="nav-item nav-link active" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true">Given Code</a>
                             <a className="nav-item nav-link" id={"nav-after-tab-" + problem.id} data-toggle="tab" href={"#nav-after-" + problem.id} role="tab" aria-controls={"nav-after-" + problem.id} aria-selected="false" onClick={refreshCM}>Run After</a>
+                            <a className="nav-item nav-link" id={"nav-live-tab-" + problem.id} data-toggle="tab" href={"#nav-live-" + problem.id} role="tab" aria-controls={"nav-live-" + problem.id} aria-selected="false" onClick={refreshCM}>Live Code</a>
                             <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={refreshCM}>Standard Code</a>
                         </div>
                     </nav>
@@ -50,6 +52,9 @@ const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, in
                         </div>
                         <div className="tab-pane fade" id={"nav-after-" + problem.id} role="tabpanel" aria-labelledby={"nav-after-tab-" + problem.id}>
                             <CodeEditor shareDBSubDoc={afterCodeSubDoc} flag={count} />
+                        </div>
+                        <div className="tab-pane fade" id={"nav-live-" + problem.id} role="tabpanel" aria-labelledby={"nav-live-tab-" + problem.id}>
+                            <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={count} />
                         </div>
                         <div className="tab-pane fade" id={"nav-standard-" + problem.id} role="tabpanel" aria-labelledby={"nav-standard-tab-" + problem.id}>
                             <CodeEditor shareDBSubDoc={standardCodeSubDoc} flag={count} />
@@ -146,7 +151,7 @@ const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, in
                     }
                     {config.peerHelp &&
                         <div className="tab-pane fade" id={"nav-contact-"+problem.id} role="tabpanel" aria-labelledby={"nav-contact-tab-"+problem.id}>
-                            <PeerHelp problem={problem} />
+                            {/* <PeerHelp problem={problem} /> */}
                         </div>
                     }
                 </div>

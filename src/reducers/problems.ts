@@ -31,6 +31,7 @@ export interface ICodeProblem {
     afterCode: string;
     description: string;
     givenCode: string;
+    liveCode: string;
     standardCode: string;
     notes: string;
     files: ICodeFile[];
