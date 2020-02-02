@@ -16,14 +16,15 @@ import Files from './Files';
 import uuid from '../../../utils/uuid';
 
 
-const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, problem, output, errors, verifiedTests, config, flag, variables, dispatch, failedTest }) => {
+const MySolution = ({ userSolution, intermediateCodeState, problemsDoc, isAdmin, username, problem, output, errors, verifiedTests, config, flag, variables, dispatch, failedTest }) => {
     const codeSolution = userSolution as ICodeSolution;
     const graphicsRef = React.createRef<HTMLDivElement>();
-    
+    const messageRef = React.createRef<HTMLDivElement>();
+
     const doRunCode = () => {
         const graphicsEl = graphicsRef.current;
         if (graphicsEl) {
-        graphicsEl.innerHTML = '';
+            graphicsEl.innerHTML = '';
         }
         return dispatch(runCode(codeSolution, problem, intermediateCodeState, graphicsEl, myTest));
     };
@@ -32,19 +33,19 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
         return dispatch(codeChanged(problem, value));
     };
     let myTest: ICodeVariableTest;
-    if(failedTest!==null){
+    if (failedTest !== null) {
         myTest = JSON.parse(JSON.stringify(failedTest));
         myTest.author = username;
         myTest.id = uuid();
-        myTest.verified = isAdmin;
+        myTest.status = isAdmin ? 'Passed' : 'Unverified';
     } else {
         myTest = {
             author: username,
-            verified: isAdmin,
+            status: isAdmin ? 'Passed' : 'Unverified',
             id: uuid(),
-            input: JSON.parse(JSON.stringify(variables.filter(i=>i.type === 'input'))),
+            input: JSON.parse(JSON.stringify(variables.filter(i => i.type === 'input'))),
             output: JSON.parse(JSON.stringify(variables.filter(i => i.type === 'output')))
-        };    
+        };
     }
 
     const [count, setCount] = useState(0);
@@ -57,9 +58,10 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
         setCount(count + 1);
     }
     const doRunTests = () => {
+        doResetTest();
         const graphicsEl_tmp = graphicsRef.current;
         if (graphicsEl_tmp) {
-        graphicsEl_tmp.innerHTML = '';
+            graphicsEl_tmp.innerHTML = '';
         }
         return dispatch(runUnitTests(codeSolution, problem, intermediateCodeState, graphicsEl_tmp));
     };
@@ -71,8 +73,32 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
     }
 
     const doSubmitTest = () => {
-        dispatch(addVariableTest(problem.id, myTest));
-        if (config.autoVerify) dispatch(runVerifyTest(problem, intermediateCodeState, myTest));
+        let messageDiv = messageRef.current as HTMLDivElement;
+        dispatch(addVariableTest(problem.id, myTest)).then(() => {
+            if (config.autoVerify) dispatch(runVerifyTest(problem, myTest)).then(() => {
+                const updated_variableTests = problemsDoc.traverse(['allProblems', problem.id, 'problemDetails', 'variableTests']);
+                let result = '';
+                updated_variableTests.forEach((t, i) => {
+                    if (t.id === myTest.id) result = t.status;
+                })
+
+                if(result==='Failed') messageDiv.innerHTML = "<div class='alert alert-warning alert-dismissible fade show' role='alert'>"+
+                "Your test case failed to pass the standard code."+
+                "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>" +
+                 " <span aria-hidden='true'>&times;</span>" +
+                "</button>" +
+              "</div>";
+              if(result==='Passed') messageDiv.innerHTML = "<div class='alert alert-success alert-dismissible fade show' role='alert'>"+
+              "Congrats! Your test case passed the standard code."+
+              "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>" +
+               " <span aria-hidden='true'>&times;</span>" +
+              "</button>" +
+            "</div>";
+                //failed.style.display = "block";
+
+            });
+        });
+
         // doResetTest();
     }
 
@@ -81,11 +107,11 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
             <div className="col">
                 <div>
                     {variables &&
-                        <CodeInputEditor failedTest={failedTest} variables={variables} onVariableChange={doChangeInputVariable} flag={count+flag} isEdit={config.addTests} />
+                        <CodeInputEditor failedTest={failedTest} variables={variables} onVariableChange={doChangeInputVariable} flag={count + flag} isEdit={config.addTests} />
                     }
                     <CodeEditor value={codeSolution.code} onChange={doSetCode} flag={flag} />
                     {variables &&
-                        <CodeOutputEditor failedTest={failedTest} variables={variables} onVariableChange={doChangeOutputVariable} flag={count+flag} isEdit={config.addTests} />
+                        <CodeOutputEditor failedTest={failedTest} variables={variables} onVariableChange={doChangeOutputVariable} flag={count + flag} isEdit={config.addTests} />
                     }
                     <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
                     {config.runTests &&
@@ -110,6 +136,10 @@ const MySolution = ({ userSolution, intermediateCodeState, isAdmin, username, pr
             </div>
         </div>
         <div className="row">
+            <div className="col test-case-message" ref={messageRef}>
+            </div>
+        </div>
+        <div className="row">
             <div className="col">
                 <Tests problem={problem} />
             </div>
@@ -128,12 +158,12 @@ function mapStateToProps(state, ownProps) {
     const { problem } = ownProps;
     const { problemDetails } = problem;
     const { config, variables, variableTests } = problemDetails;
-    const verifiedTests = variableTests.filter(i => i.verified === true);
+    const verifiedTests = variableTests.filter(i => i.status === 'Passed');
     const userSolution = solutions.allSolutions[ownProps.problem.id][myuid];
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { output, errors, currentFailedVariableTest } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { output: '', errors: [], currentFailedVariableTest: '' };
-    let failedT = verifiedTests.filter(i=>i.id===currentFailedVariableTest);
-    const failedTest = failedT.length>0?failedT[0]:null;
+    let failedT = verifiedTests.filter(i => i.id === currentFailedVariableTest);
+    const failedTest = failedT.length > 0 ? failedT[0] : null;
     return update(ownProps, { $merge: { isAdmin, username, problemsDoc, config, variables, userSolution, intermediateCodeState, output, errors, verifiedTests, failedTest } });
 }
 export default connect(mapStateToProps)(MySolution);

@@ -66,7 +66,7 @@ export interface ICodeTest {
 export interface ICodeVariableTest {
     id?: string,
     author?: string,
-    verified?: boolean,
+    status?: 'Unverified'|'Failed'|'Passed',
     input: ICodeVariable[],
     output: ICodeVariable[]
 }

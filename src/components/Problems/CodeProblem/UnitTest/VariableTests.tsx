@@ -4,12 +4,13 @@ import update from 'immutability-helper';
 import VariableTest from './VariableTest';
 import { addVariableTest } from '../../../../actions/sharedb_actions';
 import uuid from '../../../../utils/uuid';
+import { ICodeVariableTest } from '../../../../reducers/problems';
 
 const VariableTests = ({ index, problem, username, flag, variableTests, variables, isAdmin, userInfo, doc, dispatch, uid }) => {
     const doAddTest = () => {
-        const newTest = {
+        const newTest:ICodeVariableTest = {
             author: username,
-            verified: isAdmin,
+            status: isAdmin?'Passed':'Unverified',
             id: uuid(),
             input: variables.filter(i=>i.type==='input'),
             output: variables.filter(i=>i.type==='output')

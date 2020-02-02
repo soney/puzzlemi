@@ -85,7 +85,7 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { tests, variables, config, variableTests } = problemDetails;
 
     const outputVariables = variables.filter(i => i.type === 'output')
-    const validVariableTests = variableTests.filter(i => i.verified === true);
+    const validVariableTests = variableTests.filter(i => i.status === 'Passed');
 
     const testIDs = tests.map((t) => t.id); // fingerprint
 

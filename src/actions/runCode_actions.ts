@@ -226,7 +226,7 @@ export function runUnitTests(codeSolution: ICodeSolution, problem: IProblem, int
         const { id: problemID } = problem;
         const problemDetails = problem.problemDetails as ICodeProblem;
         const { variableTests } = problemDetails;
-        const validVariableTests = variableTests.filter(i => i.verified === true);
+        const validVariableTests = variableTests.filter(i => i.status === 'Passed');
         dispatch({
             problemID,
             type: EventTypes.BEGIN_RUN_CODE
@@ -283,8 +283,8 @@ export function runUnitTests(codeSolution: ICodeSolution, problem: IProblem, int
     }
 }
 
-export function runVerifyTest(problem: IProblem, intermediateSolutionState: ICodeSolutionState, variableTest: ICodeVariableTest) {
-    return (dispatch: Dispatch, getState) => {
+export function runVerifyTest(problem: IProblem, variableTest: ICodeVariableTest) {
+    return async (dispatch: Dispatch, getState) => {
         const { id: problemID } = problem;
         const problemDetails = problem.problemDetails as ICodeProblem;
         const { afterCode, standardCode, tests } = problemDetails;
@@ -313,10 +313,19 @@ export function runVerifyTest(problem: IProblem, intermediateSolutionState: ICod
         }
         const writeFileHandler = (contents, fname) => {
         }
+        
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        const updated_variableTests = problemsDoc.traverse(['allProblems', problemID, 'problemDetails', 'variableTests']);
+        let testIndex = 0;
+        updated_variableTests.forEach((t, i)=>{
+            if(t.id === variableTest.id) testIndex = i;
+        })
 
-        executeCode(fullCode, fullTests, afterCode, files, outputChangeHandler, writeFileHandler, null).then(result => {
-            const { errString, passedAll, testResults } = result;
-            console.log(result)
+        await executeCode(fullCode, fullTests, afterCode, files, outputChangeHandler, writeFileHandler, null).then(result => {
+            const { passedAll } = result;
+            const status = passedAll?'Passed':'Failed';
+            problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'variableTests', testIndex, 'status'], status);
         })
 
     }
