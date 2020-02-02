@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 import { CodeEditor } from '../../CodeEditor';
@@ -15,11 +15,30 @@ import Tests from './Tests';
 import Files from './Files';
 import uuid from '../../../utils/uuid';
 
+let myTest: ICodeVariableTest;
 
 const MySolution = ({ userSolution, intermediateCodeState, problemsDoc, isAdmin, username, problem, output, errors, verifiedTests, config, flag, variables, dispatch, failedTest }) => {
     const codeSolution = userSolution as ICodeSolution;
     const graphicsRef = React.createRef<HTMLDivElement>();
     const messageRef = React.createRef<HTMLDivElement>();
+
+    useEffect(()=>{
+        if(failedTest!==null){
+            myTest = JSON.parse(JSON.stringify(failedTest));
+            myTest.author = username;
+            myTest.id = uuid();
+            myTest.status = isAdmin ? 'Passed' : 'Unverified';    
+        }
+        else {
+            myTest = {
+                author: username,
+                status: isAdmin ? 'Passed' : 'Unverified',
+                id: uuid(),
+                input: JSON.parse(JSON.stringify(variables.filter(i => i.type === 'input'))),
+                output: JSON.parse(JSON.stringify(variables.filter(i => i.type === 'output')))
+            };    
+        }
+    }, [failedTest, username, isAdmin, variables])
 
     const doRunCode = () => {
         const graphicsEl = graphicsRef.current;
@@ -32,21 +51,6 @@ const MySolution = ({ userSolution, intermediateCodeState, problemsDoc, isAdmin,
         const { value } = ev;
         return dispatch(codeChanged(problem, value));
     };
-    let myTest: ICodeVariableTest;
-    if (failedTest !== null) {
-        myTest = JSON.parse(JSON.stringify(failedTest));
-        myTest.author = username;
-        myTest.id = uuid();
-        myTest.status = isAdmin ? 'Passed' : 'Unverified';
-    } else {
-        myTest = {
-            author: username,
-            status: isAdmin ? 'Passed' : 'Unverified',
-            id: uuid(),
-            input: JSON.parse(JSON.stringify(variables.filter(i => i.type === 'input'))),
-            output: JSON.parse(JSON.stringify(variables.filter(i => i.type === 'output')))
-        };
-    }
 
     const [count, setCount] = useState(0);
 
@@ -94,12 +98,8 @@ const MySolution = ({ userSolution, intermediateCodeState, problemsDoc, isAdmin,
                " <span aria-hidden='true'>&times;</span>" +
               "</button>" +
             "</div>";
-                //failed.style.display = "block";
-
             });
         });
-
-        // doResetTest();
     }
 
     return <div>
