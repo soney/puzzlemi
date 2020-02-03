@@ -6,9 +6,8 @@ import { CodeEditor } from '../../../CodeEditor';
 import ChatWidget from './ChatWidget';
 import * as showdown from 'showdown';
 
-const SessionPanel = ({ activeSession, problem, aggregateDataDoc, sessions, isTutee }) => {
+const SessionPanel = ({ activeSession, sessionIndex, problem, aggregateDataDoc, sessions, isTutee }) => {
     if (activeSession === null) return <></>;
-    const sessionIndex = sessions.indexOf(activeSession);
 
     const p = ['userData', problem.id, 'helpSessions', sessionIndex];
     const sharedCodeSubDoc = aggregateDataDoc.subDoc([...p, 'solution', 'code']);
@@ -20,17 +19,17 @@ const SessionPanel = ({ activeSession, problem, aggregateDataDoc, sessions, isTu
         <div className="session-head">
             <h5>Title:</h5>
             {isTutee
-                ? <div><CodeEditor shareDBSubDoc={titleSubDoc} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 50 }} /></div>
+                ? <div><CodeEditor shareDBSubDoc={titleSubDoc} refreshDoc={sessionIndex} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 50 }} /></div>
                 : <div><p dangerouslySetInnerHTML={{ __html: converter.makeHtml(activeSession.title) }} />
                 </div>}
             <h5>Description: </h5>
             {isTutee
-                ? <div><CodeEditor shareDBSubDoc={descriptionSubDoc} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 50 }} /></div>
+                ? <div><CodeEditor shareDBSubDoc={descriptionSubDoc} refreshDoc={sessionIndex} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 50 }} /></div>
                 : <div><p dangerouslySetInnerHTML={{ __html: converter.makeHtml(activeSession.description) }} /></div>}
         </div>
         <div className="row">
             <div className="col">
-                <CodeEditor shareDBSubDoc={sharedCodeSubDoc} />
+                <CodeEditor shareDBSubDoc={sharedCodeSubDoc} refreshDoc={sessionIndex} />
             </div>
             <div className="col">
                 <ChatWidget problem={problem} sessions={sessions} />
@@ -47,9 +46,10 @@ function mapStateToProps(state, ownProps) {
     const { currentActiveHelpSession } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { currentActiveHelpSession: '' };
     let activeS = sessions.filter(s => s.id === currentActiveHelpSession);
     const activeSession = activeS.length > 0 ? activeS[0] : null;
+    const sessionIndex = sessions.indexOf(activeSession);
     const myuid = users.myuid as string;
     const username = myuid === "testuid" ? "testuser" : users.allUsers[myuid].username;
     const isTutee = activeSession !== null ? activeSession.tutee === username : false;
-    return update(ownProps, { $merge: { username, aggregateDataDoc, sessions, activeSession, isTutee } });
+    return update(ownProps, { $merge: { username, sessionIndex, aggregateDataDoc, sessions, activeSession, isTutee } });
 }
 export default connect(mapStateToProps)(SessionPanel);

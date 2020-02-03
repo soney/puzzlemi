@@ -14,7 +14,6 @@ const ChatWidget = ({ activeSession, dispatch, problem, sessions, username }) =>
 
     const onMessageChange = (e) => {
         message = e.value;
-        message='';
     }
 
     const onSendMessage = () => {
@@ -24,9 +23,9 @@ const ChatWidget = ({ activeSession, dispatch, problem, sessions, username }) =>
             timestamp: getTimeStamp()
         }
         dispatch(addMessage(problem.id, newMessage, sessionIndex))
+        message='';
     }
     const converter = new showdown.Converter();
-
 
     return <div>
         <div className="chat-container">
