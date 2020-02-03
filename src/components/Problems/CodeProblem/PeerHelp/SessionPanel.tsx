@@ -6,10 +6,10 @@ import { CodeEditor } from '../../../CodeEditor';
 import ChatWidget from './ChatWidget';
 import * as showdown from 'showdown';
 
-const SessionPanel = ({ activeSession, dispatch, problem, aggregateDataDoc, helpSessions, isTutee }) => {
+const SessionPanel = ({ activeSession, problem, aggregateDataDoc, sessions, isTutee }) => {
     if (activeSession === null) return <></>;
+    const sessionIndex = sessions.indexOf(activeSession);
 
-    const sessionIndex = helpSessions.indexOf(activeSession);
     const p = ['userData', problem.id, 'helpSessions', sessionIndex];
     const sharedCodeSubDoc = aggregateDataDoc.subDoc([...p, 'solution', 'code']);
     const titleSubDoc = aggregateDataDoc.subDoc([...p, 'title']);
@@ -33,7 +33,7 @@ const SessionPanel = ({ activeSession, dispatch, problem, aggregateDataDoc, help
                 <CodeEditor shareDBSubDoc={sharedCodeSubDoc} />
             </div>
             <div className="col">
-                <ChatWidget problem={problem} />
+                <ChatWidget problem={problem} sessions={sessions} />
             </div>
         </div>
     </div>
@@ -41,17 +41,15 @@ const SessionPanel = ({ activeSession, dispatch, problem, aggregateDataDoc, help
 
 function mapStateToProps(state, ownProps) {
     const { shareDBDocs, intermediateUserState, users } = state;
-    const { problem } = ownProps;
+    const { sessions } = ownProps;
     const aggregateDataDoc = shareDBDocs.aggregateData
-    const aggregateData = aggregateDataDoc.getData();
-    const helpSessions = aggregateData.userData[problem.id].helpSessions;
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveHelpSession } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { currentActiveHelpSession: '' };
-    let activeS = helpSessions.filter(s => s.id === currentActiveHelpSession);
+    let activeS = sessions.filter(s => s.id === currentActiveHelpSession);
     const activeSession = activeS.length > 0 ? activeS[0] : null;
     const myuid = users.myuid as string;
     const username = myuid === "testuid" ? "testuser" : users.allUsers[myuid].username;
     const isTutee = activeSession !== null ? activeSession.tutee === username : false;
-    return update(ownProps, { $merge: { activeSession, isTutee, aggregateDataDoc, helpSessions } });
+    return update(ownProps, { $merge: { username, aggregateDataDoc, sessions, activeSession, isTutee } });
 }
 export default connect(mapStateToProps)(SessionPanel);

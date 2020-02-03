@@ -4,14 +4,14 @@ import update from 'immutability-helper';
 import SessionList from './SessionList';
 import SessionPanel from './SessionPanel';
 
-const PeerHelp = ({ helpSessions, problem }) => {
+const PeerHelp = ({ sessions, problem }) => {
     return <div>
-        <SessionPanel problem={problem} />
+        <SessionPanel problem={problem} sessions={sessions} />
         <div className="help-sessions-list">
             <h5>List of Help Sessions </h5>
 
             <div className="list-group help-sessions-list-group">
-                {helpSessions.map((session, i) => <SessionList key={i} session={session} problem={problem} />)}
+                {sessions.map((session, i) => <SessionList key={i} session={session} sessions={sessions} problem={problem} />)}
             </div>
         </div>
     </div>
@@ -20,10 +20,12 @@ const PeerHelp = ({ helpSessions, problem }) => {
 function mapStateToProps(state, ownProps) {
     const { shareDBDocs } = state;
     const { problem } = ownProps;
+    const aggregateData = shareDBDocs.i.aggregateData
 
-    const aggregateDataDoc = shareDBDocs.aggregateData
-    const aggregateData = aggregateDataDoc.getData();
-    const helpSessions = aggregateData.userData[problem.id].helpSessions
-    return update(ownProps, { $merge: { helpSessions } });
+    let helpSessions = [];
+    if(aggregateData){
+        helpSessions = aggregateData.userData[problem.id].helpSessions
+    }
+    return update(ownProps, { $merge: { sessions: helpSessions } });
 }
 export default connect(mapStateToProps)(PeerHelp);

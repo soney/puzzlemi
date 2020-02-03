@@ -17,7 +17,7 @@ const SessionList = ({ session, currentActiveHelpSession, dispatch, problem }) =
             <h5 className="mb-1"><p dangerouslySetInnerHTML={{ __html: converter.makeHtml(session.title) }} /></h5>
             <small>{timeAgo(parseInt(session.timestamp))}</small>
         </div>
-        <p className="mb-1"><p dangerouslySetInnerHTML={{ __html: converter.makeHtml(session.description) }} /></p>
+        <p className="mb-1" dangerouslySetInnerHTML={{ __html: converter.makeHtml(session.description) }} />
         <small>{session.tutee}</small>
     </div>
 }

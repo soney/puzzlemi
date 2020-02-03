@@ -3,7 +3,7 @@ import '../css/App.scss';
 import * as reactRedux from 'react-redux';
 import { ReconnectingWebsocket, SDBClient, SDBDoc } from 'sdb-ts';
 import Problems from './Problems/Problems';
-import { setProblemsDoc, beginListeningOnProblemsDoc, beginListeningOnAggregateDataDoc, setSolutionsDoc, setUsersDoc, setAggregateDataDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
+import { setProblemsDoc, beginListeningOnProblemsDoc, setSolutionsDoc, setUsersDoc, setAggregateDataDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
 import { setUser } from '../actions/user_actions';
 import UserHeader from './UserHeader';
 import { IProblems } from '../reducers/problems';
@@ -47,7 +47,6 @@ function mapDispatchToProps(dispatch, ownProps) {
     const aggregateDataDoc: SDBDoc<IAggregateData> = sdbClient.get(appState.channel, 'aggregateData');
     dispatch(setAggregateDataDoc(aggregateDataDoc));
     aggregateDataDoc.createIfEmpty(emptyAggregateDataDoc).then(() => {
-        dispatch(beginListeningOnAggregateDataDoc(aggregateDataDoc));
         dispatch(beginListeningOnDoc(aggregateDataDoc, 'aggregateData'));
         return aggregateDataDoc;
     });

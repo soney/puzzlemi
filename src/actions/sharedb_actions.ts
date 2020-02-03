@@ -9,7 +9,6 @@ import { IAggregateData, IHelpSession, IMessage } from '../reducers/aggregateDat
 import { IUsers } from '../reducers/users';
 import { ISolutions, ICodeSolution } from '../reducers/solutions';
 import { ICodeVariable } from '../reducers/problems';
-import { ICodeSolutionState } from '../reducers/intermediateUserState';
 
 export interface IProblemAddedAction {
     type: EventTypes.PROBLEM_ADDED,
@@ -706,21 +705,6 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                         const { li } = op as ListInsertOp;
                         dispatch(testAdded(problemID, li));
                     }
-                });
-            }
-        });
-    };
-}
-
-export function beginListeningOnAggregateDataDoc(doc: SDBDoc<IAggregateData>) {
-    return (dispatch: Dispatch, getState) => {
-        doc.subscribe((type, ops) => {
-            if (type === null || type === 'create') {
-                // dispatch(problemsFetched(doc.getData()));
-            } else if (type === 'op') {
-                const wasAtBottom = isNearBottom();
-                ops!.forEach((op) => {
-                    const { p } = op;
                 });
             }
         });

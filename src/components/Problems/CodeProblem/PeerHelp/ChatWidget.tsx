@@ -9,11 +9,12 @@ import { IMessage } from '../../../../reducers/aggregateData';
 import * as showdown from 'showdown';
 
 let message = 'send your *message* here';
-const ChatWidget = ({ activeSession, dispatch, problem, helpSessions, username }) => {
-    const sessionIndex = helpSessions.indexOf(activeSession);
+const ChatWidget = ({ activeSession, dispatch, problem, sessions, username }) => {
+    const sessionIndex = sessions.indexOf(activeSession);
 
     const onMessageChange = (e) => {
         message = e.value;
+        message='';
     }
 
     const onSendMessage = () => {
@@ -58,17 +59,14 @@ const ChatWidget = ({ activeSession, dispatch, problem, helpSessions, username }
 }
 
 function mapStateToProps(state, ownProps) {
-    const { shareDBDocs, intermediateUserState, users } = state;
-    const { problem } = ownProps;
-    const aggregateDataDoc = shareDBDocs.aggregateData
-    const aggregateData = aggregateDataDoc.getData();
-    const helpSessions = aggregateData.userData[problem.id].helpSessions;
+    const { intermediateUserState, users } = state;
+    const { sessions } = ownProps;
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveHelpSession } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { currentActiveHelpSession: '' };
-    let activeS = helpSessions.filter(s => s.id === currentActiveHelpSession);
+    let activeS = sessions.filter(s => s.id === currentActiveHelpSession);
     const activeSession = activeS.length > 0 ? activeS[0] : null;
     const myuid = users.myuid as string;
     const username = myuid === "testuid" ? "testuser" : users.allUsers[myuid].username;
-    return update(ownProps, { $merge: { activeSession, aggregateDataDoc, helpSessions, username } });
+    return update(ownProps, { $merge: { activeSession, sessions, username } });
 }
 export default connect(mapStateToProps)(ChatWidget);
