@@ -1,12 +1,13 @@
 import { SDBDoc } from 'sdb-ts';
 import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
+import { getTimeStamp } from '../utils/timestamp';
 import EventTypes from './EventTypes';
 import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
 import { IProblem, IMultipleChoiceOption, IProblems, ICodeTest, IMultipleChoiceSelectionType, ICodeVariableTest } from '../reducers/problems';
-import { IAggregateData } from '../reducers/aggregateData';
+import { IAggregateData, IHelpSession, IMessage } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
-import { ISolutions } from '../reducers/solutions';
+import { ISolutions, ICodeSolution } from '../reducers/solutions';
 import { ICodeVariable } from '../reducers/problems';
 
 export interface IProblemAddedAction {
@@ -250,7 +251,9 @@ export function replaceProblems(newProblems: IProblems) {
                 const { problemDetails } = newProblems.allProblems[problemID];
                 if (problemDetails.problemType === 'code') {
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
-                        completed: []
+                        completed: [],
+                        variableTest: {},
+                        helpSessions: []
                     });
                 } else if (problemDetails.problemType === 'multiple-choice') {
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
@@ -299,7 +302,9 @@ export function addCodeProblem() {
         };
 
         await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], {
-            completed: []
+            completed: [],
+            variableTests: {},
+            helpSessions: []
         });
 
         await problemsDoc.submitObjectInsertOp(['allProblems', newProblem.id], newProblem);
@@ -473,6 +478,33 @@ export function changeProblemConfig(problemID: string, item: string, value: bool
         const problemsDoc = shareDBDocs.problems;
 
         problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'config', item], value);
+    }
+}
+
+export function addHelpSession(problemID: string, username: string, userSolution: ICodeSolution, helpID: string) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        const newHelpSession: IHelpSession = {
+            id: helpID,
+            timestamp: getTimeStamp(),
+            status: true,
+            tutee: username,
+            tutors: [],
+            chatMessages: [],
+            title: 'no title',
+            description: '**no description**',
+            solution: userSolution as ICodeSolution
+        }
+        aggregateDataDoc.submitListPushOp(['userData', problemID, 'helpSessions'], newHelpSession);
+    }
+}
+
+export function addMessage(problemID: string, newMessage: IMessage, helpIndex: number) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        aggregateDataDoc.submitListPushOp(['userData', problemID, 'helpSessions', helpIndex, 'chatMessages'], newMessage)
     }
 }
 
@@ -677,26 +709,4 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
             }
         });
     };
-}
-
-export function joinHelpSession(id: string, tuteeID: string, tutorID: string) {
-    return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
-        const { userData } = doc.getData();
-        const { helpSessions } = userData[id];
-        const sessionIndex = helpSessions.findIndex(e => e.tuteeID === tuteeID);
-        doc.submitListPushOp(['userData', id, 'helpSessions', sessionIndex, 'tutorIDs'], tutorID);
-    }
-}
-
-export function quitHelpSession(id: string, sessionIndex: string, uid: string) {
-    return (dispatch: Dispatch, getState) => {
-        const { doc } = getState();
-        const { userData } = doc.getData();
-        const { helpSessions } = userData[id];
-        const session = helpSessions[sessionIndex];
-        if (session.tuteeID === uid) doc.submitListDeleteOp(['userData', id, 'helpSessions', sessionIndex]);
-        const tutorIndex = session.tutorIDs.indexOf(uid);
-        if (tutorIndex !== -1) doc.submitListDeleteOp(['userData', id, 'helpSessions', sessionIndex, 'tutorIDs', tutorIndex]);
-    }
 }

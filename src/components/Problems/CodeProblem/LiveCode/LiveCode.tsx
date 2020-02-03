@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from "react-redux";
-import { CodeEditor } from '../../CodeEditor';
+import { CodeEditor } from '../../../CodeEditor';
 import update from 'immutability-helper';
 import ProblemNotes from './ProblemNotes';
 
@@ -24,6 +24,6 @@ function mapStateToProps(state, ownProps) {
     const { shareDBDocs } = state;
     const problemsDoc = shareDBDocs.problems;
 
-    return update(ownProps, { $merge: {problemsDoc }});
+    return update(ownProps, { $merge: { problemsDoc } });
 }
 export default connect(mapStateToProps)(LiveCode);

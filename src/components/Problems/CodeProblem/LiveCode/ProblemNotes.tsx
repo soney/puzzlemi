@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import * as showdown from 'showdown';
 import update from 'immutability-helper';
 import SketchOverlay from './SketchOverlay';
-import { CodeEditor } from '../../CodeEditor';
+import { CodeEditor } from '../../../CodeEditor';
 
 const ProblemNotes = ({ problem, problemsDoc, notes, isRender, isAdmin }) => {
     if (isAdmin) {
@@ -14,7 +14,7 @@ const ProblemNotes = ({ problem, problemsDoc, notes, isRender, isAdmin }) => {
                 <div className="row">
                     <div className="col">
                         <p className="problem-notes" dangerouslySetInnerHTML={problemNotes} />
-                        <SketchOverlay problem={problem} id={problem.id}/>
+                        <SketchOverlay problem={problem} id={problem.id} />
                     </div>
                 </div>
             </div>;

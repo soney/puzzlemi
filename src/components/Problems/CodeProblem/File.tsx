@@ -8,7 +8,7 @@ import { IPMState } from '../../../reducers';
 
 const File = ({ dispatch, problem, fileIndex, file, name, contents, isAdmin, problemsDoc, isUserFile }) => {
     const doDeleteFile = () => {
-        if(isUserFile) {
+        if (isUserFile) {
             dispatch(deleteUserFile(problem.id, file.id));
         } else {
             dispatch(deleteProblemFile(problem.id, file.id));
@@ -17,19 +17,19 @@ const File = ({ dispatch, problem, fileIndex, file, name, contents, isAdmin, pro
     const p = ['allProblems', problem.id, 'problemDetails', 'files', fileIndex];
     const nameSubDoc = problemsDoc.subDoc([...p, 'name']);
     const contentsSubDoc = problemsDoc.subDoc([...p, 'contents']);
-    if(isAdmin) {
+    if (isAdmin) {
         return <div>
             <div className='clearfix'>
                 <button className="btn btn-outline-danger btn-sm float-right" onClick={doDeleteFile}>Delete</button>
             </div>
-            <CodeEditor shareDBSubDoc={nameSubDoc} options={{lineNumbers: false, mode: 'text', lineWrapping: true, height: 30}} />
-            <CodeEditor shareDBSubDoc={contentsSubDoc} options={{lineNumbers: false, mode: 'text', lineWrapping: true, height: 120}} />
+            <CodeEditor shareDBSubDoc={nameSubDoc} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 30 }} />
+            <CodeEditor shareDBSubDoc={contentsSubDoc} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 120 }} />
         </div>;
     } else {
         return <div className='file'>
             <div className='fileInfo clearfix'>
                 <code className='filename'>{name}</code>
-                { isUserFile &&
+                {isUserFile &&
                     <button className="btn btn-outline-danger btn-sm float-right" onClick={doDeleteFile}>Delete</button>
                 }
             </div>

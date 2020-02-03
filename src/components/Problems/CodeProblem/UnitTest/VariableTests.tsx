@@ -8,17 +8,17 @@ import { ICodeVariableTest } from '../../../../reducers/problems';
 
 const VariableTests = ({ index, problem, username, flag, variableTests, variables, isAdmin, userInfo, doc, dispatch, uid }) => {
     const doAddTest = () => {
-        const newTest:ICodeVariableTest = {
+        const newTest: ICodeVariableTest = {
             author: username,
-            status: isAdmin?'Passed':'Unverified',
+            status: isAdmin ? 'Passed' : 'Unverified',
             id: uuid(),
-            input: variables.filter(i=>i.type==='input'),
-            output: variables.filter(i=>i.type==='output')
+            input: variables.filter(i => i.type === 'input'),
+            output: variables.filter(i => i.type === 'output')
         }
         dispatch(addVariableTest(problem.id, newTest));
     }
-    const inputVariables = variables.filter(i=>i.type==='input');
-    const outputVariables = variables.filter(i=>i.type==='output');
+    const inputVariables = variables.filter(i => i.type === 'input');
+    const outputVariables = variables.filter(i => i.type === 'output');
 
     return <div className='tests'>
         {isAdmin &&
@@ -39,7 +39,7 @@ const VariableTests = ({ index, problem, username, flag, variableTests, variable
                             </tr>
                         </thead>
                         <tbody>
-                            {variableTests.map((test, i) => <VariableTest key={test.id + `${i}`} problem={problem} variable={variables[0]} test={test} testIndex={i} isInput={true} totalNum={variableTests.length} flag={flag}/>)}
+                            {variableTests.map((test, i) => <VariableTest key={test.id + `${i}`} problem={problem} variable={variables[0]} test={test} testIndex={i} isInput={true} totalNum={variableTests.length} flag={flag} />)}
                         </tbody>
                     </table>
                 }
@@ -47,8 +47,8 @@ const VariableTests = ({ index, problem, username, flag, variableTests, variable
             </div>
         }
         {!isAdmin && variableTests.length !== 0 &&
-        <>
-        </>
+            <>
+            </>
             // <div>
             //     <h4>My Tests</h4>
             //     <table className="table table-sm">
@@ -82,6 +82,6 @@ function mapStateToProps(state, ownProps) {
     const { problem } = ownProps;
     const { problemDetails } = problem;
     const { variableTests, variables } = problemDetails;
-    return update(ownProps, { $merge: {isAdmin, problemsDoc, variables, variableTests, username }});
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, variables, variableTests, username } });
 }
 export default connect(mapStateToProps)(VariableTests); 

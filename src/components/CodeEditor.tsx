@@ -37,7 +37,7 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
             width: null,
             onChangeCallback: null,
             readOnly: false,
-            autoRefresh:true,
+            autoRefresh: true,
         },
         value: ''
     };
@@ -57,8 +57,12 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         if (shareDBSubDoc !== prevProps.shareDBSubDoc) {
             if (prevProps.shareDBSubDoc === undefined)
                 this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
-            if (shareDBSubDoc === undefined)
+            else if (shareDBSubDoc === undefined)
                 this.codemirrorBinding.destroy();
+            else {
+                this.codemirrorBinding.destroy();
+                this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
+            }
         }
         if (value !== prevProps.value) {
             this.setState({ code: value as string });
@@ -69,7 +73,7 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         if (flag !== prevProps.flag) {
             // need a better way to fix the refresh problem
             let that = this;
-            setTimeout(function(){
+            setTimeout(function () {
                 that.codeMirror.refresh();
             }, 500)
         }

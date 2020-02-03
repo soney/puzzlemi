@@ -44,6 +44,6 @@ function mapStateToProps(state, ownProps) {
     const { problem } = ownProps;
     const { problemDetails } = problem;
     const { variables } = problemDetails;
-    return update(ownProps, { $merge: {isAdmin, problemsDoc, variables }});
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, variables } });
 }
 export default connect(mapStateToProps)(Variables); 

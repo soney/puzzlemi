@@ -313,18 +313,18 @@ export function runVerifyTest(problem: IProblem, variableTest: ICodeVariableTest
         }
         const writeFileHandler = (contents, fname) => {
         }
-        
+
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
         const updated_variableTests = problemsDoc.traverse(['allProblems', problemID, 'problemDetails', 'variableTests']);
         let testIndex = 0;
-        updated_variableTests.forEach((t, i)=>{
-            if(t.id === variableTest.id) testIndex = i;
+        updated_variableTests.forEach((t, i) => {
+            if (t.id === variableTest.id) testIndex = i;
         })
 
         await executeCode(fullCode, fullTests, afterCode, files, outputChangeHandler, writeFileHandler, null).then(result => {
             const { passedAll } = result;
-            const status = passedAll?'Passed':'Failed';
+            const status = passedAll ? 'Passed' : 'Failed';
             problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'variableTests', testIndex, 'status'], status);
         })
 

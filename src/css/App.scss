@@ -274,6 +274,10 @@ nav {
     }
 }
 
+.help-sessions-list {
+    margin-top: 20px;
+}
+
 .result-badge {
     margin-left: 10px;
 }
@@ -293,6 +297,35 @@ nav {
 
 .testResult {
     margin-top: 10px;
+}
+.chat-messages-wrapper{
+    height: 250px;
+    overflow-y: scroll;
+    border: 1px solid #eee;
+    margin-bottom: 12px;
+    padding: 5px;
+}
+
+.session-head{
+    margin-bottom: 10px;
+}
+
+.content{
+    padding-top: 10px;
+    padding-bottom: 0px;
+}
+
+.sender{
+    font-weight: bold;
+}
+
+.chat-message-item {
+    margin-bottom: 10px
+}
+
+.timestamp{
+    margin-left: 5px;
+    color: #bbb;
 }
 
 .sketchAdmin {

@@ -13,16 +13,16 @@ const Files = ({ problem, problemFiles, isAdmin, dispatch, userFiles }) => {
     const hasProblemFiles = !!(problemFiles && problemFiles.length);
     const hasUserFiles = !!(userFiles && userFiles.length);
     return <div>
-        {   (hasProblemFiles || hasUserFiles) &&
+        {(hasProblemFiles || hasUserFiles) &&
             <hr />
         }
-        {   (hasProblemFiles) &&
+        {(hasProblemFiles) &&
             problemFiles.map((file, i) => <File problem={problem} key={`${file.id}-${i}`} file={file} fileIndex={i} isUserFile={false} />)
         }
-        {   (hasUserFiles) &&
+        {(hasUserFiles) &&
             userFiles.map((file, i) => <File problem={problem} key={`${file.id}-${i}`} file={file} fileIndex={i} isUserFile={true} />)
         }
-        { isAdmin &&
+        {isAdmin &&
             <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddFile}>+ File</button>
         }
     </div>;
@@ -41,6 +41,6 @@ function mapStateToProps(state: IPMState, ownProps) {
 
     const fileIDs = [...problemFiles, ...userFiles].map((f) => f.id); // fingerprint for updates
 
-    return update(ownProps, { $merge: { isAdmin, problemID, problemFiles, userFiles, fileIDs }});
+    return update(ownProps, { $merge: { isAdmin, problemID, problemFiles, userFiles, fileIDs } });
 }
 export default connect(mapStateToProps)(Files); 

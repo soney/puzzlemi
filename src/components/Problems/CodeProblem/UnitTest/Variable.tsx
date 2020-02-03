@@ -39,6 +39,6 @@ function mapStateToProps(state, ownProps) {
     const { isAdmin } = intermediateUserState;
     const problemsDoc = shareDBDocs.problems;
 
-    return update(ownProps, { $merge: {isAdmin, problemsDoc }});
+    return update(ownProps, { $merge: { isAdmin, problemsDoc } });
 }
 export default connect(mapStateToProps)(Variable); 

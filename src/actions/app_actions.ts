@@ -11,9 +11,9 @@ export const setAppState = (appState: IAppState): IAppStateChangedAction => ({
 
 export interface IAppSelectedStudentForSolutionView {
     type: EventTypes.SELECT_USER_FOR_SOLUTION_VIEW,
-    uid: string|false
+    uid: string | false
 };
-export const selectUserForSolutionView = (uid: string|false): IAppSelectedStudentForSolutionView => ({
+export const selectUserForSolutionView = (uid: string | false): IAppSelectedStudentForSolutionView => ({
     type: EventTypes.SELECT_USER_FOR_SOLUTION_VIEW, uid
 });
 
@@ -24,7 +24,7 @@ export function selectRandomUserForSolutionView(problemID: string) {
         const solutionsData = solutionsDoc!.getData();
         const problemSolutions = solutionsData.allSolutions[problemID];
 
-        if(problemSolutions) {
+        if (problemSolutions) {
             const users = Object.keys(problemSolutions);
             const randomUser = randomItem(users) || false;
 
@@ -40,14 +40,14 @@ export function selectRandomCorrectUserForSolutionView(problemID: string) {
         const solutionsData = solutionsDoc!.getData();
         const problemSolutions = solutionsData.allSolutions[problemID];
 
-        if(problemSolutions) {
+        if (problemSolutions) {
             const aggregateDataDoc = shareDBDocs.aggregateData;
             const aggregateData = aggregateDataDoc!.getData();
             const problemAggregateData = aggregateData.userData[problemID];
             const { completed } = problemAggregateData;
 
             const users = Object.keys(problemSolutions);
-            const correctUsers = users.filter((userID) => ( completed.includes(userID) ))
+            const correctUsers = users.filter((userID) => (completed.includes(userID)))
 
             const randomUser = randomItem(correctUsers) || false;
 
@@ -63,14 +63,14 @@ export function selectRandomIncorrectUserForSolutionView(problemID: string) {
         const solutionsData = solutionsDoc!.getData();
         const problemSolutions = solutionsData.allSolutions[problemID];
 
-        if(problemSolutions) {
+        if (problemSolutions) {
             const aggregateDataDoc = shareDBDocs.aggregateData;
             const aggregateData = aggregateDataDoc!.getData();
             const problemAggregateData = aggregateData.userData[problemID];
             const { completed } = problemAggregateData;
 
             const users = Object.keys(problemSolutions);
-            const incorrectUsers = users.filter((userID) => ( !completed.includes(userID) ))
+            const incorrectUsers = users.filter((userID) => (!completed.includes(userID)))
 
             const randomUser = randomItem(incorrectUsers) || false;
 
@@ -82,5 +82,5 @@ export function selectRandomIncorrectUserForSolutionView(problemID: string) {
 
 
 function randomItem(items: ReadonlyArray<any>): any {
-    return items[Math.floor(Math.random()*items.length)];
+    return items[Math.floor(Math.random() * items.length)];
 }
