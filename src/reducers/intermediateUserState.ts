@@ -1,6 +1,6 @@
 import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
-import { ISetIsAdminAction, ICodeChangedAction } from '../actions/user_actions';
+import { ISetIsAdminAction, ICodeChangedAction, IUpdateActiveHelpSessionAction } from '../actions/user_actions';
 import { IOutputChangedAction, IErrorChangedAction, IDoneRunningCodeAction, IBeginRunningCodeAction, IPassedAddAction, IFailedAddAction } from '../actions/runCode_actions';
 import { IPMTestResult } from '../pyTests/PMTestSuite';
 import { IProblemAddedAction, ISDBDocFetchedAction, ITestAddedAction, ITestPartChangedAction } from '../actions/sharedb_actions';
@@ -22,6 +22,7 @@ export interface ICodeSolutionState {
     testResults: ICodeSolutionTestResultsState,
     passedVariableTests: string[],
     currentFailedVariableTest: string,
+    currentActiveHelpSession: string,
 }
 
 export interface ICodeSolutionTestResultsState {
@@ -30,7 +31,7 @@ export interface ICodeSolutionTestResultsState {
 
 export type ISolutionState = ICodeSolutionState | null;
 
-export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: false, intermediateSolutionState: {} }, action: ISetIsAdminAction|IOutputChangedAction|IErrorChangedAction|IDoneRunningCodeAction|IBeginRunningCodeAction|IProblemAddedAction|ISDBDocFetchedAction|ICodeChangedAction|ITestAddedAction|ITestPartChangedAction|IPassedAddAction|IFailedAddAction) => {
+export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: false, intermediateSolutionState: {} }, action: ISetIsAdminAction|IOutputChangedAction|IErrorChangedAction|IDoneRunningCodeAction|IBeginRunningCodeAction|IProblemAddedAction|ISDBDocFetchedAction|ICodeChangedAction|ITestAddedAction|ITestPartChangedAction|IPassedAddAction|IFailedAddAction|IUpdateActiveHelpSessionAction) => {
     const { type } = action;
     if(type === EventTypes.SET_IS_ADMIN) {
         const { isAdmin } = action as ISetIsAdminAction;
@@ -68,6 +69,15 @@ export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: f
             intermediateSolutionState: {
                 [problemID]: {
                     currentFailedVariableTest: {$set: failedID}
+                }
+            }
+        })
+    } else if (type === EventTypes.UPDATE_ACTIVE_HELP_SESSION) {
+        const {problemID, helpID} = action as IUpdateActiveHelpSessionAction;
+        return update(state, {
+            intermediateSolutionState: {
+                [problemID]: {
+                    currentActiveHelpSession: {$set: helpID}
                 }
             }
         })
@@ -186,6 +196,7 @@ function getIntermediateSolutionState(problem: IProblem): ISolutionState {
             testResults: {},
             passedVariableTests: [],
             currentFailedVariableTest: '',
+            currentActiveHelpSession: '',
         };
     } else {
         // throw new Error(`No way to get solution state object for problem type ${problemType}`)

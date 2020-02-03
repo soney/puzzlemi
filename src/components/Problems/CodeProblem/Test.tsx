@@ -14,16 +14,16 @@ const Test = ({ testResult, dispatch, problem, testIndex, test, isAdmin, descrip
     const actualSubDoc = problemsDoc.subDoc([...p, 'actual']);
     const expectedSubDoc = problemsDoc.subDoc([...p, 'expected']);
     const descriptionSubDoc = problemsDoc.subDoc([...p, 'description']);
-    if(isAdmin) {
+    if (isAdmin) {
         return <tr>
             <td>
-                <CodeEditor shareDBSubDoc={actualSubDoc} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}} />
+                <CodeEditor shareDBSubDoc={actualSubDoc} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} />
             </td>
             <td>
-                <CodeEditor shareDBSubDoc={expectedSubDoc} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}} />
+                <CodeEditor shareDBSubDoc={expectedSubDoc} options={{ lineNumbers: false, mode: 'python', lineWrapping: true, height: 30 }} />
             </td>
             <td>
-                <CodeEditor shareDBSubDoc={descriptionSubDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 30}} />
+                <CodeEditor shareDBSubDoc={descriptionSubDoc} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 30 }} />
             </td>
             <td>
                 <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}>Delete</button>
@@ -32,8 +32,8 @@ const Test = ({ testResult, dispatch, problem, testIndex, test, isAdmin, descrip
     } else {
         const converter = new showdown.Converter();
         const testDescription = { __html: converter.makeHtml('**Meta Test** ' + description) };
-        const passedStatusClass = testResult ? ( testResult.passed ? 'alert-success' : 'alert-danger') : 'alert-secondary';
-        const passFailMessage = testResult ? ( testResult.passed ? 'Passed' : 'Failed') : '';
+        const passedStatusClass = testResult ? (testResult.passed ? 'alert-success' : 'alert-danger') : 'alert-secondary';
+        const passFailMessage = testResult ? (testResult.passed ? 'Passed' : 'Failed') : '';
         return <tr className={['test', passedStatusClass].join(' ')}>
             <td dangerouslySetInnerHTML={testDescription} />
             <td>
@@ -48,7 +48,7 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { isAdmin, intermediateSolutionState } = intermediateUserState;
     const problemsDoc = shareDBDocs.problems;
     const intermediateProblemState = intermediateSolutionState[problem.id];
-    const testResult = intermediateProblemState!.testResults[test.id]; 
+    const testResult = intermediateProblemState!.testResults[test.id];
     const description = test.description;
 
     return update(ownProps, { $merge: { isAdmin, problemsDoc, testResult, description } });

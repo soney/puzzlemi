@@ -12,7 +12,7 @@ const VariableTest = ({ problem, dispatch, flag, testUserInfo, testIndex, test, 
         dispatch(deleteVariableTest(problem.id, testIndex));
     };
     const doChangeTestStatus = () => {
-        const status = test.status==="Passed"?"Failed":"Passed";
+        const status = test.status === "Passed" ? "Failed" : "Passed";
         dispatch(changeVariableTestStatus(problem.id, testIndex, status));
     }
     if (isInput) {
