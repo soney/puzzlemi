@@ -141,11 +141,15 @@ const MySolution = ({ userSolution, intermediateCodeState, problemsDoc, isAdmin,
                 <div ref={graphicsRef} className='graphics'></div>
 
                 <Files problem={problem} />
+                { config.peerHelp &&
+                <div>
                 {myHelpSession === null &&
                     <button type="button" className="btn btn-outline-primary" onClick={doRequestHelp}>Enable a Help Session</button>
                 }
                 {myHelpSession !== null &&
                     <button type="button" className="btn btn-outline-primary">Check My Help Session</button>
+                }
+                </div>
                 }
             </div>
         </div>
