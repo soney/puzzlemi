@@ -6,16 +6,16 @@ import { CodeEditor } from '../../CodeEditor';
 import { CodeInputEditor } from '../../CodeInputEditor';
 import { CodeOutputEditor } from '../../CodeOutputEditor';
 import { ICodeSolution } from '../../../reducers/solutions';
-import { ICodeVariableTest } from '../../../reducers/problems';
+// import { ICodeVariableTest } from '../../../reducers/problems';
 import { ISolutionState, ICodeSolutionState } from '../../../reducers/intermediateUserState';
-import { runCode, runUnitTests, runVerifyTest } from '../../../actions/runCode_actions';
+// import { runCode, runUnitTests, runVerifyTest } from '../../../actions/runCode_actions';
 import { codeChanged, updateCurrentActiveHelpSession } from '../../../actions/user_actions';
-import { addVariableTest, addHelpSession } from '../../../actions/sharedb_actions';
-import Tests from './Tests';
+// import { addVariableTest, addHelpSession } from '../../../actions/sharedb_actions';
+// import Tests from './Tests';
 import Files from './Files';
 import uuid from '../../../utils/uuid';
 
-let myTest: ICodeVariableTest;
+// let myTest: ICodeVariableTest;
 
 const MySolution = ({ userSolution, intermediateCodeState, problemsDoc, isAdmin, username, problem, output, errors, verifiedTests, config, flag, variables, dispatch, failedTest, myHelpSession, redirectCallback }) => {
     const codeSolution = userSolution as ICodeSolution;
@@ -23,21 +23,21 @@ const MySolution = ({ userSolution, intermediateCodeState, problemsDoc, isAdmin,
     const messageRef = React.createRef<HTMLDivElement>();
 
     useEffect(() => {
-        if (failedTest !== null) {
-            myTest = JSON.parse(JSON.stringify(failedTest));
-            myTest.author = username;
-            myTest.id = uuid();
-            myTest.status = isAdmin ? 'Passed' : 'Unverified';
-        }
-        else {
-            myTest = {
-                author: username,
-                status: isAdmin ? 'Passed' : 'Unverified',
-                id: uuid(),
-                input: JSON.parse(JSON.stringify(variables.filter(i => i.type === 'input'))),
-                output: JSON.parse(JSON.stringify(variables.filter(i => i.type === 'output')))
-            };
-        }
+        // if (failedTest !== null) {
+        //     myTest = JSON.parse(JSON.stringify(failedTest));
+        //     myTest.author = username;
+        //     myTest.id = uuid();
+        //     myTest.status = isAdmin ? 'Passed' : 'Unverified';
+        // }
+        // else {
+        //     myTest = {
+        //         author: username,
+        //         status: isAdmin ? 'Passed' : 'Unverified',
+        //         id: uuid(),
+        //         input: JSON.parse(JSON.stringify(variables.filter(i => i.type === 'input'))),
+        //         output: JSON.parse(JSON.stringify(variables.filter(i => i.type === 'output')))
+        //     };
+        // }
     }, [failedTest, username, isAdmin, variables])
 
     const doRunCode = () => {
@@ -45,7 +45,7 @@ const MySolution = ({ userSolution, intermediateCodeState, problemsDoc, isAdmin,
         if (graphicsEl) {
             graphicsEl.innerHTML = '';
         }
-        return dispatch(runCode(codeSolution, problem, intermediateCodeState, graphicsEl, myTest));
+        // return dispatch(runCode(codeSolution, problem, intermediateCodeState, graphicsEl, myTest));
     };
     const doSetCode = (ev) => {
         const { value } = ev;
@@ -67,46 +67,46 @@ const MySolution = ({ userSolution, intermediateCodeState, problemsDoc, isAdmin,
         if (graphicsEl_tmp) {
             graphicsEl_tmp.innerHTML = '';
         }
-        return dispatch(runUnitTests(codeSolution, problem, intermediateCodeState, graphicsEl_tmp));
+        // return dispatch(runUnitTests(codeSolution, problem, intermediateCodeState, graphicsEl_tmp));
     };
     const doChangeInputVariable = (index, content) => {
-        myTest.input[index].value = content;
+        // myTest.input[index].value = content;
     }
     const doChangeOutputVariable = (index, content) => {
-        myTest.output[index].value = content;
+        // myTest.output[index].value = content;
     }
 
     const doSubmitTest = () => {
-        let messageDiv = messageRef.current as HTMLDivElement;
-        dispatch(addVariableTest(problem.id, myTest)).then(() => {
-            if (config.autoVerify) dispatch(runVerifyTest(problem, myTest)).then(() => {
-                const updated_variableTests = problemsDoc.traverse(['allProblems', problem.id, 'problemDetails', 'variableTests']);
-                let result = '';
-                updated_variableTests.forEach((t, i) => {
-                    if (t.id === myTest.id) result = t.status;
-                })
+        // let messageDiv = messageRef.current as HTMLDivElement;
+        // dispatch(addVariableTest(problem.id, myTest)).then(() => {
+        //     if (config.autoVerify) dispatch(runVerifyTest(problem, myTest)).then(() => {
+        //         const updated_variableTests = problemsDoc.traverse(['allProblems', problem.id, 'problemDetails', 'variableTests']);
+        //         let result = '';
+        //         updated_variableTests.forEach((t, i) => {
+        //             if (t.id === myTest.id) result = t.status;
+        //         })
 
-                if (result === 'Failed') messageDiv.innerHTML = "<div class='alert alert-warning alert-dismissible fade show' role='alert'>" +
-                    "Your test case failed to pass the standard code." +
-                    "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>" +
-                    " <span aria-hidden='true'>&times;</span>" +
-                    "</button>" +
-                    "</div>";
-                if (result === 'Passed') messageDiv.innerHTML = "<div class='alert alert-success alert-dismissible fade show' role='alert'>" +
-                    "Congrats! Your test case passed the standard code." +
-                    "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>" +
-                    " <span aria-hidden='true'>&times;</span>" +
-                    "</button>" +
-                    "</div>";
-            });
-        });
+        //         if (result === 'Failed') messageDiv.innerHTML = "<div class='alert alert-warning alert-dismissible fade show' role='alert'>" +
+        //             "Your test case failed to pass the standard code." +
+        //             "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>" +
+        //             " <span aria-hidden='true'>&times;</span>" +
+        //             "</button>" +
+        //             "</div>";
+        //         if (result === 'Passed') messageDiv.innerHTML = "<div class='alert alert-success alert-dismissible fade show' role='alert'>" +
+        //             "Congrats! Your test case passed the standard code." +
+        //             "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>" +
+        //             " <span aria-hidden='true'>&times;</span>" +
+        //             "</button>" +
+        //             "</div>";
+        //     });
+        // });
     }
 
     const doRequestHelp = () => {
         const helpID = uuid();
-        dispatch(addHelpSession(problem.id, username, userSolution, helpID)).then(
-            dispatch(updateCurrentActiveHelpSession(problem.id, helpID))
-        );
+        // dispatch(addHelpSession(problem.id, username, userSolution, helpID)).then(
+        //     dispatch(updateCurrentActiveHelpSession(problem.id, helpID))
+        // );
         redirectCallback();
     }
 
@@ -159,7 +159,7 @@ const MySolution = ({ userSolution, intermediateCodeState, problemsDoc, isAdmin,
         </div>
         <div className="row">
             <div className="col">
-                <Tests problem={problem} />
+                {/* <Tests problem={problem} /> */}
             </div>
         </div>
     </div>

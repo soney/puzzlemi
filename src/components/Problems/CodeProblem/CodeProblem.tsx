@@ -5,14 +5,14 @@ import ProblemDescription from '../ProblemDescription';
 import ProblemNotes from './LiveCode/ProblemNotes';
 import update from 'immutability-helper';
 import { CodeEditor } from '../../CodeEditor';
-import Tests from './Tests';
-import Variables from './UnitTest/Variables';
+// import Tests from './Tests';
+// import Variables from './UnitTest/Variables';
 import ConfigPanel from './ConfigPanel';
 import Files from './Files';
 import MySolution from './MySolution';
 import LiveCode from './LiveCode/LiveCode';
 import PeerHelp from './PeerHelp/PeerHelp';
-import VariableTests from './UnitTest/VariableTests';
+// import VariableTests from './UnitTest/VariableTests';
 import { ISolutionState, ICodeSolutionState } from '../../../reducers/intermediateUserState';
 import { IPMState } from '../../../reducers';
 import CodeSolutionView from './CodeSolutionView';
@@ -111,16 +111,16 @@ const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, in
                     </nav>
                     <div className="tab-content" id="nav-instructor-config-tabContent">
                         <div className="tab-pane fade show active" id={"nav-variables-" + problem.id} role="tabpanel" aria-labelledby={"nav-variables-tab-" + problem.id}>
-                            <Variables problem={problem} />
+                            {/* <Variables problem={problem} /> */}
                         </div>
                         <div className="tab-pane fade" id={"nav-config-" + problem.id} role="tabpanel" aria-labelledby={"nav-config-tab-" + problem.id}>
                             <ConfigPanel problem={problem} />
                         </div>
                         <div className="tab-pane fade" id={"nav-tests-" + problem.id} role="tabpanel" aria-labelledby={"nav-tests-tab-" + problem.id}>
-                            <Tests problem={problem} flag={count} />
+                            {/* <Tests problem={problem} flag={count} /> */}
                         </div>
                         <div className="tab-pane fade" id={"nav-variable-tests-" + problem.id} role="tabpanel" aria-labelledby={"nav-variable-tests-tab-" + problem.id}>
-                            <VariableTests problem={problem} flag={count} />
+                            {/* <VariableTests problem={problem} flag={count} /> */}
                         </div>
                     </div>
                 </div>

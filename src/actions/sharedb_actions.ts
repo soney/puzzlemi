@@ -4,11 +4,11 @@ import uuid from '../utils/uuid';
 import { getTimeStamp } from '../utils/timestamp';
 import EventTypes from './EventTypes';
 import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
-import { IProblem, IMultipleChoiceOption, IProblems, ICodeTest, IMultipleChoiceSelectionType, ICodeVariableTest } from '../reducers/problems';
+import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType } from '../reducers/problems';
 import { IAggregateData, IHelpSession, IMessage } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
 import { ISolutions, ICodeSolution } from '../reducers/solutions';
-import { ICodeVariable } from '../reducers/problems';
+// import { ICodeVariable } from '../reducers/problems';
 
 export interface IProblemAddedAction {
     type: EventTypes.PROBLEM_ADDED,
@@ -280,16 +280,16 @@ export function addCodeProblem() {
             visible: true,
             problemDetails: {
                 problemType: 'code',
-                tests: [],
+                // tests: [],
                 givenCode: `# code here`,
-                afterCode: '',
+                // afterCode: '',
                 standardCode: `# standard solution`,
                 liveCode: `# live code demo`,
                 notes: '*no notes*',
                 description: '*no description*',
                 files: [],
-                variables: [],
-                variableTests: [],
+                // variables: [],
+                // variableTests: [],
                 sketch: [],
                 config: {
                     runTests: false,
@@ -385,57 +385,62 @@ export function updateSketch(problemID: string, sketch: any[]) {
     };
 }
 
-export function addTest(problemID: string) {
-    return async (dispatch: Dispatch, getState) => {
-        const { shareDBDocs } = getState();
-        const problemsDoc = shareDBDocs.problems;
-        const aggregateDataDoc = shareDBDocs.aggregateData;
+// export function addTest(problemID: string) {
+//     return async (dispatch: Dispatch, getState) => {
+//         const { shareDBDocs } = getState();
+//         const problemsDoc = shareDBDocs.problems;
+//         const aggregateDataDoc = shareDBDocs.aggregateData;
 
-        const newTest: ICodeTest = {
-            actual: 'True',
-            description: '*no description*',
-            expected: 'True',
-            id: uuid(),
-        };
+//         const newTest: ICodeTest = {
+//             actual: 'True',
+//             description: '*no description*',
+//             expected: 'True',
+//             id: uuid(),
+//         };
 
-        await problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'tests'], newTest);
-        await aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'completed'], []);
-    };
-}
+//         await problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'tests'], newTest);
+//         await aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'completed'], []);
+//     };
+// }
 
+// export interface ITestAddedAction {
+//     type: EventTypes.TEST_ADDED,
+//     problemID: string,
+//     test: ICodeTest
+// }
 export interface ITestAddedAction {
     type: EventTypes.TEST_ADDED,
     problemID: string,
-    test: ICodeTest
+    test: any
 }
 
-export const testAdded = (problemID: string, test: ICodeTest): ITestAddedAction => ({
-    type: EventTypes.TEST_ADDED, problemID, test
-});
+// export const testAdded = (problemID: string, test: ICodeTest): ITestAddedAction => ({
+//     type: EventTypes.TEST_ADDED, problemID, test
+// });
 
-export function addVariable(problemID: string) {
-    return async (dispatch: Dispatch, getState) => {
-        const { shareDBDocs } = getState();
-        const problemsDoc = shareDBDocs.problems;
+// export function addVariable(problemID: string) {
+//     return async (dispatch: Dispatch, getState) => {
+//         const { shareDBDocs } = getState();
+//         const problemsDoc = shareDBDocs.problems;
 
-        const newVariable: ICodeVariable = {
-            type: 'input',
-            name: 'x',
-            value: '0'
-        }
+//         const newVariable: ICodeVariable = {
+//             type: 'input',
+//             name: 'x',
+//             value: '0'
+//         }
 
-        problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'variables'], newVariable);
-    }
-}
+//         problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'variables'], newVariable);
+//     }
+// }
 
-export function deleteVariable(problemID: string, variableIndex: number) {
-    return async (dispatch: Dispatch, getState) => {
-        const { shareDBDocs } = getState();
-        const problemsDoc = shareDBDocs.problems;
+// export function deleteVariable(problemID: string, variableIndex: number) {
+//     return async (dispatch: Dispatch, getState) => {
+//         const { shareDBDocs } = getState();
+//         const problemsDoc = shareDBDocs.problems;
 
-        problemsDoc.submitListDeleteOp(['allProblems', problemID, 'problemDetails', 'variables', variableIndex]);
-    }
-}
+//         problemsDoc.submitListDeleteOp(['allProblems', problemID, 'problemDetails', 'variables', variableIndex]);
+//     }
+// }
 
 export function changeVariableType(problemID: string, variableIndex: number, newType: 'input' | 'output') {
     return async (dispatch: Dispatch, getState) => {
@@ -446,14 +451,14 @@ export function changeVariableType(problemID: string, variableIndex: number, new
     }
 }
 
-export function addVariableTest(problemID: string, variableTest: ICodeVariableTest) {
-    return async (dispatch: Dispatch, getState) => {
-        const { shareDBDocs } = getState();
-        const problemsDoc = shareDBDocs.problems;
+// export function addVariableTest(problemID: string, variableTest: ICodeVariableTest) {
+//     return async (dispatch: Dispatch, getState) => {
+//         const { shareDBDocs } = getState();
+//         const problemsDoc = shareDBDocs.problems;
 
-        problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'variableTests'], variableTest);
-    };
-}
+//         problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'variableTests'], variableTest);
+//     };
+// }
 
 export function deleteVariableTest(problemID: string, testIndex: number) {
     return async (dispatch: Dispatch, getState) => {
@@ -508,15 +513,21 @@ export function addMessage(problemID: string, newMessage: IMessage, helpIndex: n
     }
 }
 
+// export interface ITestPartChangedAction {
+//     type: EventTypes.TEST_PART_CHANGED,
+//     problemID: string,
+//     test: ICodeTest,
+//     part: string
+// }
 export interface ITestPartChangedAction {
     type: EventTypes.TEST_PART_CHANGED,
     problemID: string,
-    test: ICodeTest,
+    test: any,
     part: string
 }
-export const testPartChanged = (problemID: string, test: ICodeTest, part: string): ITestPartChangedAction => ({
-    type: EventTypes.TEST_PART_CHANGED, problemID, test, part
-});
+// export const testPartChanged = (problemID: string, test: ICodeTest, part: string): ITestPartChangedAction => ({
+//     type: EventTypes.TEST_PART_CHANGED, problemID, test, part
+// });
 
 export function deleteTest(problemID: string, testID: string) {
     return (dispatch: Dispatch, getState) => {
@@ -688,23 +699,23 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                         multipleChoiceOptionDeleted(problemID, ld);
                     }
 
-                    const changeTestPartMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'tests', true, /actual|expected/, true])
-                    if (changeTestPartMatches) {
-                        const problemID = p[1] as string;
-                        const testPart = p[5] as string;
-                        const test = doc.traverse(['allProblems', problemID, 'problemDetails', 'tests', p[4]])
-                        dispatch(testPartChanged(problemID, test, testPart));
+                    // const changeTestPartMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'tests', true, /actual|expected/, true])
+                    // if (changeTestPartMatches) {
+                    //     const problemID = p[1] as string;
+                    //     const testPart = p[5] as string;
+                    //     const test = doc.traverse(['allProblems', problemID, 'problemDetails', 'tests', p[4]])
+                    //     dispatch(testPartChanged(problemID, test, testPart));
 
-                        const { shareDBDocs } = getState();
-                        const aggregateDataDoc = shareDBDocs.aggregateData;
-                        aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'completed'], []);
-                    }
-                    const addTestMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'tests', true]);
-                    if (addTestMatches) {
-                        const problemID = p[1] as string;
-                        const { li } = op as ListInsertOp;
-                        dispatch(testAdded(problemID, li));
-                    }
+                    //     const { shareDBDocs } = getState();
+                    //     const aggregateDataDoc = shareDBDocs.aggregateData;
+                    //     aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'completed'], []);
+                    // }
+                    // const addTestMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'tests', true]);
+                    // if (addTestMatches) {
+                    //     const problemID = p[1] as string;
+                    //     const { li } = op as ListInsertOp;
+                    //     dispatch(testAdded(problemID, li));
+                    // }
                 });
             }
         });

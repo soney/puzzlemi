@@ -28,16 +28,16 @@ export interface IMultipleChoiceProblem {
 export type IMultipleChoiceSelectionType = 'single'|'multiple';
 
 export interface ICodeProblem {
-    afterCode: string;
+    // afterCode: string;
     description: string;
     givenCode: string;
     liveCode: string;
     standardCode: string;
     notes: string;
     files: ICodeFile[];
-    tests: ICodeTest[];
-    variableTests: ICodeVariableTest[];
-    variables: ICodeVariable[];
+    // tests: ICodeTest[];
+    // variableTests: ICodeVariableTest[];
+    // variables: ICodeVariable[];
     config: ICodeProblemConfig;
     sketch: any [];
     problemType: 'code';
@@ -51,26 +51,26 @@ export interface ICodeProblemConfig {
     autoVerify: boolean;
 }
 
-export interface ICodeVariable {
-    name: string;
-    value: string;
-    type: 'input'|'output';
-}
+// export interface ICodeVariable {
+//     name: string;
+//     value: string;
+//     type: 'input'|'output';
+// }
 
-export interface ICodeTest {
-    id: string,
-    actual: string,
-    expected: string,
-    description: string
-}
+// export interface ICodeTest {
+//     id: string,
+//     actual: string,
+//     expected: string,
+//     description: string
+// }
 
-export interface ICodeVariableTest {
-    id?: string,
-    author?: string,
-    status?: 'Unverified'|'Failed'|'Passed',
-    input: ICodeVariable[],
-    output: ICodeVariable[]
-}
+// export interface ICodeVariableTest {
+//     id?: string,
+//     author?: string,
+//     status?: 'Unverified'|'Failed'|'Passed',
+//     input: ICodeVariable[],
+//     output: ICodeVariable[]
+// }
 
 export interface ICodeFile {
     id: string,

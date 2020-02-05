@@ -27,6 +27,7 @@ export interface ICodeSolutionState {
 
 export interface ICodeSolutionTestResultsState {
     [testID: string]: IPMTestResult
+
 }
 
 export type ISolutionState = ICodeSolutionState | null;
@@ -38,6 +39,7 @@ export const intermediateUserState = (state: IIntermediateUserState={ isAdmin: f
         return update(state, { isAdmin: { $set: isAdmin }});
     } else if(type === EventTypes.OUTPUT_CHANGED) {
         const { problemID, output } = action as IOutputChangedAction;
+
         return update(state, {
             intermediateSolutionState: {
                 [problemID]: {
