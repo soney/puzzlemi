@@ -381,3 +381,11 @@ nav {
     bottom: 0px;
     left: 0px;
 }
+
+.code-input-editor, .code-output-editor {
+    background-color: blue;
+    .CodeMirror-linenumber {
+        color: red;
+        opacity: 0;
+    }
+}

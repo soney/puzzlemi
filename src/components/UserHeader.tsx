@@ -58,7 +58,11 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
         allUserDisplays.splice(0, 0, "(nobody here)");
     }
 
-    const editButton = isInstructor ? <label className='float-right'><input type="checkbox" onChange={handleEditChange} /> Admin Mode</label> : null;
+    const editButton = isInstructor ? <div className="custom-control custom-switch">
+            <input id="admin-mode" type="checkbox" className="custom-control-input" onChange={handleEditChange} defaultChecked={false} />
+            <label htmlFor="admin-mode" className="custom-control-label">Admin Mode</label>
+        </div> : null;
+        // <label className='float-right'><input type="checkbox" onChange={handleEditChange} /> Admin Mode</label> : null;
     const usersRow = isAdmin ? <div className="allUsers container">
         <div className="row">
             <div className='col'>

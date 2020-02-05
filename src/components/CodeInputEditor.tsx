@@ -207,10 +207,12 @@ export class CodeInputEditor extends React.Component<ICodeInputEditorProps, ICod
     }
 
     public render(): React.ReactNode {
-        return <textarea
-            ref={(ref: HTMLTextAreaElement) => this.codeNode = ref}
-            defaultValue={this.props.value}
-            autoComplete="off"
-        />;
+        return <div className="code-editor code-input-editor">
+            <textarea
+                ref={(ref: HTMLTextAreaElement) => this.codeNode = ref}
+                defaultValue={this.props.value}
+                autoComplete="off"
+            />
+        </div>;
     };
 };
