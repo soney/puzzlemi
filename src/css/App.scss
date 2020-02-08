@@ -239,9 +239,18 @@ nav {
     width: 80%;
 }
 
+.problem-notes-admin{
+    border: solid 1px #eeeeee;
+    text-indent: 10px;
+}
+.test-case-message{
+    padding-top: 15px;
+}
+
 .problem-notes {
     word-wrap: break-word;
-    position: absolute;
+    // position: absolute;
+    
     h1 {
         font-weight: bold;
         font-size: 24px;
@@ -265,6 +274,34 @@ nav {
     }
 }
 
+.help-sessions-list {
+    margin-top: 20px;
+}
+
+.test-list-item.active {
+    background: white;
+    color: black;
+    font-weight: bold;
+    border-color: #dfdfdf;
+    border-left-width: 20px !important;
+}
+
+.test-list-item.instructor {
+    border-left: 10px solid #28a744;
+}
+
+.test-list-item.student {
+    border-left: 10px solid #007bff;
+}
+
+.test-list-item.true {
+    background: #d0e6d0;
+}
+
+.test-list-item.false {
+    background: #f8d6da;
+}
+
 .result-badge {
     margin-left: 10px;
 }
@@ -285,19 +322,57 @@ nav {
 .testResult {
     margin-top: 10px;
 }
+.chat-messages-wrapper{
+    height: 250px;
+    overflow-y: scroll;
+    border: 1px solid #eee;
+    margin-bottom: 12px;
+    padding: 5px;
+}
+
+.session-head{
+    margin-bottom: 10px;
+}
+
+.content{
+    padding-top: 10px;
+    padding-bottom: 0px;
+}
+
+.sender{
+    font-weight: bold;
+}
+
+.chat-message-item {
+    margin-bottom: 10px
+}
+
+.timestamp{
+    margin-left: 5px;
+    color: #bbb;
+}
 
 .sketchAdmin {
     position: absolute;
-    left: 15px;
-    width: calc(100% - 30px);
-    height: 300px;
+    // left: 15px;
+    width: 100%;//calc(100% - 30px);
+    height: calc(100% - 17px);
 }
 
 .sketchStudent{
     position: absolute;
-    width: calc(100% - 30px);
-    height: 300px;
+    width: 100%;
+    height: 100%;
 }
+
+.sketchContainerAdmin{
+    width: calc(100% - 30px);
+}
+
+.sketchContainerStudent{
+    width: calc(100% - 30px);
+}
+
 .sketchMode{
     z-index: 99;
 }

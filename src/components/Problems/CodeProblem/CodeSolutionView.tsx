@@ -23,14 +23,14 @@ const CodeSolutionView = ({ dispatch, problem, currentUser, solutionText, hasSol
                 <button className="btn btn-outline-secondary btn-sm" onClick={selectRandomIncorrectUser}>Random incorrect solution</button>
             </div>
             {
-                currentUser && hasSolution && 
+                currentUser && hasSolution &&
                 <div>
                     <h4>Solution:</h4>
                     <pre>{solutionText}</pre>
                 </div>
             }
             {
-                currentUser && !hasSolution && 
+                currentUser && !hasSolution &&
                 <div className="no_solution">(no solution)</div>
             }
         </div>
@@ -43,13 +43,13 @@ function mapStateToProps(state: IPMState, ownProps) {
     let solutionText: string = '';
 
     const currentUser = app.selectedUserForSolutionsView;
-    if(currentUser) {
+    if (currentUser) {
         const solutionsData = shareDBDocs.i.solutions;
         const { problem } = ownProps;
-        if(solutionsData && solutionsData.allSolutions && solutionsData.allSolutions.hasOwnProperty(problem.id)) {
+        if (solutionsData && solutionsData.allSolutions && solutionsData.allSolutions.hasOwnProperty(problem.id)) {
             const problemSolutions = solutionsData!.allSolutions[problem.id];
             const currentSolution = problemSolutions[currentUser];
-            if(currentSolution && currentSolution.hasOwnProperty('code')) {
+            if (currentSolution && currentSolution.hasOwnProperty('code')) {
                 solutionText = (currentSolution as ICodeSolution).code;
                 hasSolution = true;
             }

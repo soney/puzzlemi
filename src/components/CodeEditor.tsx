@@ -19,6 +19,7 @@ interface ICodeEditorProps {
     flag?: any;
     shareDBSubDoc?: SDBSubDoc<string>;
     onChange?: (e: ICodeChangeEvent) => void;
+    refreshDoc?: any;
 };
 
 interface ICodeEditorState {
@@ -37,7 +38,7 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
             width: null,
             onChangeCallback: null,
             readOnly: false,
-            autoRefresh:true,
+            autoRefresh: true,
         },
         value: ''
     };
@@ -53,11 +54,24 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
     };
 
     public componentDidUpdate(prevProps: ICodeEditorProps): void {
-        const { value, shareDBSubDoc, flag } = this.props;
+        const { value, shareDBSubDoc, flag, refreshDoc, options } = this.props;
+        if (refreshDoc !== prevProps.refreshDoc) {
+            if (prevProps.shareDBSubDoc === undefined)
+                this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
+            else if (shareDBSubDoc === undefined)
+                this.codemirrorBinding.destroy();
+            else {
+                this.codemirrorBinding.destroy();
+                this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
+            }
+        }
+        if (options.readOnly !== prevProps.options.readOnly) {
+            this.codeMirror.setOption('readOnly', options.readOnly)
+        }
         if (shareDBSubDoc !== prevProps.shareDBSubDoc) {
             if (prevProps.shareDBSubDoc === undefined)
                 this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
-            if (shareDBSubDoc === undefined)
+            else if (shareDBSubDoc === undefined)
                 this.codemirrorBinding.destroy();
         }
         if (value !== prevProps.value) {
@@ -69,7 +83,7 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         if (flag !== prevProps.flag) {
             // need a better way to fix the refresh problem
             let that = this;
-            setTimeout(function(){
+            setTimeout(function () {
                 that.codeMirror.refresh();
             }, 500)
         }

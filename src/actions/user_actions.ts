@@ -20,6 +20,16 @@ export const setUser = (user: IUserInfo): ISetUserAction => ({
     user, type: EventTypes.SET_USER
 });
 
+export interface ISetActiveTestAction {
+    type: EventTypes.SET_ACTIVE_TEST,
+    testID: string,
+    problemID: string
+}
+
+export const setActiveTest = (testID: string, problemID: string): ISetActiveTestAction => ({
+    testID, problemID, type: EventTypes.SET_ACTIVE_TEST
+})
+
 export interface IMultipleChoiceSelectedOptionsChangedAction {
     type: EventTypes.MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED,
     selectedItems: string[],
@@ -39,15 +49,15 @@ export function setUserSelectedOptions(problemID: string, selectedItems: string[
         const aggregateData = aggregateDataDoc.getData();
         const optionSelectedData = aggregateData.userData[problemID].selected;
 
-        for(let optionID in optionSelectedData) {
-            if(optionSelectedData.hasOwnProperty(optionID)) {
+        for (let optionID in optionSelectedData) {
+            if (optionSelectedData.hasOwnProperty(optionID)) {
                 const usersWhoSelectedOption = optionSelectedData[optionID];
                 const mySelectedOptionIndex = usersWhoSelectedOption.indexOf(myuid);
                 const inNewSelectedOptions = selectedItems.indexOf(optionID) >= 0;
 
-                if(mySelectedOptionIndex >= 0 && !inNewSelectedOptions) {
+                if (mySelectedOptionIndex >= 0 && !inNewSelectedOptions) {
                     await aggregateDataDoc.submitListDeleteOp(['userData', problemID, 'selected', optionID, mySelectedOptionIndex]);
-                } else if(mySelectedOptionIndex < 0 && inNewSelectedOptions) {
+                } else if (mySelectedOptionIndex < 0 && inNewSelectedOptions) {
                     await aggregateDataDoc.submitListPushOp(['userData', problemID, 'selected', optionID], myuid);
                 }
             }
@@ -81,6 +91,14 @@ export interface ITextResponseChangedAction {
 export const setTextResponse = (problemID: string, response: string): ITextResponseChangedAction => ({
     response, problemID, type: EventTypes.TEXT_RESPONSE_CHANGED
 });
+export interface IUpdateActiveHelpSessionAction {
+    type: EventTypes.UPDATE_ACTIVE_HELP_SESSION,
+    problemID: string,
+    helpID: string
+}
+export const updateCurrentActiveHelpSession = (problemID: string, helpID: string): IUpdateActiveHelpSessionAction => ({
+    problemID, helpID, type: EventTypes.UPDATE_ACTIVE_HELP_SESSION
+})
 
 export function resetCode(index: number) {
     return (dispatch: Dispatch, getState) => {
