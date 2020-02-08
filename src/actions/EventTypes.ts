@@ -20,6 +20,7 @@ enum EventTypes {
     PROBLEMS_FETCHED = 'puzzles fetched',
     SET_DOC = 'set doc',
     SET_IS_ADMIN = 'set is admin',
+    SET_ACTIVE_TEST = 'set active test ID',
     CODE_CHANGED = 'code changed',
     RESET_CODE = 'reset code',
     OUTPUT_CHANGED = 'output changed',

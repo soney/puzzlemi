@@ -4,20 +4,17 @@ import { connect } from "react-redux";
 import ProblemDescription from '../ProblemDescription';
 import ProblemNotes from './LiveCode/ProblemNotes';
 import update from 'immutability-helper';
-import { CodeEditor } from '../../CodeEditor';
-// import Tests from './Tests';
-// import Variables from './UnitTest/Variables';
 import ConfigPanel from './ConfigPanel';
 import Files from './Files';
 import MySolution from './MySolution';
 import LiveCode from './LiveCode/LiveCode';
 import PeerHelp from './PeerHelp/PeerHelp';
-// import VariableTests from './UnitTest/VariableTests';
-import { ISolutionState, ICodeSolutionState } from '../../../reducers/intermediateUserState';
+import { ISolutionState } from '../../../reducers/intermediateUserState';
 import { IPMState } from '../../../reducers';
 import CodeSolutionView from './CodeSolutionView';
+import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 
-const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, intermediateCodeState, output, errors, config }) => {
+const CodeProblem = ({ problem, isAdmin, config }) => {
     const [count, setCount] = useState(0);
     const peerHelpTabRef = React.createRef<HTMLAnchorElement>();
     const peerHelpDivRef = React.createRef<HTMLDivElement>();
@@ -28,11 +25,6 @@ const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, in
     const refreshCM = () => {
         setCount(count + 1);
     }
-    const p = ['allProblems', problem.id];
-    const givenCodeSubDoc = problemsDoc.subDoc([...p, 'problemDetails', 'givenCode']);
-    const afterCodeSubDoc = problemsDoc.subDoc([...p, 'problemDetails', 'afterCode']);
-    const liveCodeSubDoc = problemsDoc.subDoc([...p, 'problemDetails', 'liveCode']);
-    const standardCodeSubDoc = problemsDoc.subDoc([...p, 'problemDetails', 'standardCode']);
     const peerHelpRedirect = () => {
         const peerHelpTab = peerHelpTabRef.current as HTMLAnchorElement;
         const mySolutionTab = mySolutionTabRef.current as HTMLAnchorElement;
@@ -55,28 +47,7 @@ const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, in
             </div>
             <div className="row">
                 <div className="col">
-                    <nav>
-                        <div className="nav nav-tabs instructor-tab" id={"nav-instructor-code-tab-" + problem.id} role="tablist">
-                            <a className="nav-item nav-link active" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true">Given Code</a>
-                            <a className="nav-item nav-link" id={"nav-after-tab-" + problem.id} data-toggle="tab" href={"#nav-after-" + problem.id} role="tab" aria-controls={"nav-after-" + problem.id} aria-selected="false" onClick={refreshCM}>Run After</a>
-                            <a className="nav-item nav-link" id={"nav-live-tab-" + problem.id} data-toggle="tab" href={"#nav-live-" + problem.id} role="tab" aria-controls={"nav-live-" + problem.id} aria-selected="false" onClick={refreshCM}>Live Code</a>
-                            <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={refreshCM}>Standard Code</a>
-                        </div>
-                    </nav>
-                    <div className="tab-content" id={"nav-instructor-code-tabContent-" + problem.id}>
-                        <div className="tab-pane fade show active" id={"nav-given-" + problem.id} role="tabpanel" aria-labelledby={"nav-given-tab-" + problem.id}>
-                            <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
-                        </div>
-                        <div className="tab-pane fade" id={"nav-after-" + problem.id} role="tabpanel" aria-labelledby={"nav-after-tab-" + problem.id}>
-                            <CodeEditor shareDBSubDoc={afterCodeSubDoc} flag={count} />
-                        </div>
-                        <div className="tab-pane fade" id={"nav-live-" + problem.id} role="tabpanel" aria-labelledby={"nav-live-tab-" + problem.id}>
-                            <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={count} />
-                        </div>
-                        <div className="tab-pane fade" id={"nav-standard-" + problem.id} role="tabpanel" aria-labelledby={"nav-standard-tab-" + problem.id}>
-                            <CodeEditor shareDBSubDoc={standardCodeSubDoc} flag={count} />
-                        </div>
-                    </div>
+                    <PuzzleEditor problem={problem} flag={count} />
                 </div>
                 <div className="col">
                     <nav>
@@ -101,28 +72,8 @@ const CodeProblem = ({ problem, isAdmin, problemsDoc, userSolution, dispatch, in
             </div>
             <div className="row">
                 <div className="col">
-                    <nav>
-                        <div className="nav nav-tabs instructor-tab" id={"nav-instructor-config-tab-" + problem.id} role="tablist">
-                            <a className="nav-item nav-link active" id={"nav-variables-tab-" + problem.id} data-toggle="tab" href={"#nav-variables-" + problem.id} role="tab" aria-controls={"nav-variables-" + problem.id} aria-selected="true">Variables</a>
-                            <a className="nav-item nav-link" id={"nav-config-tab-" + problem.id} data-toggle="tab" href={"#nav-config-" + problem.id} role="tab" aria-controls={"nav-config-" + problem.id} aria-selected="false">Config</a>
-                            <a className="nav-item nav-link" id={"nav-tests-tab-" + problem.id} data-toggle="tab" href={"#nav-tests-" + problem.id} role="tab" aria-controls={"nav-tests-" + problem.id} aria-selected="false" onClick={refreshCM}>Tests</a>
-                            <a className="nav-item nav-link" id={"nav-variable-tests-tab-" + problem.id} data-toggle="tab" href={"#nav-variable-tests-" + problem.id} role="tab" aria-controls={"nav-variable-tests-" + problem.id} aria-selected="false" onClick={refreshCM}>Variable Tests</a>
-                        </div>
-                    </nav>
-                    <div className="tab-content" id="nav-instructor-config-tabContent">
-                        <div className="tab-pane fade show active" id={"nav-variables-" + problem.id} role="tabpanel" aria-labelledby={"nav-variables-tab-" + problem.id}>
-                            {/* <Variables problem={problem} /> */}
-                        </div>
-                        <div className="tab-pane fade" id={"nav-config-" + problem.id} role="tabpanel" aria-labelledby={"nav-config-tab-" + problem.id}>
-                            <ConfigPanel problem={problem} />
-                        </div>
-                        <div className="tab-pane fade" id={"nav-tests-" + problem.id} role="tabpanel" aria-labelledby={"nav-tests-tab-" + problem.id}>
-                            {/* <Tests problem={problem} flag={count} /> */}
-                        </div>
-                        <div className="tab-pane fade" id={"nav-variable-tests-" + problem.id} role="tabpanel" aria-labelledby={"nav-variable-tests-tab-" + problem.id}>
-                            {/* <VariableTests problem={problem} flag={count} /> */}
-                        </div>
-                    </div>
+                    <h5> Config: </h5>
+                    <ConfigPanel problem={problem} />
                 </div>
             </div>
             <div className="row">
@@ -190,8 +141,7 @@ function mapStateToProps(state: IPMState, ownProps) {
 
     const userSolution = solutions.allSolutions[ownProps.problem.id][myuid];
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
-    const { output, errors } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { output: '', errors: [] };
 
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, output, errors, intermediateCodeState, config } });
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config } });
 }
 export default connect(mapStateToProps)(CodeProblem);

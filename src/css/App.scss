@@ -278,6 +278,30 @@ nav {
     margin-top: 20px;
 }
 
+.test-list-item.active {
+    background: white;
+    color: black;
+    font-weight: bold;
+    border-color: #dfdfdf;
+    border-left-width: 20px !important;
+}
+
+.test-list-item.instructor {
+    border-left: 10px solid #28a744;
+}
+
+.test-list-item.student {
+    border-left: 10px solid #007bff;
+}
+
+.test-list-item.true {
+    background: #d0e6d0;
+}
+
+.test-list-item.false {
+    background: #f8d6da;
+}
+
 .result-badge {
     margin-left: 10px;
 }

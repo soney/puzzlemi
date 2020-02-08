@@ -14,6 +14,7 @@ import update from 'immutability-helper';
 import { appState } from '..';
 import { ISolutions } from '../reducers/solutions';
 import { IUsers } from '../reducers/users';
+import uuid from '../utils/uuid';
 
 
 const PMApplication = ({ isAdmin, dispatch }) => {
@@ -54,11 +55,11 @@ function mapDispatchToProps(dispatch, ownProps) {
     fetch(`${appState.postBase}/_myInfo`).then((response) => {
         return response.json();
     }).then((myInfo) => {
-        if(appState.debugMode) {
-            myInfo = update(myInfo, { uid: { $set: 'testuid' }})
+        if (appState.debugMode) {
+            myInfo = update(myInfo, { uid: { $set: 'testuid-' + uuid() } })
         }
         dispatch(setUser(myInfo));
-        if(myInfo.isInstructor) {
+        if (myInfo.isInstructor) {
             const solutionsDoc: SDBDoc<ISolutions> = sdbClient.get(appState.channel, 'solutions');
             dispatch(setSolutionsDoc(solutionsDoc));
             dispatch(beginListeningOnDoc(solutionsDoc, 'solutions'));
