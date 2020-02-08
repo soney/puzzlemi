@@ -9,10 +9,21 @@ export type ISolutionAggregate = ICodeSolutionAggregate | IMultipleChoiceSolutio
 
 export interface ICodeSolutionAggregate {
     completed: string[],
-    variableTests: {
-        [testID: string]: string[],
+    tests: {
+        [testID: string]: ICodeTest
     },
     helpSessions: IHelpSession[];
+}
+
+export interface ICodeTest {
+    id: string;
+    name: string;
+    author: string;
+    type: 'instructor' | 'student';
+    before: string;
+    after: string;
+    status: 'Unverified' | 'Failed' | 'Passed';
+    completed: string[],
 }
 
 export interface IHelpSession {

@@ -7,18 +7,18 @@ export interface IAppState {
     websocketLocation: string,
     channel: string,
     postBase: string,
-    selectedUserForSolutionsView: string|false
+    selectedUserForSolutionsView: string | false
 }
 
-export const app = (state: IAppState={debugMode: false, websocketLocation: '', channel: '', postBase: '', selectedUserForSolutionsView: false}, action: IAppStateChangedAction|IAppSelectedStudentForSolutionView) => {
+export const app = (state: IAppState = { debugMode: false, websocketLocation: '', channel: '', postBase: '', selectedUserForSolutionsView: false }, action: IAppStateChangedAction | IAppSelectedStudentForSolutionView) => {
     const { type } = action;
-    if(type === EventTypes.APP_STATE_CHANGED) {
+    if (type === EventTypes.APP_STATE_CHANGED) {
         const { appState } = action as IAppStateChangedAction;
         return appState;
-    } else if(type === EventTypes.SELECT_USER_FOR_SOLUTION_VIEW) {
+    } else if (type === EventTypes.SELECT_USER_FOR_SOLUTION_VIEW) {
         const { uid } = action as IAppSelectedStudentForSolutionView;
         return update(state, {
-            selectedUserForSolutionsView: { $set: uid}
+            selectedUserForSolutionsView: { $set: uid }
         })
     } else {
         return state;

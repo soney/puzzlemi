@@ -19,7 +19,7 @@ interface ICodeEditorProps {
     flag?: any;
     shareDBSubDoc?: SDBSubDoc<string>;
     onChange?: (e: ICodeChangeEvent) => void;
-    refreshDoc?:any;
+    refreshDoc?: any;
 };
 
 interface ICodeEditorState {
@@ -54,7 +54,7 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
     };
 
     public componentDidUpdate(prevProps: ICodeEditorProps): void {
-        const { value, shareDBSubDoc, flag, refreshDoc } = this.props;
+        const { value, shareDBSubDoc, flag, refreshDoc, options } = this.props;
         if (refreshDoc !== prevProps.refreshDoc) {
             if (prevProps.shareDBSubDoc === undefined)
                 this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
@@ -64,6 +64,9 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
                 this.codemirrorBinding.destroy();
                 this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
             }
+        }
+        if (options.readOnly !== prevProps.options.readOnly) {
+            this.codeMirror.setOption('readOnly', options.readOnly)
         }
         if (shareDBSubDoc !== prevProps.shareDBSubDoc) {
             if (prevProps.shareDBSubDoc === undefined)
