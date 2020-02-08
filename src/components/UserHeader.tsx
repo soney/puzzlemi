@@ -7,6 +7,7 @@ import { selectUserForSolutionView } from "../actions/app_actions";
 import * as classNames from 'classnames';
 import { replaceProblems } from "../actions/sharedb_actions";
 import { IProblems } from "../reducers/problems";
+import Hotkeys from 'react-hot-keys';
 
 const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, problemsDoc, isAdmin, allUsers}) => {
     const { myuid } = users;
@@ -14,10 +15,15 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
 
     const { loggedIn, isInstructor, username, email } = users.allUsers[myuid];
 
+    const toggleIsAdmin = () => {
+        dispatch(setIsAdmin(!isAdmin));
+    };
+
     const handleEditChange = (event) => {
         const checked = event.target.checked;
         dispatch(setIsAdmin(checked));
     }
+
     const downloadJSON = () => {
         const data = problemsDoc.getData();
         const stringifiedData = JSON.stringify(data);
@@ -59,7 +65,7 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
     }
 
     const editButton = isInstructor ? <div className="custom-control custom-switch">
-            <input id="admin-mode" type="checkbox" className="custom-control-input" onChange={handleEditChange} defaultChecked={false} />
+            <input id="admin-mode" type="checkbox" className="custom-control-input" onChange={handleEditChange} checked={isAdmin} />
             <label htmlFor="admin-mode" className="custom-control-label">Admin Mode</label>
         </div> : null;
         // <label className='float-right'><input type="checkbox" onChange={handleEditChange} /> Admin Mode</label> : null;
@@ -91,6 +97,7 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
                 </form>
             }
             <form className="form-inline">
+                <Hotkeys keyName="ctrl+shift+a" onKeyDown={toggleIsAdmin}></Hotkeys>
                 <span className='nav-item'>{editButton}</span>
             </form>
         </nav>

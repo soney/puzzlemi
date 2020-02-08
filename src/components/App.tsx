@@ -15,7 +15,6 @@ import { appState } from '..';
 import { ISolutions } from '../reducers/solutions';
 import { IUsers } from '../reducers/users';
 
-
 const PMApplication = ({ isAdmin, dispatch }) => {
     return <div className="container">
         <UserHeader />

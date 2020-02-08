@@ -5,15 +5,16 @@ import update from 'immutability-helper';
 import { addCodeProblem, addMultipleChoiceProblem, addTextResponseProblem } from '../../actions/sharedb_actions';
 import { IProblem } from '../../reducers/problems';
 import { IPMState } from '../../reducers';
+import Hotkeys from 'react-hot-keys';
 
 const Problems = ({ isAdmin, dispatch, problems }) => {
-    const doAddCodeProblem = (): void => {
+    const doAddCodeProblem = (event): void => {
         dispatch(addCodeProblem());
     };
-    const doAddMultipleChoiceProblem = (): void => {
+    const doAddMultipleChoiceProblem = (event): void => {
         dispatch(addMultipleChoiceProblem());
     };
-    const doAddTextResponseProblem = (): void => {
+    const doAddTextResponseProblem = (event): void => {
         dispatch(addTextResponseProblem());
     };
 
@@ -28,6 +29,9 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
         {
             isAdmin &&
             <div className="row">
+                <Hotkeys keyName="ctrl+shift+c" onKeyDown={doAddCodeProblem}></Hotkeys>
+                <Hotkeys keyName="ctrl+shift+m" onKeyDown={doAddMultipleChoiceProblem}></Hotkeys>
+                <Hotkeys keyName="ctrl+shift+t" onKeyDown={doAddTextResponseProblem}></Hotkeys>
                 <div className="btn-group btn-block" role="group">
                     <button className="btn btn-outline-success btn-sm" onClick={doAddCodeProblem}>+ Code</button>
                     <button className="btn btn-outline-success btn-sm" onClick={doAddMultipleChoiceProblem}>+ Multiple Choice</button>
