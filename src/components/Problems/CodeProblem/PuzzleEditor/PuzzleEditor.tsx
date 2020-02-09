@@ -106,7 +106,7 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                         }
                     </div>)}
                 </div>
-                {config.addTests &&
+                {(config.addTests || isAdmin) &&
                     <div className="add-button">
                         <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button>
                     </div>
