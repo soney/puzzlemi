@@ -6,13 +6,13 @@ import { CodeEditor } from '../../../CodeEditor';
 import { ICodeSolution } from '../../../../reducers/solutions';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { codeChanged, setActiveTest } from '../../../../actions/user_actions';
-import { ICodeTest } from '../../../../reducers/aggregateData';
+import { ICodeTest, CodeTestType } from '../../../../reducers/aggregateData';
 import { addTest, deleteTest } from '../../../../actions/sharedb_actions';
 
 const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, username, testObjects, dispatch, currentTest, testResults, flag, aggregateDataDoc }) => {
     const [count, setCount] = useState(0);
 
-    if (!currentTest) return <></>
+    if (!currentTest) { return null; }
     const codeSolution = userSolution as ICodeSolution;
     const p_agg = ['userData', problem.id];
     const beforeCodeSubDoc = aggregateDataDoc.subDoc([...p_agg, 'tests', currentTest.id, 'before']);
@@ -43,7 +43,7 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
     }
 
     const getTestClassName = (test) => {
-        const baseClasses = "list-group-item list-group-item-action test-list-item " + test.type;
+        const baseClasses = "list-group-item list-group-item-action test-list-item " + (test.type === CodeTestType.INSTRUCTOR ? 'instructor' : 'student');
         const activeClass = test.id === currentTest.id ? " active " : " ";
         const result = testResults[test.id];
         const isEditClass = test.author === username ? " isedit " : " ";
@@ -68,7 +68,9 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                     </div>
                     <div className="col-3">
                         {isEdit && currentTest.author !== 'null' &&
-                            <button className="btn btn-outline-danger btn-sm btn-block" onClick={doDeleteTest}>Delete</button>
+                            <button className="btn btn-outline-danger btn-sm btn-block" onClick={doDeleteTest}>
+                                <i className="fas fa-trash"></i> Delete
+                            </button>
                         }
                     </div>
                 </div>

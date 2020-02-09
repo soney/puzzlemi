@@ -34,9 +34,15 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
                 <Hotkeys keyName="ctrl+shift+m" onKeyUp={doAddMultipleChoiceProblem} filter ={()=>true}></Hotkeys>
                 <Hotkeys keyName="ctrl+shift+t" onKeyUp={doAddTextResponseProblem} filter ={()=>true}></Hotkeys>
                 <div className="btn-group btn-block" role="group">
-                    <button className="btn btn-outline-success btn-sm" onClick={doAddCodeProblem}>+ Code</button>
-                    <button className="btn btn-outline-success btn-sm" onClick={doAddMultipleChoiceProblem}>+ Multiple Choice</button>
-                    <button className="btn btn-outline-success btn-sm" onClick={doAddTextResponseProblem}>+ Text Response</button>
+                    <button className="btn btn-outline-success btn-sm" onClick={doAddCodeProblem}>
+                        <i className="fas fa-plus"></i> Code
+                    </button>
+                    <button className="btn btn-outline-success btn-sm" onClick={doAddMultipleChoiceProblem}>
+                        <i className="fas fa-plus"></i> Multiple Choice
+                    </button>
+                    <button className="btn btn-outline-success btn-sm" onClick={doAddTextResponseProblem}>
+                        <i className="fas fa-plus"></i> Text Response
+                    </button>
                 </div>
             </div>
         }

@@ -23,7 +23,8 @@ const MultipleChoiceOptions = ({ problem, options, dispatch, isAdmin, aggregateD
                     <tr>
                         <th>Correct</th>
                         <th>Description</th>
-                        <th>Delete</th>
+                        <th>#</th>
+                        <th>Move / Delete</th>
                     </tr>
                 </thead>
             }
@@ -32,8 +33,10 @@ const MultipleChoiceOptions = ({ problem, options, dispatch, isAdmin, aggregateD
                 {
                     isAdmin &&
                     <tr>
-                        <td colSpan={3}>
-                            <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddOption}>+ Option</button>
+                        <td colSpan={4}>
+                            <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddOption}>
+                                <i className="fas fa-plus"></i> Option
+                            </button>
                         </td>
                     </tr>
                 }

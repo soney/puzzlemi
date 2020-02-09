@@ -5,7 +5,7 @@ import { getTimeStamp } from '../utils/timestamp';
 import EventTypes from './EventTypes';
 import sharedb, { ObjectInsertOp, ListDeleteOp } from 'sharedb';
 import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType } from '../reducers/problems';
-import { IAggregateData, IHelpSession, IMessage, ICodeSolutionAggregate, ICodeTest } from '../reducers/aggregateData';
+import { IAggregateData, IHelpSession, IMessage, ICodeSolutionAggregate, ICodeTest, CodeTestStatus, CodeTestType } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
 import { ISolutions, ICodeSolution } from '../reducers/solutions';
 
@@ -193,6 +193,32 @@ function getOptionIndex(options: IMultipleChoiceOption[], optionID: string): num
     return -1;
 }
 
+export function moveMultipleChoiceOptionUp(problemID: string, optionID: string) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        const p = ['allProblems', problemID, 'problemDetails', 'options'];
+        const options = problemsDoc.traverse(p);
+        const optionIndex = getOptionIndex(options, optionID);
+        if (optionIndex > 0) {
+            await problemsDoc.submitListMoveOp([...p, optionIndex], optionIndex - 1);
+        }
+    };
+}
+
+export function moveMultipleChoiceOptionDown(problemID: string, optionID: string) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems;
+        const p = ['allProblems', problemID, 'problemDetails', 'options'];
+        const options = problemsDoc.traverse(p);
+        const optionIndex = getOptionIndex(options, optionID);
+        if (optionIndex >= 0 && optionIndex < options.length - 1) {
+            await problemsDoc.submitListMoveOp([...p, optionIndex], optionIndex + 1);
+        }
+    };
+}
+
 export function deleteMultipleChoiceOption(problemID: string, optionID: string) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
@@ -300,10 +326,10 @@ export function addCodeProblem() {
             id: uuid(),
             name: 'default',
             author: 'null',
-            type: 'instructor',
+            type: CodeTestType.INSTRUCTOR,
             before: '# given variables',
             after: '# assertions',
-            status: 'Passed',
+            status: CodeTestStatus.PASSED,
             completed:[]
         }
 
@@ -403,10 +429,10 @@ export function addTest(problemID: string, username: string, isAdmin: boolean) {
         id: uuid(),
         name: 'new',
         author: username,
-        type: isAdmin?'instructor':'student',
+        type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
         before: '# given variables',
         after: '# assertions',
-        status: 'Passed',
+        status: CodeTestStatus.PASSED,
         completed: []
     }
     await aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'tests', newCodeTest.id], newCodeTest);
@@ -534,6 +560,32 @@ export function setProblemVisibility(id: string, visible: boolean) {
         const problemsDoc = shareDBDocs.problems;
 
         problemsDoc.submitObjectReplaceOp(['allProblems', id, 'visible'], visible);
+    };
+}
+
+export function moveProblemUp(id: string) {
+    return (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems as SDBDoc<IProblems>;
+        const { order } = problemsDoc.getData();
+
+        const problemIndex = order.indexOf(id);
+        if(problemIndex > 0) {
+            problemsDoc.submitListMoveOp(['order', problemIndex], problemIndex-1);
+        }
+    };
+}
+
+export function moveProblemDown(id: string) {
+    return (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const problemsDoc = shareDBDocs.problems as SDBDoc<IProblems>;
+        const { order } = problemsDoc.getData();
+
+        const problemIndex = order.indexOf(id);
+        if(problemIndex >= 0 && problemIndex < order.length-1) {
+            problemsDoc.submitListMoveOp(['order', problemIndex], problemIndex+1);
+        }
     };
 }
 

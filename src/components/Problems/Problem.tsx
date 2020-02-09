@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
-import { deleteProblem, setProblemVisibility } from '../../actions/sharedb_actions';
+import { deleteProblem, setProblemVisibility, moveProblemUp, moveProblemDown } from '../../actions/sharedb_actions';
 import CodeProblem from './CodeProblem/CodeProblem';
 import MultipleChoiceProblem from './MultipleChoiceProblem/MultipleChoiceProblem';
 import * as classNames from 'classnames';
@@ -32,6 +32,12 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
     const doShowProblem = () => {
         dispatch(setProblemVisibility(problemID, true));
     }
+    const doMoveProblemUp = () => {
+        dispatch(moveProblemUp(problemID));
+    }
+    const doMoveProblemDown = () => {
+        dispatch(moveProblemDown(problemID));
+    }
 
     let problemDisplay: JSX.Element|null = null;
     if(problemType === 'code') {
@@ -48,13 +54,29 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
                 <div className="col clearfix">
                     <div className="btn-group btn-group-toggle" data-toggle="buttons">
                         <label className={"btn btn-sm " + (visible ? "btn-primary" : "btn-outline-primary")}>
-                            <input type="radio" name="options" id="visible" onClick={doShowProblem} /> Visible
+                            <input type="radio" name="options" id="visible" onClick={doShowProblem} />
+                            <i className="fas fa-eye"></i>
+                            Visible
                         </label>
                         <label className={"btn btn-sm " + (!visible ? "btn-secondary" : "btn-outline-secondary")}>
-                            <input type="radio" name="options" id="hidden" onClick={doHideProblem} /> Hidden
+                            <input type="radio" name="options" id="hidden" onClick={doHideProblem} />
+                            <i className="fas fa-eye-slash"></i>
+                            Hidden
                         </label>
                     </div>
-                    <button className="btn btn-sm btn-outline-danger float-right" onClick={doDeleteProblem}>Delete Problem</button>
+                    <div className="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label className={"btn btn-sm btn-outline-secondary"}>
+                            <input type="radio" name="options" onClick={doMoveProblemUp} />
+                            <i className="fas fa-arrow-up"></i>
+                            Up
+                        </label>
+                        <label className={"btn btn-sm btn-outline-secondary"}>
+                            <input type="radio" name="options" onClick={doMoveProblemDown} />
+                            <i className="fas fa-arrow-down"></i>
+                            Down
+                        </label>
+                    </div>
+                    <button className="btn btn-sm btn-outline-danger float-right" onClick={doDeleteProblem}><i className="fas fa-trash"></i> Delete Problem</button>
                 </div>
             </div>
         }

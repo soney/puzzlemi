@@ -15,14 +15,17 @@ export interface ICodeSolutionAggregate {
     helpSessions: IHelpSession[];
 }
 
+export enum CodeTestType { INSTRUCTOR, STUDENT };
+export enum CodeTestStatus { UNVERIFIED, FAILED, PASSED };
+
 export interface ICodeTest {
     id: string;
     name: string;
     author: string;
-    type: 'instructor' | 'student';
+    type: CodeTestType;
     before: string;
     after: string;
-    status: 'Unverified' | 'Failed' | 'Passed';
+    status: CodeTestStatus;
     completed: string[],
 }
 

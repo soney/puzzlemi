@@ -21,6 +21,8 @@ interface ICodeEditorProps {
     onChange?: (e: ICodeChangeEvent) => void;
     refreshDoc?: any;
     focusOnMount?: boolean;
+    selectOnFocus: boolean;
+    captureTabs: boolean;
 };
 
 interface ICodeEditorState {
@@ -41,7 +43,9 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
             readOnly: false,
             autoRefresh: true,
         },
-        value: ''
+        value: '',
+        selectOnFocus: false,
+        captureTabs: true
     };
     private codeMirror!: CodeMirror.EditorFromTextArea;
     private codeNode!: HTMLTextAreaElement;
@@ -94,11 +98,14 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         this.codeMirror.setValue(this.state.code);
         this.codeMirror.setSize(this.props.options.width, this.props.options.height);
         this.codeMirror.setOption('extraKeys', {
-            "Tab": (cm) => {
+            "Tab": this.props.captureTabs ? (cm) => {
                 const spaces = Array(cm.getOption('indentUnit')! + 1).join(' ');
                 cm.getDoc().replaceSelection(spaces);
-            },
-            // "Shift-Tab": false,
+            }: false,
+            // "Shift-Tab": this.props.captureTabs ? (cm) => {
+            //     const spaces = Array(cm.getOption('indentUnit')! + 1).join(' ');
+            //     cm.getDoc().replaceSelection(spaces);
+            // }: false,
             "Esc": () => {
                 let node: HTMLElement|null = this.codeNode;
                 while(node) {
@@ -110,6 +117,11 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
 
             }
         });
+        if(this.props.selectOnFocus) {
+            this.codeMirror.on('focus', () => {
+                this.codeMirror.execCommand('selectAll');
+            });
+        }
         this.codeMirror.refresh();
 
 
