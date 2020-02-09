@@ -9,7 +9,7 @@ import { IMultipleChoiceSolution } from '../../../reducers/solutions';
 import * as classNames from 'classnames';
 import { IPMState } from '../../../reducers';
 
-const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolution, optionIndex, problem, description, dispatch, problemsDoc, isAdmin, isCorrect, numSelected, selectedByCurrentUser }) => {
+const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolution, optionIndex, problem, description, dispatch, problemsDoc, isAdmin, isCorrect, numSelected, selectedByCurrentUser, claimFocus }) => {
     const doMoveOptionUp = () => {
         dispatch(moveMultipleChoiceOptionUp(problem.id, option.id));
     }
@@ -41,10 +41,10 @@ const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolu
     if(isAdmin) {
         const optionSubDoc = problemsDoc.subDoc(['allProblems', problem.id, 'problemDetails', 'options', optionIndex, 'description']);
         return <tr>
-            <td><label><input type="checkbox" checked={isCorrect} onChange={doChangeOptionCorrectness} /> Correct</label></td>
             <td>
-                <CodeEditor shareDBSubDoc={optionSubDoc} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}} />
+                <CodeEditor shareDBSubDoc={optionSubDoc} focusOnMount={claimFocus} selectOnFocus={true} captureTabs={false} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}} />
             </td>
+            <td><label><input type="checkbox" checked={isCorrect} onChange={doChangeOptionCorrectness} /> Correct</label></td>
             <td className='selectionCount'>{numSelected}</td>
             <td>
                 <div className="btn-group btn-group-toggle" data-toggle="buttons">
@@ -79,7 +79,7 @@ const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolu
 
 function mapStateToProps(state: IPMState, ownProps) {
     const { app, intermediateUserState, shareDBDocs, solutions, users } = state;
-    const { isAdmin } = intermediateUserState;
+    const { isAdmin, awaitingFocus } = intermediateUserState;
     const problemsDoc = shareDBDocs.problems;
 
 
@@ -92,6 +92,8 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { selectedItems } = userSolution;
 
     const { isCorrect, description } = option;
+
+    const claimFocus = awaitingFocus && awaitingFocus.id === option.id;
 
     const currentUser = app.selectedUserForSolutionsView;
     let selectedByCurrentUser: boolean = false;
@@ -116,6 +118,6 @@ function mapStateToProps(state: IPMState, ownProps) {
         }
     }
 
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, selectedItems, selectionType, revealSolution, description, optionIndex, isCorrect, selectedByCurrentUser } });
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, selectedItems, selectionType, revealSolution, description, optionIndex, isCorrect, selectedByCurrentUser, claimFocus } });
 }
 export default connect(mapStateToProps)(MultipleChoiceOption);

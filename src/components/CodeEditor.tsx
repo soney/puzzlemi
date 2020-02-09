@@ -97,15 +97,11 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         this.codeMirror = CodeMirror.fromTextArea(this.codeNode, this.props.options);
         this.codeMirror.setValue(this.state.code);
         this.codeMirror.setSize(this.props.options.width, this.props.options.height);
+        // this.codeMirror.keyMap.default["Shift-Tab"] = "indentLess";
+        // CodeMirror.keyMap.default["Tab"] = "indentMore";
         this.codeMirror.setOption('extraKeys', {
-            "Tab": this.props.captureTabs ? (cm) => {
-                const spaces = Array(cm.getOption('indentUnit')! + 1).join(' ');
-                cm.getDoc().replaceSelection(spaces);
-            }: false,
-            // "Shift-Tab": this.props.captureTabs ? (cm) => {
-            //     const spaces = Array(cm.getOption('indentUnit')! + 1).join(' ');
-            //     cm.getDoc().replaceSelection(spaces);
-            // }: false,
+            "Tab": this.props.captureTabs ? 'indentMore' : false,
+            "Shift-Tab": this.props.captureTabs ? 'indentLess' : false,
             "Esc": () => {
                 let node: HTMLElement|null = this.codeNode;
                 while(node) {

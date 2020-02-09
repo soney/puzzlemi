@@ -3,7 +3,7 @@ import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
 import { getTimeStamp } from '../utils/timestamp';
 import EventTypes from './EventTypes';
-import sharedb, { ObjectInsertOp, ListDeleteOp } from 'sharedb';
+import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
 import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType } from '../reducers/problems';
 import { IAggregateData, IHelpSession, IMessage, ICodeSolutionAggregate, ICodeTest, CodeTestStatus, CodeTestType } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
@@ -116,26 +116,26 @@ export interface IMultipleChoiceOptionAddedAction {
     option: IMultipleChoiceOption,
     problemID: string,
 }
-export async function multipleChoiceOptionAdded(problemID: string, option: IMultipleChoiceOption) {
-    return async (dispatch: Dispatch, getState) => {
-        dispatch({
-            problemID, option, type: EventTypes.OPTION_ADDED
-        } as IMultipleChoiceOptionAddedAction);
-        await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
-    };
+export async function multipleChoiceOptionAdded(problemID: string, option: IMultipleChoiceOption, dispatch: Dispatch, getState) {
+    dispatch({
+        problemID, option, type: EventTypes.OPTION_ADDED
+    } as IMultipleChoiceOptionAddedAction);
+    await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+    // return async (dispatch: Dispatch, getState) => {
+    // };
 }
 export interface IMultipleChoiceOptionDeletedAction {
     type: EventTypes.OPTION_DELETED,
     option: IMultipleChoiceOption,
     problemID: string,
 }
-export function multipleChoiceOptionDeleted(problemID: string, option: IMultipleChoiceOption) {
-    return async (dispatch: Dispatch, getState) => {
-        dispatch({
-            problemID, option, type: EventTypes.OPTION_DELETED
-        } as IMultipleChoiceOptionDeletedAction);
-        await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
-    };
+export async function multipleChoiceOptionDeleted(problemID: string, option: IMultipleChoiceOption, dispatch: Dispatch, getState) {
+    // return async (dispatch: Dispatch, getState) => {
+    dispatch({
+        problemID, option, type: EventTypes.OPTION_DELETED
+    } as IMultipleChoiceOptionDeletedAction);
+    await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
+    // };
 }
 export function multipleChoiceOptionDescriptionChanged(problemID: string, optionID: string, description: string) {
     return async (dispatch: Dispatch, getState) => {
@@ -696,11 +696,17 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                         multipleChoiceRevealSolutionChanged(problemID, oi, dispatch, getState);
                     }
 
-                    const optionDeletedMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'options', true]);
-                    if (optionDeletedMatches) {
+                    const optionAddedOrDeletedMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'options', true]);
+                    if (optionAddedOrDeletedMatches) {
                         const problemID = p[1] as string;
                         const { ld } = op as ListDeleteOp;
-                        multipleChoiceOptionDeleted(problemID, ld);
+                        if(ld) {
+                            multipleChoiceOptionDeleted(problemID, ld, dispatch, getState);
+                        }
+                        const { li } = op as ListInsertOp;
+                        if(li) {
+                            multipleChoiceOptionAdded(problemID, li, dispatch, getState);
+                        }
                     }
                 });
             }

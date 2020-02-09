@@ -1,10 +1,8 @@
 import { Dispatch } from "redux";
 import '../js/skulpt/skulpt.min.js';
 import '../js/skulpt/skulpt-stdlib.js';
-import { PMTestSuite } from "../pyTests/PMTestSuite";
 import EventTypes from "./EventTypes";
 import { ICodeSolution } from "../reducers/solutions.js";
-// import { IProblem, ICodeProblem, ICodeVariableTest, ICodeTest } from "../reducers/problems";
 import { IProblem, ICodeProblem } from "../reducers/problems";
 import { ICodeTest } from "../reducers/aggregateData.js";
 import { ICodeSolutionState } from "../reducers/intermediateUserState.js";
@@ -81,18 +79,18 @@ export interface IExecuteCodeResult {
     output: string
 }
 
-function executeCode(code: string, files, outputChangeHandler, writeFileHandler, graphics) {
+function executeCode(beforeCode: string, code: string, afterCode: string, files, outputChangeHandler, writeFileHandler, graphics) {
+    beforeCode = beforeCode + '\n';
+    afterCode = '\n' + afterCode;
+    const fullCode = `${beforeCode}${code}${afterCode}`;
     return new Promise<IExecuteCodeResult>(function (resolve, reject) {
         let output: string = '';
         const outputs: string[] = [];
 
-        const testSuite = new PMTestSuite(code, outputs);
         const outf = (outValue: string): void => {
-            if (!testSuite.currentlyRunning()) {
-                outputs.push(outValue);
-                output = outputs.join('');
-                outputChangeHandler(output);
-            }
+            outputs.push(outValue);
+            output = outputs.join('');
+            outputChangeHandler(output);
         };
 
         const readf = (fname: string): string => {
@@ -128,7 +126,7 @@ function executeCode(code: string, files, outputChangeHandler, writeFileHandler,
         });
         if (graphics) (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = graphics;
         const myPromise = Sk.misceval.asyncToPromise(() => {
-            return Sk.importMainWithBody("<stdin>", false, `${code}\n`, true);
+            return Sk.importMainWithBody("<stdin>", false, `${fullCode}\n`, true);
         });
         let errString: string;
         const onFinally = () => {
@@ -136,7 +134,8 @@ function executeCode(code: string, files, outputChangeHandler, writeFileHandler,
             resolve(returnResult);
         };
         myPromise.then(onFinally, (err) => {
-            const pretextLines = 0;
+            const pretextLines = (beforeCode.match(/\n/g) || '').length;
+ 
             const matches = code.match(/\n/g);
             const progLines = matches ? (matches.length + 1) : 1;
 
@@ -148,9 +147,10 @@ function executeCode(code: string, files, outputChangeHandler, writeFileHandler,
                     errorBefore = true;
                 } else if (errorLine > (progLines + pretextLines)) {
                     errorAfter = true;
+                    err.traceback[0].lineno = err.traceback[0].lineno - pretextLines - progLines;
                 } else {
                     if (pretextLines > 0) {
-                        err.traceback[0].lineno = err.traceback[0].lineno - pretextLines + 1;
+                        err.traceback[0].lineno = err.traceback[0].lineno - pretextLines;
                     }
                 }
             }
@@ -256,7 +256,7 @@ export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermed
         const problemDetails = problem.problemDetails as ICodeProblem;
         const { code } = codeSolution;
         const files = { problemFiles: problemDetails.files, userFiles: codeSolution.files };
-        const fullCode = test.before.concat(' \n' + code, ' \n' + test.after);
+        // const fullCode = test.before.concat(' \n' + code, ' \n' + test.after);
         const outputChangeHandler = (output) => {
             dispatch({
                 problemID,
@@ -280,7 +280,7 @@ export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermed
             type: EventTypes.BEGIN_RUN_CODE
         } as IBeginRunningCodeAction);
 
-        executeCode(fullCode, files, outputChangeHandler, writeFileHandler, graphics).then(result => {
+        executeCode(test.before, code, test.after, files, outputChangeHandler, writeFileHandler, graphics).then(result => {
             const { errString } = result;
             const passed = errString?false:true;
             if (errString) {

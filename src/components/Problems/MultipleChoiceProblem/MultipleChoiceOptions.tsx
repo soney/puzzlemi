@@ -7,6 +7,7 @@ import { IPMState } from '../../../reducers';
 import MultipleChoiceOption from './MultipleChoiceOption';
 import { IMultipleChoiceSolutionAggregate } from '../../../reducers/aggregateData';
 import { IMultipleChoiceOption } from '../../../reducers/problems';
+// import Hotkeys from 'react-hot-keys';
 
 const MultipleChoiceOptions = ({ problem, options, dispatch, isAdmin, aggregateData }) => {
     const doAddOption = () => {
@@ -21,8 +22,8 @@ const MultipleChoiceOptions = ({ problem, options, dispatch, isAdmin, aggregateD
                 isAdmin &&
                 <thead>
                     <tr>
-                        <th>Correct</th>
                         <th>Description</th>
+                        <th>Correct</th>
                         <th>#</th>
                         <th>Move / Delete</th>
                     </tr>
@@ -34,6 +35,7 @@ const MultipleChoiceOptions = ({ problem, options, dispatch, isAdmin, aggregateD
                     isAdmin &&
                     <tr>
                         <td colSpan={4}>
+                            {/* <Hotkeys keyName="ctrl+shift+o" onKeyDown={() => console.log('add')} filter={()=>true}></Hotkeys> */}
                             <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddOption}>
                                 <i className="fas fa-plus"></i> Option
                             </button>
