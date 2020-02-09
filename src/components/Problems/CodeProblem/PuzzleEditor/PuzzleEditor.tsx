@@ -55,6 +55,38 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
         setCount(count + 1);
     }
 
+    if (config.disableTest) {
+        return <>
+            <div className="row">
+                <div className="col">
+                    {isAdmin
+                        ? <>
+                            <nav>
+                                <div className="nav nav-tabs instructor-tab" id={"nav-instructor-code-tab-" + problem.id} role="tablist">
+                                    <a className="nav-item nav-link active" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true">Given Code</a>
+                                    <a className="nav-item nav-link" id={"nav-live-tab-" + problem.id} data-toggle="tab" href={"#nav-live-" + problem.id} role="tab" aria-controls={"nav-live-" + problem.id} aria-selected="false" onClick={refreshCM}>Live Code</a>
+                                    <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={refreshCM}>Standard Code</a>
+                                </div>
+                            </nav>
+                            <div className="tab-content" id={"nav-instructor-code-tabContent-" + problem.id}>
+                                <div className="tab-pane fade show active" id={"nav-given-" + problem.id} role="tabpanel" aria-labelledby={"nav-given-tab-" + problem.id}>
+                                    <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
+                                </div>
+                                <div className="tab-pane fade" id={"nav-live-" + problem.id} role="tabpanel" aria-labelledby={"nav-live-tab-" + problem.id}>
+                                    <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={count} />
+                                </div>
+                                <div className="tab-pane fade" id={"nav-standard-" + problem.id} role="tabpanel" aria-labelledby={"nav-standard-tab-" + problem.id}>
+                                    <CodeEditor shareDBSubDoc={standardCodeSubDoc} flag={count} />
+                                </div>
+                            </div>
+                        </>
+                        : <CodeEditor value={codeSolution.code} onChange={doSetCode} flag={flag} />
+                    }
+                </div>
+            </div>
+        </>
+    }
+
     return <>
         <div className="row">
             <div className="col-9">

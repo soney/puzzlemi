@@ -40,6 +40,7 @@ export interface ICodeProblem {
 }
 
 export interface ICodeProblemConfig {
+    disableTest: boolean;
     runTests: boolean;
     addTests: boolean;
     displayInstructor: boolean;
