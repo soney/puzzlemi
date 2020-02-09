@@ -3,7 +3,6 @@ export const getTimeStamp = (): string => {
 }
 
 export const timeAgo = (time): string => {
-
     switch (typeof time) {
         case 'number':
             break;
@@ -11,7 +10,9 @@ export const timeAgo = (time): string => {
             time = +new Date(time);
             break;
         case 'object':
-            if (time.constructor === Date) time = time.getTime();
+            if (time.constructor === Date) {
+                time = time.getTime();
+            }
             break;
         default:
             time = +new Date();
@@ -33,9 +34,9 @@ export const timeAgo = (time): string => {
         [5806080000, 'Last century', 'Next century'], // 60*60*24*7*4*12*100*2
         [58060800000, 'centuries', 2903040000] // 60*60*24*7*4*12*100*20, 60*60*24*7*4*12*100
     ];
-    let seconds = (+new Date() - time) / 1000;
-    let token = 'ago';
-    let list_choice = 1;
+    let seconds: number = (+new Date() - time) / 1000;
+    let token: string = 'ago';
+    let list_choice:number = 1;
 
     if (seconds === 0) {
         return 'Just now';
@@ -45,11 +46,13 @@ export const timeAgo = (time): string => {
         token = 'from now';
         list_choice = 2;
     }
-    let i = 0;
-    let format;
-    while (format = time_formats[i++]) {
+    // let i: number = 0;
+    // let format;
+    // while (format = time_formats[i++]) {
+    for(let i: number = 0; i<time_formats.length; i++) {
+        const format = time_formats[i];
         if (seconds < format[0]) {
-            if (typeof format[2] === 'string') { return format[list_choice]; }
+            if (typeof format[2] === 'string') { return format[list_choice] as string; }
             else { return Math.floor(seconds / format[2]) + ' ' + format[1] + ' ' + token; }
         }
     }

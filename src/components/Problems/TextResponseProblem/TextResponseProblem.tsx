@@ -8,7 +8,7 @@ import { IPMState } from '../../../reducers';
 import { ITextResponseSolution } from '../../../reducers/solutions';
 import TextResponseSolutionView from './TextResponseSolutionView';
 
-const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin }) => {
+const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin, claimFocus }) => {
     const { response } = userSolution;
     const doSetResponse = (ev) => {
         const { value } = ev;
@@ -16,7 +16,7 @@ const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin }) => {
     };
     return <>
             <div className="col">
-                <ProblemDescription problem={problem} />
+                <ProblemDescription focusOnMount={claimFocus} problem={problem} />
             </div>
             { isAdmin &&
                 <TextResponseSolutionView problem={problem} />
@@ -30,12 +30,15 @@ const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin }) => {
 }
 function mapStateToProps(state: IPMState, ownProps) {
     const { intermediateUserState, shareDBDocs, solutions, users } = state;
-    const { isAdmin } = intermediateUserState;
+    const { isAdmin, awaitingFocus } = intermediateUserState;
+    const { problem } = ownProps;
     const problemsDoc = shareDBDocs.problems;
 
     const myuid = users.myuid as string;
-    const userSolution = solutions.allSolutions[ownProps.problem.id][myuid] as ITextResponseSolution;
+    const userSolution = solutions.allSolutions[problem.id][myuid] as ITextResponseSolution;
 
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution } });
+    const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
+
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, claimFocus } });
 }
 export default connect(mapStateToProps)(TextResponseProblem);

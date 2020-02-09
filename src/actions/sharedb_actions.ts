@@ -3,7 +3,7 @@ import { Dispatch } from 'redux';
 import uuid from '../utils/uuid';
 import { getTimeStamp } from '../utils/timestamp';
 import EventTypes from './EventTypes';
-import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
+import sharedb, { ObjectInsertOp, ListDeleteOp } from 'sharedb';
 import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType } from '../reducers/problems';
 import { IAggregateData, IHelpSession, IMessage, ICodeSolutionAggregate, ICodeTest } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';

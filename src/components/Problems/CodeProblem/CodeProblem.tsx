@@ -14,7 +14,7 @@ import { IPMState } from '../../../reducers';
 import CodeSolutionView from './CodeSolutionView';
 import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 
-const CodeProblem = ({ problem, isAdmin, config }) => {
+const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
     const [count, setCount] = useState(0);
     const peerHelpTabRef = React.createRef<HTMLAnchorElement>();
     const peerHelpDivRef = React.createRef<HTMLDivElement>();
@@ -42,7 +42,7 @@ const CodeProblem = ({ problem, isAdmin, config }) => {
         return <>
             <div className="row">
                 <div className="col">
-                    <ProblemDescription problem={problem} />
+                    <ProblemDescription focusOnMount={claimFocus} problem={problem} />
                 </div>
             </div>
             <div className="row">
@@ -131,17 +131,18 @@ const CodeProblem = ({ problem, isAdmin, config }) => {
 
 function mapStateToProps(state: IPMState, ownProps) {
     const { intermediateUserState, shareDBDocs, solutions, users } = state;
-    const { isAdmin } = intermediateUserState;
+    const { isAdmin, awaitingFocus } = intermediateUserState;
     const problemsDoc = shareDBDocs.problems;
     const { problem } = ownProps;
     const { problemDetails } = problem;
     const { config } = problemDetails;
 
+    const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
     const myuid = users.myuid as string;
 
     const userSolution = solutions.allSolutions[ownProps.problem.id][myuid];
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
 
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config } });
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus } });
 }
 export default connect(mapStateToProps)(CodeProblem);

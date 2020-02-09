@@ -7,7 +7,7 @@ import * as classNames from 'classnames';
 import { IPMState } from '../../../reducers';
 import MultipleChoiceOptions from './MultipleChoiceOptions';
 
-const MultipleChoiceProblem = ({ problem, dispatch, allCorrect, isAdmin, selectionType, revealSolution }) => {
+const MultipleChoiceProblem = ({ problem, dispatch, allCorrect, isAdmin, selectionType, revealSolution, claimFocus }) => {
     const doChangeMultipleChoiceSelectionType = (event) => {
         const { target } = event;
         const { checked } = target;
@@ -27,13 +27,19 @@ const MultipleChoiceProblem = ({ problem, dispatch, allCorrect, isAdmin, selecti
             isIncorrect: revealSolution && !allCorrect
         })}>
             <div className="col">
-                <ProblemDescription problem={problem} />
+                <ProblemDescription focusOnMount={claimFocus} problem={problem} />
             </div>
             {
                 isAdmin &&
                 <div className="col">
-                    <label><input type='checkbox' checked={selectionType==='multiple'} onChange={doChangeMultipleChoiceSelectionType} /> Multiple item selection</label>
-                    <label><input type='checkbox' checked={revealSolution} onChange={doChangeRevealSolution} /> Reveal Solution (and block further edits)</label>
+                    <div className="custom-control custom-switch">
+                        <input id={`multiple-item-selection-${problem.id}`} className="custom-control-input" type='checkbox' checked={selectionType==='multiple'} onChange={doChangeMultipleChoiceSelectionType} />
+                        <label htmlFor={`multiple-item-selection-${problem.id}`} className="custom-control-label">Multiple Item Selection</label>
+                    </div>
+                    <div className="custom-control custom-switch">
+                        <input id={`reveal-solution-${problem.id}`} className="custom-control-input" type='checkbox' checked={revealSolution} onChange={doChangeRevealSolution} />
+                        <label htmlFor={`reveal-solution-${problem.id}`} className="custom-control-label">Reveal Solution (and block futher edits)</label>
+                    </div>
                 </div>
             }
             <MultipleChoiceOptions problem={problem} />
@@ -42,11 +48,13 @@ const MultipleChoiceProblem = ({ problem, dispatch, allCorrect, isAdmin, selecti
 }
 function mapStateToProps(state: IPMState, ownProps) {
     const { intermediateUserState } = state;
-    const { isAdmin } = intermediateUserState;
+    const { isAdmin, awaitingFocus } = intermediateUserState;
     const { problem } = ownProps;
     const { problemDetails } = problem;
     const { selectionType, revealSolution } = problemDetails;
 
-    return update(ownProps, { $merge: { isAdmin, selectionType, revealSolution, allCorrect: false } });
+    const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
+
+    return update(ownProps, { $merge: { isAdmin, selectionType, revealSolution, claimFocus, allCorrect: false } });
 }
 export default connect(mapStateToProps)(MultipleChoiceProblem);

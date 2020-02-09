@@ -3,6 +3,9 @@ import { SDBSubDoc, } from "sdb-ts";
 class ShareDBCodeMirrorBinding {
     private editorDoc: CodeMirror.Doc;
     private suppressChanges: boolean = false;
+    private initialFetchCallbacks: Function[] = [];
+    private gotInitialFetch: boolean = false;
+
     constructor(private codeMirror: CodeMirror.Editor, private doc: SDBSubDoc<string>) {
         this.editorDoc = codeMirror.getDoc();
         this.doc.subscribe(this.onSDBDocEvent);
@@ -19,6 +22,9 @@ class ShareDBCodeMirrorBinding {
         if(type === null) {
             const data = this.doc.getData() as string;
             this.codeMirror.setValue(data);
+            this.gotInitialFetch = true;
+            this.initialFetchCallbacks.forEach((callback) => callback());
+            this.initialFetchCallbacks.splice(0, this.initialFetchCallbacks.length);
         } else if(type === 'op') {
             if(source !== this) {
                 ops.forEach((op) => this.applyOp(op));
@@ -26,6 +32,14 @@ class ShareDBCodeMirrorBinding {
         }
         this.suppressChanges = false;
     };
+
+    public onInitialFetch(callback: ()=>void): void {
+        if(this.gotInitialFetch) {
+            callback();
+        } else {
+            this.initialFetchCallbacks.push(callback);
+        }
+    }
 
     private onCodeMirrorChange = (codeMirror: CodeMirror.Editor, change: CodeMirror.EditorChange): void => {
         if(!this.suppressChanges) {

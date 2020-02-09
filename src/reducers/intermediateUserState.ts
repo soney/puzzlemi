@@ -2,11 +2,16 @@ import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
 import { ISetIsAdminAction, ICodeChangedAction, IUpdateActiveHelpSessionAction, ISetActiveTestAction } from '../actions/user_actions';
 import { IOutputChangedAction, IErrorChangedAction, IDoneRunningCodeAction, IBeginRunningCodeAction, IPassedAddAction, IFailedAddAction } from '../actions/runCode_actions';
-import { IProblemAddedAction, ISDBDocFetchedAction, ITestAddedAction, ITestPartChangedAction } from '../actions/sharedb_actions';
-import { IProblem, ICodeFile } from './problems';
+import { IProblemAddedAction, ISDBDocFetchedAction, ITestAddedAction, ITestPartChangedAction, IMultipleChoiceOptionAddedAction } from '../actions/sharedb_actions';
+import { IProblem, ICodeFile, IMultipleChoiceOption } from './problems';
+import { IPMState } from '.';
+import { ICodeTest } from './aggregateData';
+
+export enum ElementAwaitingFocus { NONE, PROBLEM, OPTION, TEST, FILE };
 
 export interface IIntermediateUserState {
-    isAdmin: boolean
+    isAdmin: boolean;
+    awaitingFocus: null | IProblem | IMultipleChoiceOption | ICodeTest;
     intermediateSolutionState: {
         [problemID: string]: ISolutionState
     }
@@ -33,7 +38,7 @@ export interface ICodeTestResult {
 
 export type ISolutionState = ICodeSolutionState | null;
 
-export const intermediateUserState = (state: IIntermediateUserState = { isAdmin: false, intermediateSolutionState: {} }, action: ISetIsAdminAction | IOutputChangedAction | IErrorChangedAction | IDoneRunningCodeAction | IBeginRunningCodeAction | IProblemAddedAction | ISDBDocFetchedAction | ICodeChangedAction | ITestAddedAction | ITestPartChangedAction | IPassedAddAction | IFailedAddAction | IUpdateActiveHelpSessionAction | ISetActiveTestAction) => {
+export const intermediateUserState = (state: IIntermediateUserState = { isAdmin: false, awaitingFocus: null, intermediateSolutionState: {} }, action: ISetIsAdminAction | IOutputChangedAction | IErrorChangedAction | IDoneRunningCodeAction | IBeginRunningCodeAction | IProblemAddedAction | ISDBDocFetchedAction | ICodeChangedAction | ITestAddedAction | ITestPartChangedAction | IPassedAddAction | IFailedAddAction | IUpdateActiveHelpSessionAction | ISetActiveTestAction) => {
     const { type } = action;
     if (type === EventTypes.SET_IS_ADMIN) {
         const { isAdmin } = action as ISetIsAdminAction;
@@ -168,6 +173,34 @@ export const intermediateUserState = (state: IIntermediateUserState = { isAdmin:
                     testResults: { $set: {} }
                 }
             }
+        });
+    } else {
+        return state;
+    }
+}
+
+export const crossSliceIntermediateUserStateReducer = (state: IPMState, action: IProblemAddedAction|ITestAddedAction|IMultipleChoiceOptionAddedAction): IPMState => {
+    const { type } = action;
+    if (type === EventTypes.PROBLEM_ADDED) {
+        const { problem } = action as IProblemAddedAction;
+        return update(state, {
+            intermediateUserState: {
+                awaitingFocus: { $set: problem }
+            },
+        });
+    } else if (type === EventTypes.TEST_ADDED) {
+        const { test } = action as ITestAddedAction;
+        return update(state, {
+            intermediateUserState: {
+                awaitingFocus: { $set: test }
+            },
+        });
+    } else if (type === EventTypes.OPTION_ADDED) {
+        const { option } = action as IMultipleChoiceOptionAddedAction;
+        return update(state, {
+            intermediateUserState: {
+                awaitingFocus: { $set: option }
+            },
         });
     } else {
         return state;

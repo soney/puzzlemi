@@ -20,6 +20,7 @@ interface ICodeEditorProps {
     shareDBSubDoc?: SDBSubDoc<string>;
     onChange?: (e: ICodeChangeEvent) => void;
     refreshDoc?: any;
+    focusOnMount?: boolean;
 };
 
 interface ICodeEditorState {
@@ -82,9 +83,8 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         }
         if (flag !== prevProps.flag) {
             // need a better way to fix the refresh problem
-            let that = this;
-            setTimeout(function () {
-                that.codeMirror.refresh();
+            setTimeout(() => {
+                this.codeMirror.refresh();
             }, 500)
         }
     };
@@ -94,12 +94,24 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         this.codeMirror.setValue(this.state.code);
         this.codeMirror.setSize(this.props.options.width, this.props.options.height);
         this.codeMirror.setOption('extraKeys', {
-            Tab: (cm) => {
+            "Tab": (cm) => {
                 const spaces = Array(cm.getOption('indentUnit')! + 1).join(' ');
                 cm.getDoc().replaceSelection(spaces);
+            },
+            // "Shift-Tab": false,
+            "Esc": () => {
+                let node: HTMLElement|null = this.codeNode;
+                while(node) {
+                    if(node.matches('.problem')) {
+                        node.focus();
+                    }
+                    node = node.parentElement;
+                }
+
             }
         });
         this.codeMirror.refresh();
+
 
         if (this.props.shareDBSubDoc) {
             this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, this.props.shareDBSubDoc);
@@ -113,6 +125,18 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
             }
             if (this.props.options.onChangeCallback) this.props.options.onChangeCallback();
         });
+
+        if(this.props.focusOnMount) {
+            if(this.codemirrorBinding) {
+                this.codemirrorBinding.onInitialFetch(() => {
+                    this.codeMirror.focus();
+                    this.codeMirror.execCommand('selectAll');
+                });
+            } else {
+                this.codeMirror.focus();
+                this.codeMirror.execCommand('selectAll');
+            }
+        }
     };
     public componentWillUnmount(): void {
         if (this.codeMirror) {

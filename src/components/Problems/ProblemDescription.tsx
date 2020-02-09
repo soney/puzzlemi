@@ -5,14 +5,14 @@ import { CodeEditor } from '../CodeEditor';
 import update from 'immutability-helper';
 import { IPMState } from '../../reducers';
 
-const ProblemDescription = ({ problem, isAdmin, problemsDoc, description }) => {
+const ProblemDescription = ({ problem, isAdmin, problemsDoc, description, focusOnMount }) => {
     if(isAdmin) {
         const p = ['allProblems', problem.id, 'problemDetails', 'description'];
         const subDoc = problemsDoc.subDoc(p);
         return <div className="row">
             <div className="col">
                 <h4>Description:</h4>
-                <CodeEditor shareDBSubDoc={subDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 80}} />
+                <CodeEditor focusOnMount={focusOnMount} shareDBSubDoc={subDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 80}} />
             </div>
         </div>;
     } else {

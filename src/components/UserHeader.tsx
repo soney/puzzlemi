@@ -97,7 +97,7 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
                 </form>
             }
             <form className="form-inline">
-                <Hotkeys keyName="ctrl+shift+a" onKeyDown={toggleIsAdmin}></Hotkeys>
+                <Hotkeys keyName="ctrl+shift+a" onKeyDown={toggleIsAdmin} filter={()=>true}></Hotkeys>
                 <span className='nav-item'>{editButton}</span>
             </form>
         </nav>

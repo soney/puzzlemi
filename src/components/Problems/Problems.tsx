@@ -22,16 +22,17 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
         <ul className='problems'>
             {problems && problems.length
             ? problems.map((problem, i) =>
-                    <Problem key={`${problem.id}-${i}`} problem={problem} />
+                    <Problem key={`${problem.id}-${i}`} problem={problem} tabIndex={0} />
             )
             : <li className='container no-problems'>(no problems yet)</li>}
         </ul>
         {
             isAdmin &&
             <div className="row">
-                <Hotkeys keyName="ctrl+shift+c" onKeyDown={doAddCodeProblem}></Hotkeys>
-                <Hotkeys keyName="ctrl+shift+m" onKeyDown={doAddMultipleChoiceProblem}></Hotkeys>
-                <Hotkeys keyName="ctrl+shift+t" onKeyDown={doAddTextResponseProblem}></Hotkeys>
+                <Hotkeys keyName="j" onKeyDown={() => { console.log('down'); }}></Hotkeys>
+                <Hotkeys keyName="ctrl+shift+c" onKeyUp={doAddCodeProblem} filter={()=>true}></Hotkeys>
+                <Hotkeys keyName="ctrl+shift+m" onKeyUp={doAddMultipleChoiceProblem} filter ={()=>true}></Hotkeys>
+                <Hotkeys keyName="ctrl+shift+t" onKeyUp={doAddTextResponseProblem} filter ={()=>true}></Hotkeys>
                 <div className="btn-group btn-block" role="group">
                     <button className="btn btn-outline-success btn-sm" onClick={doAddCodeProblem}>+ Code</button>
                     <button className="btn btn-outline-success btn-sm" onClick={doAddMultipleChoiceProblem}>+ Multiple Choice</button>

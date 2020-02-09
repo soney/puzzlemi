@@ -2,13 +2,10 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 import { ICodeSolution } from '../../../reducers/solutions';
-import { ISolutionState, ICodeSolutionState } from '../../../reducers/intermediateUserState';
+import { ICodeSolutionState } from '../../../reducers/intermediateUserState';
 import { runCode } from '../../../actions/runCode_actions';
-// import { runCode, runUnitTests, runVerifyTest } from '../../../actions/runCode_actions';
-import { codeChanged, updateCurrentActiveHelpSession } from '../../../actions/user_actions';
 // import { addVariableTest, addHelpSession } from '../../../actions/sharedb_actions';
 import Files from './Files';
-import uuid from '../../../utils/uuid';
 import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 import { ICodeTest } from '../../../reducers/aggregateData';
 
@@ -37,7 +34,6 @@ const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentT
     }
 
     const doRequestHelp = () => {
-        const helpID = uuid();
         // dispatch(addHelpSession(problem.id, username, userSolution, helpID)).then(
         //     dispatch(updateCurrentActiveHelpSession(problem.id, helpID))
         // );

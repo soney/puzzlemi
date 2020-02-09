@@ -8,9 +8,20 @@ import * as classNames from 'classnames';
 import TextResponseProblem from './TextResponseProblem/TextResponseProblem';
 import { IPMState } from '../../reducers';
 
-const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSolution, isAdmin }) => {
+const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSolution, isAdmin, tabIndex, claimFocus }) => {
     const { id: problemID, problemDetails } = problem;
     const { problemType } = problemDetails;
+
+    const elementRef: React.Ref<HTMLLIElement> = React.createRef();
+
+    React.useEffect(() => {
+        if (claimFocus) {
+            const el = elementRef.current;
+            if (el) {
+                el.scrollIntoView({block: 'start', inline: 'nearest'});
+            }
+        }
+    });
 
     const doDeleteProblem = () => {
         return dispatch(deleteProblem(problemID));
@@ -31,7 +42,7 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
         problemDisplay = <TextResponseProblem problem={problem} />;
     }
 
-    return <li className={classNames({'problem': true, 'container': true, 'passedAll': passedAll&&!isAdmin})}>
+    return <li className={classNames({'problem': true, 'container': true, 'passedAll': passedAll&&!isAdmin})} tabIndex={tabIndex} ref={elementRef}>
         { isAdmin &&
             <div className="row">
                 <div className="col clearfix">
@@ -65,7 +76,7 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
 function mapStateToProps(state: IPMState, ownProps) {
     const { intermediateUserState, shareDBDocs, users } = state;
     const myuid = users.myuid as string;
-    const { isAdmin } = intermediateUserState;
+    const { isAdmin, awaitingFocus } = intermediateUserState;
     const { problem } = ownProps;
     const { problemDetails } = problem;
     const { problemType, revealSolution } = problemDetails;
@@ -78,6 +89,8 @@ function mapStateToProps(state: IPMState, ownProps) {
     const numCompleted = completed.length;
     const passedAll = completed.indexOf(myuid) >= 0 && !(problemType==='multiple-choice'&&!revealSolution);
 
-    return update(ownProps, {$merge: { isAdmin, numCompleted, passedAll, visible, revealSolution }});
+    const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
+
+    return update(ownProps, {$merge: { isAdmin, numCompleted, passedAll, visible, revealSolution, claimFocus }});
 }
 export default connect(mapStateToProps)(Problem);
