@@ -17,14 +17,6 @@ const problemAdded = (problem: IProblem): IProblemAddedAction => ({
     problem, type: EventTypes.PROBLEM_ADDED,
 });
 
-// export interface IProblemsFetchedAction {
-//     type: EventTypes.PROBLEMS_FETCHED,
-//     problems: IProblems
-// }
-// export const problemsFetched = (problems: IProblems): IProblemsFetchedAction => ({
-//     problems, type: EventTypes.PROBLEMS_FETCHED,
-// });
-
 export interface IGivenCodeChangedAction {
     type: EventTypes.GIVEN_CODE_CHANGED,
     problemID: string,
@@ -508,38 +500,13 @@ export function addMessage(problemID: string, newMessage: IMessage, helpIndex: n
     }
 }
 
-// export interface ITestPartChangedAction {
-//     type: EventTypes.TEST_PART_CHANGED,
-//     problemID: string,
-//     test: ICodeTest,
-//     part: string
-// }
+
 export interface ITestPartChangedAction {
     type: EventTypes.TEST_PART_CHANGED,
     problemID: string,
     test: any,
     part: string
 }
-// export const testPartChanged = (problemID: string, test: ICodeTest, part: string): ITestPartChangedAction => ({
-//     type: EventTypes.TEST_PART_CHANGED, problemID, test, part
-// });
-
-// export function deleteTest(problemID: string, testID: string) {
-//     return (dispatch: Dispatch, getState) => {
-//         const { shareDBDocs } = getState();
-//         const problemsDoc = shareDBDocs.problems;
-
-//         const testsP = ['allProblems', problemID, 'problemDetails', 'tests'];
-//         const existingTests = problemsDoc.traverse(testsP);
-
-//         for (let i: number = 0, len = existingTests.length; i < len; i++) {
-//             const eti = existingTests[i];
-//             if (eti.id === testID) {
-//                 return problemsDoc.submitListDeleteOp([...testsP, i]);
-//             }
-//         }
-//     };
-// }
 
 export function addFileToProblem(problemID: string) {
     return (dispatch: Dispatch, getState) => {
