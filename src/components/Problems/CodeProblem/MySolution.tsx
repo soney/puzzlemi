@@ -28,9 +28,9 @@ const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentT
         if (graphicsEl_tmp) {
             graphicsEl_tmp.innerHTML = '';
         }
-        testObjects.forEach(test=>{
+        testObjects.forEach(test => {
             dispatch(runCode(codeSolution, problem, intermediateCodeState, graphicsEl_tmp, test))
-        })        
+        })
     }
 
     const doRequestHelp = () => {
@@ -42,22 +42,24 @@ const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentT
 
     return <div>
         <div className="row">
-            <div className="col-7">
+            <div className={config.disableTest ? "col" : "col-7"}>
                 <div>
                     <PuzzleEditor problem={problem} flag={flag} />
                     <div className="row">
-                        <div className="col-9">
+                        <div className={config.disableTest ? "col" : "col-9"}>
                             <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
                         </div>
-                        <div className="col-3">
-                        {config.runTests &&
-                            <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunAll}>Run All</button>
+                        {!config.disableTest &&
+                            <div className="col-3">
+                                {config.runTests &&
+                                    <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunAll}>Run All</button>
+                                }
+                            </div>
                         }
-                        </div>
                     </div>
                 </div>
             </div>
-            <div className="col-5">
+            <div className="col">
                 {currentResult &&
                     <pre className={'codeOutput' + (currentResult.errors.length > 0 ? ' alert alert-danger' : ' no-error')}>
                         {currentResult.output}
@@ -97,7 +99,7 @@ function mapStateToProps(state, ownProps) {
     const { config } = problemDetails;
     const myuid = users.myuid as string;
     const username = myuid.slice(7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
-    
+
     const userSolution = solutions.allSolutions[problem.id][myuid];
     const helpSessions = aggregateData.userData[problem.id].helpSessions
     let myHelpS = helpSessions.filter(s => s.tuteeID === myuid && s.status === true);

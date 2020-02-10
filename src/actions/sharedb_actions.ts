@@ -313,6 +313,7 @@ export function addCodeProblem() {
                 files: [],
                 sketch: [],
                 config: {
+                    disableTest: false,
                     runTests: false,
                     addTests: false,
                     displayInstructor: false,
