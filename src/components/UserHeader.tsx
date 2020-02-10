@@ -92,12 +92,10 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
                 <form className="form-inline">
                     <div className="btn-group">
                         <button onClick={downloadJSON} className='btn btn-sm btn-outline-secondary'>
-                            <i className="fas fa-file-export"></i>
-                            Export problems
+                            <i className="fas fa-file-export"></i>&nbsp;Export problems
                         </button>
                         <label className="file-upload btn btn-sm btn-outline-secondary">
-                            <i className="fas fa-file-import"></i>
-                            Import problems
+                            <i className="fas fa-file-import"></i>&nbsp;Import problems
                             <input type="file" onChange={handleFile} className="form-control-file" />
                         </label>
                     </div>

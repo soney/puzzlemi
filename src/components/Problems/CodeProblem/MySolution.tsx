@@ -23,7 +23,6 @@ const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentT
     };
 
     const doRunAll = () => {
-
         const graphicsEl_tmp = graphicsRef.current;
         if (graphicsEl_tmp) {
             graphicsEl_tmp.innerHTML = '';

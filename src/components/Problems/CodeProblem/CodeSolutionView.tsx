@@ -15,8 +15,8 @@ const CodeSolutionView = ({ dispatch, problem, currentUser, solutionText, hasSol
     const selectRandomIncorrectUser = () => {
         dispatch(selectRandomIncorrectUserForSolutionView(problem.id));
     };
-    return <div className="row">
-        <div className="col">
+    return <div className="row solution">
+        <div className="col random-solution-selection">
             <div className="btn-group" role="group" aria-label="random solutions">
                 <button className="btn btn-outline-secondary btn-sm" onClick={selectRandomUser}>Random solution</button>
                 <button className="btn btn-outline-secondary btn-sm" onClick={selectRandomCorrectUser}>Random correct solution</button>

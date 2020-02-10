@@ -50,35 +50,34 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
 
     return <li className={classNames({'problem': true, 'container': true, 'passedAll': passedAll&&!isAdmin})} tabIndex={tabIndex} ref={elementRef}>
         { isAdmin &&
-            <div className="row">
-                <div className="col clearfix">
-                    <div className="btn-group btn-group-toggle" data-toggle="buttons">
-                        <label className={"btn btn-sm " + (visible ? "btn-primary" : "btn-outline-primary")}>
-                            <input type="radio" name="options" id="visible" onClick={doShowProblem} />
-                            <i className="fas fa-eye"></i>
-                            Visible
-                        </label>
-                        <label className={"btn btn-sm " + (!visible ? "btn-secondary" : "btn-outline-secondary")}>
-                            <input type="radio" name="options" id="hidden" onClick={doHideProblem} />
-                            <i className="fas fa-eye-slash"></i>
-                            Hidden
-                        </label>
-                    </div>
-                    <div className="btn-group btn-group-toggle" data-toggle="buttons">
-                        <label className={"btn btn-sm btn-outline-secondary"}>
-                            <input type="radio" name="options" onClick={doMoveProblemUp} />
-                            <i className="fas fa-arrow-up"></i>
-                            Up
-                        </label>
-                        <label className={"btn btn-sm btn-outline-secondary"}>
-                            <input type="radio" name="options" onClick={doMoveProblemDown} />
-                            <i className="fas fa-arrow-down"></i>
-                            Down
-                        </label>
-                    </div>
-                    <button className="btn btn-sm btn-outline-danger float-right" onClick={doDeleteProblem}><i className="fas fa-trash"></i> Delete Problem</button>
+            <div className="btn-toolbar justify-content-between">
+                <div className="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label className={"btn btn-sm " + (visible ? "btn-primary" : "btn-outline-primary")}>
+                        <input type="radio" name="options" id="visible" onClick={doShowProblem} />
+                        <i className="fas fa-eye"></i>&nbsp;Visible
+                    </label>
+                    <label className={"btn btn-sm " + (!visible ? "btn-secondary" : "btn-outline-secondary")}>
+                        <input type="radio" name="options" id="hidden" onClick={doHideProblem} />
+                        <i className="fas fa-eye-slash"></i>&nbsp;Hidden
+                    </label>
                 </div>
+
+                <div className="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label className={"btn btn-sm btn-outline-secondary"}>
+                        <input type="radio" name="options" onClick={doMoveProblemUp} />
+                        <i className="fas fa-arrow-up"></i>&nbsp;Up
+                    </label>
+                    <label className={"btn btn-sm btn-outline-secondary"}>
+                        <input type="radio" name="options" onClick={doMoveProblemDown} />
+                        <i className="fas fa-arrow-down"></i>&nbsp;Down
+                    </label>
+                </div>
+                <button className="btn btn-sm btn-outline-danger float-right" onClick={doDeleteProblem}><i className="fas fa-trash"></i>&nbsp;Delete Problem</button>
             </div>
+            // <div className="row">
+            //     <div className="col clearfix">
+            //     </div>
+            // </div>
         }
         {problemDisplay}
         {
