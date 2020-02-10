@@ -6,8 +6,8 @@ import { CodeEditor } from '../../../CodeEditor';
 import { ICodeSolution } from '../../../../reducers/solutions';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { codeChanged, setActiveTest } from '../../../../actions/user_actions';
-import { ICodeTest, CodeTestType } from '../../../../reducers/aggregateData';
-import { addTest, deleteTest } from '../../../../actions/sharedb_actions';
+import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
+import { addTest, deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
 
 const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, username, testObjects, dispatch, currentTest, testResults, flag, aggregateDataDoc }) => {
     const [count, setCount] = useState(0);
@@ -42,13 +42,31 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
         dispatch(setActiveTest(testID, problem.id))
     }
 
+    const doChangeTestStatus = () => {
+        const newStatus = currentTest.status === CodeTestStatus.PASSED? CodeTestStatus.FAILED: CodeTestStatus.PASSED;
+        dispatch(changeTestStatus(problem.id, currentTest.id, newStatus))
+    }
+
     const getTestClassName = (test) => {
         const baseClasses = "list-group-item list-group-item-action test-list-item " + (test.type === CodeTestType.INSTRUCTOR ? 'instructor' : 'student');
         const activeClass = test.id === currentTest.id ? " active " : " ";
         const result = testResults[test.id];
         const isEditClass = test.author === username ? " isedit " : " ";
+        let validClass;
+        switch(test.status){
+            case CodeTestStatus.PASSED:
+                validClass = " valid ";
+                break;
+            case CodeTestStatus.FAILED:
+                validClass = " invalid ";
+                break;
+            case CodeTestStatus.UNVERIFIED:
+                validClass = " unknown ";
+                break;
+        }
+        const adminClass = isAdmin? " isadmin ": " ";
         const passClass = result && result.hasOwnProperty('passed') ? result.passed : "";
-        return baseClasses + activeClass + isEditClass + passClass;
+        return baseClasses + activeClass + isEditClass + validClass + adminClass + passClass;
     }
 
     const refreshCM = () => {
@@ -103,6 +121,14 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                             <button className="btn btn-outline-danger btn-sm btn-block" onClick={doDeleteTest}>
                                 <i className="fas fa-trash"></i> Delete
                             </button>
+                        }
+                        {isAdmin && currentTest.author !== 'null' &&
+                        <div>{
+                            (currentTest.status === CodeTestStatus.PASSED
+                                ? <button className="btn btn-outline-success btn-sm" onClick={doChangeTestStatus}>Passed</button>
+                            : <button className="btn btn-outline-danger btn-sm" onClick={doChangeTestStatus}>{currentTest.status === CodeTestStatus.FAILED? 'Failed' : 'Unverified'}</button>)
+                        }
+                        </div>
                         }
                     </div>
                 </div>
@@ -162,7 +188,7 @@ function mapStateToProps(state, ownProps) {
     const { config } = problemDetails;
 
     const myuid = users.myuid as string;
-    const username = myuid.slice(7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
+    const username = myuid.slice(0,7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveTest, testResults } = intermediateCodeState;
     const userSolution = solutions.allSolutions[problem.id][myuid];

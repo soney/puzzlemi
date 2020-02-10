@@ -317,8 +317,7 @@ export function addCodeProblem() {
                     runTests: false,
                     addTests: false,
                     displayInstructor: false,
-                    peerHelp: false,
-                    autoVerify: false
+                    peerHelp: false
                 },
             }
         };
@@ -331,7 +330,7 @@ export function addCodeProblem() {
             before: '# given variables',
             after: '# assertions',
             status: CodeTestStatus.PASSED,
-            completed:[]
+            completed: []
         }
 
         const newCodeSolutionAggregate: ICodeSolutionAggregate = {
@@ -427,25 +426,33 @@ export function addTest(problemID: string, username: string, isAdmin: boolean) {
         const aggregateDataDoc = shareDBDocs.aggregateData;
 
         const newCodeTest: ICodeTest = {
-        id: uuid(),
-        name: 'new',
-        author: username,
-        type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
-        before: '# given variables',
-        after: '# assertions',
-        status: CodeTestStatus.PASSED,
-        completed: []
-    }
-    await aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'tests', newCodeTest.id], newCodeTest);
+            id: uuid(),
+            name: 'new',
+            author: username,
+            type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
+            before: '# given variables',
+            after: '# assertions',
+            status: isAdmin? CodeTestStatus.PASSED: CodeTestStatus.UNVERIFIED,
+            completed: []
+        }
+        await aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'tests', newCodeTest.id], newCodeTest);
     };
 }
 
 export function deleteTest(problemID: string, testID: string) {
-    return async(dispatch: Dispatch, getState)=>{
-        const {shareDBDocs} = getState();
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
 
         await aggregateDataDoc.submitObjectDeleteOp(['userData', problemID, 'tests', testID]);
+    }
+}
+
+export function changeTestStatus(problemID: string, testID: string, newStatus: CodeTestStatus) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        await aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'tests', testID, 'status'], newStatus);
     }
 }
 
@@ -571,8 +578,8 @@ export function moveProblemUp(id: string) {
         const { order } = problemsDoc.getData();
 
         const problemIndex = order.indexOf(id);
-        if(problemIndex > 0) {
-            problemsDoc.submitListMoveOp(['order', problemIndex], problemIndex-1);
+        if (problemIndex > 0) {
+            problemsDoc.submitListMoveOp(['order', problemIndex], problemIndex - 1);
         }
     };
 }
@@ -584,8 +591,8 @@ export function moveProblemDown(id: string) {
         const { order } = problemsDoc.getData();
 
         const problemIndex = order.indexOf(id);
-        if(problemIndex >= 0 && problemIndex < order.length-1) {
-            problemsDoc.submitListMoveOp(['order', problemIndex], problemIndex+1);
+        if (problemIndex >= 0 && problemIndex < order.length - 1) {
+            problemsDoc.submitListMoveOp(['order', problemIndex], problemIndex + 1);
         }
     };
 }
@@ -701,11 +708,11 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                     if (optionAddedOrDeletedMatches) {
                         const problemID = p[1] as string;
                         const { ld } = op as ListDeleteOp;
-                        if(ld) {
+                        if (ld) {
                             multipleChoiceOptionDeleted(problemID, ld, dispatch, getState);
                         }
                         const { li } = op as ListInsertOp;
-                        if(li) {
+                        if (li) {
                             multipleChoiceOptionAdded(problemID, li, dispatch, getState);
                         }
                     }

@@ -5,11 +5,14 @@ import { ICodeSolution } from '../../../reducers/solutions';
 import { ICodeSolutionState } from '../../../reducers/intermediateUserState';
 import { runCode } from '../../../actions/runCode_actions';
 // import { addVariableTest, addHelpSession } from '../../../actions/sharedb_actions';
+import { addHelpSession } from '../../../actions/sharedb_actions';
+import {updateCurrentActiveHelpSession} from '../../../actions/user_actions';
 import Files from './Files';
 import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
-import { ICodeTest } from '../../../reducers/aggregateData';
+import { ICodeTest, CodeTestStatus } from '../../../reducers/aggregateData';
+import uuid from '../../../utils/uuid';
 
-const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentTest, currentResult, problem, config, flag, dispatch, myHelpSession, redirectCallback }) => {
+const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentTest, currentResult, problem, config, flag, dispatch, myHelpSession, redirectCallback, username }) => {
     const codeSolution = userSolution as ICodeSolution;
     const graphicsRef = React.createRef<HTMLDivElement>();
     const messageRef = React.createRef<HTMLDivElement>();
@@ -29,14 +32,17 @@ const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentT
             graphicsEl_tmp.innerHTML = '';
         }
         testObjects.forEach(test => {
-            dispatch(runCode(codeSolution, problem, intermediateCodeState, graphicsEl_tmp, test))
+            if(test.status === CodeTestStatus.PASSED){
+                dispatch(runCode(codeSolution, problem, intermediateCodeState, graphicsEl_tmp, test))
+            }
         })
     }
 
     const doRequestHelp = () => {
-        // dispatch(addHelpSession(problem.id, username, userSolution, helpID)).then(
-        //     dispatch(updateCurrentActiveHelpSession(problem.id, helpID))
-        // );
+        const helpID = uuid();
+        dispatch(addHelpSession(problem.id, username, userSolution, helpID)).then(
+            dispatch(updateCurrentActiveHelpSession(problem.id, helpID))
+        );
         redirectCallback();
     }
 
@@ -98,7 +104,7 @@ function mapStateToProps(state, ownProps) {
     const { problemDetails } = problem;
     const { config } = problemDetails;
     const myuid = users.myuid as string;
-    const username = myuid.slice(7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
+    const username = myuid.slice(0,7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
 
     const userSolution = solutions.allSolutions[problem.id][myuid];
     const helpSessions = aggregateData.userData[problem.id].helpSessions

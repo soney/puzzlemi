@@ -45,7 +45,6 @@ export interface ICodeProblemConfig {
     addTests: boolean;
     displayInstructor: boolean;
     peerHelp: boolean;
-    autoVerify: boolean;
 }
 
 export interface ICodeFile {
