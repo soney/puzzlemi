@@ -12,7 +12,7 @@ import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 import { ICodeTest, CodeTestStatus } from '../../../reducers/aggregateData';
 import uuid from '../../../utils/uuid';
 
-const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentTest, currentResult, problem, config, flag, dispatch, myHelpSession, redirectCallback, username }) => {
+const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentTest, currentResult, problem, config, flag, dispatch, myHelpSession, redirectCallback, username,allTestsObjects }) => {
     const codeSolution = userSolution as ICodeSolution;
     const graphicsRef = React.createRef<HTMLDivElement>();
     const messageRef = React.createRef<HTMLDivElement>();
@@ -31,7 +31,7 @@ const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentT
         if (graphicsEl_tmp) {
             graphicsEl_tmp.innerHTML = '';
         }
-        testObjects.forEach(test => {
+        allTestsObjects.forEach(test => {
             if(test.status === CodeTestStatus.PASSED){
                 dispatch(runCode(codeSolution, problem, intermediateCodeState, graphicsEl_tmp, test))
             }
@@ -102,6 +102,7 @@ function mapStateToProps(state, ownProps) {
     const aggregateData = aggregateDataDoc.getData();
     const { problem } = ownProps;
     const { problemDetails } = problem;
+    const instructorTests = problemDetails.tests;
     const { config } = problemDetails;
     const myuid = users.myuid as string;
     const username = myuid.slice(0,7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
@@ -119,8 +120,12 @@ function mapStateToProps(state, ownProps) {
     }
 
     const testObjects: ICodeTest[] = Object.values(tests);
-    const currentTest = tests.hasOwnProperty(currentActiveTest) ? tests[currentActiveTest] : testObjects[0];
+    const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
+    const allTests = Object.assign(JSON.parse(JSON.stringify(tests)),instructorTests);
+    const allTestsObjects: ICodeTest[] = Object.values(allTests);
+
+    const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
     const currentResult = testResults[currentTest.id];
-    return update(ownProps, { $merge: { isAdmin, username, problemsDoc, config, myuid, userSolution, intermediateCodeState, myHelpSession, currentTest, currentResult, testObjects } });
+    return update(ownProps, { $merge: { isAdmin, username, problemsDoc, config, myuid, userSolution, intermediateCodeState, myHelpSession, currentTest, currentResult, testObjects, allTestsObjects } });
 }
 export default connect(mapStateToProps)(MySolution);

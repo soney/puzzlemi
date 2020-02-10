@@ -277,7 +277,7 @@ export function replaceProblems(newProblems: IProblems) {
                 if (problemDetails.problemType === 'code') {
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
                         completed: [],
-                        variableTest: {},
+                        tests: {},
                         helpSessions: []
                     });
                 } else if (problemDetails.problemType === 'multiple-choice') {
@@ -300,6 +300,17 @@ export function addCodeProblem() {
         const problemsDoc = shareDBDocs.problems;
         const aggregateDataDoc = shareDBDocs.aggregateData;
 
+        const newCodeTest: ICodeTest = {
+            id: uuid(),
+            name: 'default',
+            author: 'null',
+            type: CodeTestType.INSTRUCTOR,
+            before: '# given variables',
+            after: '# assertions',
+            status: CodeTestStatus.PASSED,
+            completed: []
+        }
+
         const newProblem: IProblem = {
             id: uuid(),
             visible: true,
@@ -319,24 +330,17 @@ export function addCodeProblem() {
                     displayInstructor: false,
                     peerHelp: false
                 },
+                tests: {
+                    [newCodeTest.id]: newCodeTest
+                }
             }
         };
 
-        const newCodeTest: ICodeTest = {
-            id: uuid(),
-            name: 'default',
-            author: 'null',
-            type: CodeTestType.INSTRUCTOR,
-            before: '# given variables',
-            after: '# assertions',
-            status: CodeTestStatus.PASSED,
-            completed: []
-        }
 
         const newCodeSolutionAggregate: ICodeSolutionAggregate = {
             completed: [],
             tests: {
-                [newCodeTest.id]: newCodeTest
+                // [newCodeTest.id]: newCodeTest
             },
             helpSessions: []
         };
@@ -424,6 +428,7 @@ export function addTest(problemID: string, username: string, isAdmin: boolean) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
+        const problemsDoc = shareDBDocs.problems;
 
         const newCodeTest: ICodeTest = {
             id: uuid(),
@@ -435,24 +440,28 @@ export function addTest(problemID: string, username: string, isAdmin: boolean) {
             status: isAdmin? CodeTestStatus.PASSED: CodeTestStatus.UNVERIFIED,
             completed: []
         }
-        await aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'tests', newCodeTest.id], newCodeTest);
+        if(isAdmin) problemsDoc.submitObjectInsertOp(['allProblems', problemID, 'problemDetails', 'tests', newCodeTest.id], newCodeTest);
+        else aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'tests', newCodeTest.id], newCodeTest);
     };
 }
 
-export function deleteTest(problemID: string, testID: string) {
+export function deleteTest(problemID: string, test: ICodeTest) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
-
-        await aggregateDataDoc.submitObjectDeleteOp(['userData', problemID, 'tests', testID]);
+        const problemsDoc = shareDBDocs.problems;
+        if(test.type===CodeTestType.INSTRUCTOR) problemsDoc.submitObjectDeleteOp(['allProblems', problemID, 'problemDetails', 'tests', test.id]);
+        else aggregateDataDoc.submitObjectDeleteOp(['userData', problemID, 'tests', test.id]);
     }
 }
 
-export function changeTestStatus(problemID: string, testID: string, newStatus: CodeTestStatus) {
+export function changeTestStatus(problemID: string, test: ICodeTest, newStatus: CodeTestStatus) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
-        await aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'tests', testID, 'status'], newStatus);
+        const problemsDoc = shareDBDocs.problems;
+        if(test.type===CodeTestType.INSTRUCTOR) problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails','tests', test.id,'status'], newStatus);
+        else aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'tests', test.id, 'status'], newStatus);
     }
 }
 
