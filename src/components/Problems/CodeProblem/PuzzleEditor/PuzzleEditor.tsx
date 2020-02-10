@@ -6,18 +6,19 @@ import { CodeEditor } from '../../../CodeEditor';
 import { ICodeSolution } from '../../../../reducers/solutions';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { codeChanged, setActiveTest } from '../../../../actions/user_actions';
-import { ICodeTest, CodeTestType } from '../../../../reducers/aggregateData';
-import { addTest, deleteTest } from '../../../../actions/sharedb_actions';
+import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
+import { addTest, deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
+import { runVerifyTest } from '../../../../actions/runCode_actions';
 
-const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, username, testObjects, dispatch, currentTest, testResults, flag, aggregateDataDoc }) => {
+const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, username, testObjects, dispatch, currentTest, testResults, flag, aggregateDataDoc, instructorTestObjects, allTestsObjects }) => {
     const [count, setCount] = useState(0);
 
     if (!currentTest) { return null; }
     const codeSolution = userSolution as ICodeSolution;
-    const p_agg = ['userData', problem.id];
-    const beforeCodeSubDoc = aggregateDataDoc.subDoc([...p_agg, 'tests', currentTest.id, 'before']);
-    const afterCodeSubDoc = aggregateDataDoc.subDoc([...p_agg, 'tests', currentTest.id, 'after']);
-    const testNameSubDoc = aggregateDataDoc.subDoc([...p_agg, 'tests', currentTest.id, 'name']);
+    const p_test = currentTest.type === CodeTestType.INSTRUCTOR ? ['allProblems', problem.id, 'problemDetails', 'tests', currentTest.id] : ['userData', problem.id, 'tests', currentTest.id];
+    const beforeCodeSubDoc = currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'before']) : aggregateDataDoc.subDoc([...p_test, 'before']);
+    const afterCodeSubDoc = currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'after']) : aggregateDataDoc.subDoc([...p_test, 'after']);
+    const testNameSubDoc = currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'name']) : aggregateDataDoc.subDoc([...p_test, 'name']);
 
     const p_prb = ['allProblems', problem.id];
     const givenCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'givenCode']);
@@ -34,7 +35,7 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
     }
 
     const doDeleteTest = () => {
-        dispatch(deleteTest(problem.id, currentTest.id));
+        dispatch(deleteTest(problem.id, currentTest));
     }
 
     const doSetCurrentTest = (e) => {
@@ -42,13 +43,36 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
         dispatch(setActiveTest(testID, problem.id))
     }
 
+    const doChangeTestStatus = () => {
+        const newStatus = currentTest.status === CodeTestStatus.PASSED ? CodeTestStatus.FAILED : CodeTestStatus.PASSED;
+        dispatch(changeTestStatus(problem.id, currentTest, newStatus))
+    }
+    const doVerifyAll = () => {
+        allTestsObjects.forEach(test => {
+            dispatch(runVerifyTest(problem, test))
+        })
+    }
+
     const getTestClassName = (test) => {
         const baseClasses = "list-group-item list-group-item-action test-list-item " + (test.type === CodeTestType.INSTRUCTOR ? 'instructor' : 'student');
         const activeClass = test.id === currentTest.id ? " active " : " ";
         const result = testResults[test.id];
         const isEditClass = test.author === username ? " isedit " : " ";
+        let validClass;
+        switch (test.status) {
+            case CodeTestStatus.PASSED:
+                validClass = " valid ";
+                break;
+            case CodeTestStatus.FAILED:
+                validClass = " invalid ";
+                break;
+            case CodeTestStatus.UNVERIFIED:
+                validClass = " unknown ";
+                break;
+        }
+        const adminClass = isAdmin ? " isadmin " : " ";
         const passClass = result && result.hasOwnProperty('passed') ? result.passed : "";
-        return baseClasses + activeClass + isEditClass + passClass;
+        return baseClasses + activeClass + isEditClass + validClass + adminClass + passClass;
     }
 
     const refreshCM = () => {
@@ -104,6 +128,14 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                                 <i className="fas fa-trash"></i> Delete
                             </button>
                         }
+                        {isAdmin && currentTest.author !== 'null' &&
+                            <div>{
+                                (currentTest.status === CodeTestStatus.PASSED
+                                    ? <button className="btn btn-outline-success btn-sm" onClick={doChangeTestStatus}>Passed</button>
+                                    : <button className="btn btn-outline-danger btn-sm" onClick={doChangeTestStatus}>{currentTest.status === CodeTestStatus.FAILED ? 'Failed' : 'Unverified'}</button>)
+                            }
+                            </div>
+                        }
                     </div>
                 </div>
                 <CodeEditor shareDBSubDoc={beforeCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} />
@@ -132,17 +164,35 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                 <CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} />
             </div>
             <div className="col-3">
-                <div className="list-group test-lists">
-                    {testObjects.map((test, i) => <div key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
-                        {test.name}
-                        {test.author === username &&
-                            <span className="badge badge-light"><i className="fas fa-user"></i></span>
-                        }
-                    </div>)}
-                </div>
+                <div>Instructors' Tests</div>
+                {instructorTestObjects.map((test, i) => <div key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
+                    {test.name}
+                    {test.author === username &&
+                        <span className="badge badge-light"><i className="fas fa-user"></i></span>
+                    }
+                </div>)}
+                {testObjects.length > 0 &&
+                    <>
+                        <div>Students' Tests</div>
+                        <div className="list-group test-lists">
+                            {testObjects.map((test, i) => <div key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
+                                {test.name}
+                                {test.author === username &&
+                                    <span className="badge badge-light"><i className="fas fa-user"></i></span>
+                                }
+                            </div>)}
+                        </div>
+
+                    </>
+                }
                 {(config.addTests || isAdmin) &&
                     <div className="add-button">
                         <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button>
+                    </div>
+                }
+                {isAdmin &&
+                    <div className="add-button">
+                        <button className="btn btn-outline-primary btn-sm btn-block" onClick={doVerifyAll}>Verify All</button>
                     </div>
                 }
             </div>
@@ -159,21 +209,27 @@ function mapStateToProps(state, ownProps) {
     const aggregateDataDoc = shareDBDocs.aggregateData;
     const aggregateData = shareDBDocs.i.aggregateData;
     const { problemDetails } = problem;
+    const instructorTests = problemDetails.tests;
     const { config } = problemDetails;
 
     const myuid = users.myuid as string;
-    const username = myuid.slice(7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
+    const username = myuid.slice(0, 7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveTest, testResults } = intermediateCodeState;
     const userSolution = solutions.allSolutions[problem.id][myuid];
     let tests = {};
+
     if (aggregateData) {
         tests = aggregateData.userData[problem.id].tests;
     }
     const testObjects: ICodeTest[] = Object.values(tests);
+    const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
+    const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
+    const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
-    const currentTest = tests.hasOwnProperty(currentActiveTest) ? tests[currentActiveTest] : testObjects[0];
-    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, testObjects, aggregateDataDoc, currentTest, problemsDoc, testResults, config } })
+    const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
+
+    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, testObjects, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects } })
 }
 
 export default connect(mapStateToProps)(PuzzleEditor);

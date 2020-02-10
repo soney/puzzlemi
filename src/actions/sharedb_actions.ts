@@ -17,14 +17,6 @@ const problemAdded = (problem: IProblem): IProblemAddedAction => ({
     problem, type: EventTypes.PROBLEM_ADDED,
 });
 
-// export interface IProblemsFetchedAction {
-//     type: EventTypes.PROBLEMS_FETCHED,
-//     problems: IProblems
-// }
-// export const problemsFetched = (problems: IProblems): IProblemsFetchedAction => ({
-//     problems, type: EventTypes.PROBLEMS_FETCHED,
-// });
-
 export interface IGivenCodeChangedAction {
     type: EventTypes.GIVEN_CODE_CHANGED,
     problemID: string,
@@ -277,7 +269,7 @@ export function replaceProblems(newProblems: IProblems) {
                 if (problemDetails.problemType === 'code') {
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
                         completed: [],
-                        variableTest: {},
+                        tests: {},
                         helpSessions: []
                     });
                 } else if (problemDetails.problemType === 'multiple-choice') {
@@ -300,6 +292,17 @@ export function addCodeProblem() {
         const problemsDoc = shareDBDocs.problems;
         const aggregateDataDoc = shareDBDocs.aggregateData;
 
+        const newCodeTest: ICodeTest = {
+            id: uuid(),
+            name: 'default',
+            author: 'null',
+            type: CodeTestType.INSTRUCTOR,
+            before: '# given variables',
+            after: '# assertions',
+            status: CodeTestStatus.PASSED,
+            completed: []
+        }
+
         const newProblem: IProblem = {
             id: uuid(),
             visible: true,
@@ -317,27 +320,19 @@ export function addCodeProblem() {
                     runTests: false,
                     addTests: false,
                     displayInstructor: false,
-                    peerHelp: false,
-                    autoVerify: false
+                    peerHelp: false
                 },
+                tests: {
+                    [newCodeTest.id]: newCodeTest
+                }
             }
         };
 
-        const newCodeTest: ICodeTest = {
-            id: uuid(),
-            name: 'default',
-            author: 'null',
-            type: CodeTestType.INSTRUCTOR,
-            before: '# given variables',
-            after: '# assertions',
-            status: CodeTestStatus.PASSED,
-            completed:[]
-        }
 
         const newCodeSolutionAggregate: ICodeSolutionAggregate = {
             completed: [],
             tests: {
-                [newCodeTest.id]: newCodeTest
+                // [newCodeTest.id]: newCodeTest
             },
             helpSessions: []
         };
@@ -425,27 +420,40 @@ export function addTest(problemID: string, username: string, isAdmin: boolean) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
+        const problemsDoc = shareDBDocs.problems;
 
         const newCodeTest: ICodeTest = {
-        id: uuid(),
-        name: 'new',
-        author: username,
-        type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
-        before: '# given variables',
-        after: '# assertions',
-        status: CodeTestStatus.PASSED,
-        completed: []
-    }
-    await aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'tests', newCodeTest.id], newCodeTest);
+            id: uuid(),
+            name: 'new',
+            author: username,
+            type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
+            before: '# given variables',
+            after: '# assertions',
+            status: isAdmin? CodeTestStatus.PASSED: CodeTestStatus.UNVERIFIED,
+            completed: []
+        }
+        if(isAdmin) problemsDoc.submitObjectInsertOp(['allProblems', problemID, 'problemDetails', 'tests', newCodeTest.id], newCodeTest);
+        else aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'tests', newCodeTest.id], newCodeTest);
     };
 }
 
-export function deleteTest(problemID: string, testID: string) {
-    return async(dispatch: Dispatch, getState)=>{
-        const {shareDBDocs} = getState();
+export function deleteTest(problemID: string, test: ICodeTest) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
+        const problemsDoc = shareDBDocs.problems;
+        if(test.type===CodeTestType.INSTRUCTOR) problemsDoc.submitObjectDeleteOp(['allProblems', problemID, 'problemDetails', 'tests', test.id]);
+        else aggregateDataDoc.submitObjectDeleteOp(['userData', problemID, 'tests', test.id]);
+    }
+}
 
-        await aggregateDataDoc.submitObjectDeleteOp(['userData', problemID, 'tests', testID]);
+export function changeTestStatus(problemID: string, test: ICodeTest, newStatus: CodeTestStatus) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        const problemsDoc = shareDBDocs.problems;
+        if(test.type===CodeTestType.INSTRUCTOR) problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails','tests', test.id,'status'], newStatus);
+        else aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'tests', test.id, 'status'], newStatus);
     }
 }
 
@@ -492,38 +500,13 @@ export function addMessage(problemID: string, newMessage: IMessage, helpIndex: n
     }
 }
 
-// export interface ITestPartChangedAction {
-//     type: EventTypes.TEST_PART_CHANGED,
-//     problemID: string,
-//     test: ICodeTest,
-//     part: string
-// }
+
 export interface ITestPartChangedAction {
     type: EventTypes.TEST_PART_CHANGED,
     problemID: string,
     test: any,
     part: string
 }
-// export const testPartChanged = (problemID: string, test: ICodeTest, part: string): ITestPartChangedAction => ({
-//     type: EventTypes.TEST_PART_CHANGED, problemID, test, part
-// });
-
-// export function deleteTest(problemID: string, testID: string) {
-//     return (dispatch: Dispatch, getState) => {
-//         const { shareDBDocs } = getState();
-//         const problemsDoc = shareDBDocs.problems;
-
-//         const testsP = ['allProblems', problemID, 'problemDetails', 'tests'];
-//         const existingTests = problemsDoc.traverse(testsP);
-
-//         for (let i: number = 0, len = existingTests.length; i < len; i++) {
-//             const eti = existingTests[i];
-//             if (eti.id === testID) {
-//                 return problemsDoc.submitListDeleteOp([...testsP, i]);
-//             }
-//         }
-//     };
-// }
 
 export function addFileToProblem(problemID: string) {
     return (dispatch: Dispatch, getState) => {
@@ -571,8 +554,8 @@ export function moveProblemUp(id: string) {
         const { order } = problemsDoc.getData();
 
         const problemIndex = order.indexOf(id);
-        if(problemIndex > 0) {
-            problemsDoc.submitListMoveOp(['order', problemIndex], problemIndex-1);
+        if (problemIndex > 0) {
+            problemsDoc.submitListMoveOp(['order', problemIndex], problemIndex - 1);
         }
     };
 }
@@ -584,8 +567,8 @@ export function moveProblemDown(id: string) {
         const { order } = problemsDoc.getData();
 
         const problemIndex = order.indexOf(id);
-        if(problemIndex >= 0 && problemIndex < order.length-1) {
-            problemsDoc.submitListMoveOp(['order', problemIndex], problemIndex+1);
+        if (problemIndex >= 0 && problemIndex < order.length - 1) {
+            problemsDoc.submitListMoveOp(['order', problemIndex], problemIndex + 1);
         }
     };
 }
@@ -701,11 +684,11 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                     if (optionAddedOrDeletedMatches) {
                         const problemID = p[1] as string;
                         const { ld } = op as ListDeleteOp;
-                        if(ld) {
+                        if (ld) {
                             multipleChoiceOptionDeleted(problemID, ld, dispatch, getState);
                         }
                         const { li } = op as ListInsertOp;
-                        if(li) {
+                        if (li) {
                             multipleChoiceOptionAdded(problemID, li, dispatch, getState);
                         }
                     }

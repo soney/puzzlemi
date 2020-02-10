@@ -65,7 +65,7 @@ function mapStateToProps(state, ownProps) {
     let activeS = sessions.filter(s => s.id === currentActiveHelpSession);
     const activeSession = activeS.length > 0 ? activeS[0] : null;
     const myuid = users.myuid as string;
-    const username = myuid.slice(7) === "testuid" ? "testuser-"+myuid.slice(-4) : users.allUsers[myuid].username;
+    const username = myuid.slice(0,7) === "testuid" ? "testuser-"+myuid.slice(-4) : users.allUsers[myuid].username;
     return update(ownProps, { $merge: { activeSession, sessions, username } });
 }
 export default connect(mapStateToProps)(ChatWidget);

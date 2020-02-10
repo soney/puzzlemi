@@ -48,7 +48,7 @@ function mapStateToProps(state, ownProps) {
     const activeSession = activeS.length > 0 ? activeS[0] : null;
     const sessionIndex = sessions.indexOf(activeSession);
     const myuid = users.myuid as string;
-    const username = myuid.slice(7) === "testuid" ? "testuser-"+myuid.slice(-4) : users.allUsers[myuid].username;
+    const username = myuid.slice(0,7) === "testuid" ? "testuser-"+myuid.slice(-4) : users.allUsers[myuid].username;
     const isTutee = activeSession !== null ? activeSession.tutee === username : false;
     return update(ownProps, { $merge: { username, sessionIndex, aggregateDataDoc, sessions, activeSession, isTutee } });
 }
