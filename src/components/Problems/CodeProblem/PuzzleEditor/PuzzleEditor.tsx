@@ -8,8 +8,9 @@ import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { codeChanged, setActiveTest } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
 import { addTest, deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
+import { runVerifyTest } from '../../../../actions/runCode_actions';
 
-const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, username, testObjects, dispatch, currentTest, testResults, flag, aggregateDataDoc, instructorTestObjects }) => {
+const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, username, testObjects, dispatch, currentTest, testResults, flag, aggregateDataDoc, instructorTestObjects, allTestsObjects }) => {
     const [count, setCount] = useState(0);
 
     if (!currentTest) { return null; }
@@ -45,6 +46,11 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
     const doChangeTestStatus = () => {
         const newStatus = currentTest.status === CodeTestStatus.PASSED ? CodeTestStatus.FAILED : CodeTestStatus.PASSED;
         dispatch(changeTestStatus(problem.id, currentTest, newStatus))
+    }
+    const doVerifyAll = () => {
+        allTestsObjects.forEach(test => {
+            dispatch(runVerifyTest(problem, test))
+        })
     }
 
     const getTestClassName = (test) => {
@@ -184,6 +190,11 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                         <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button>
                     </div>
                 }
+                {isAdmin &&
+                    <div className="add-button">
+                        <button className="btn btn-outline-primary btn-sm btn-block" onClick={doVerifyAll}>Verify All</button>
+                    </div>
+                }
             </div>
         </div>
     </>
@@ -214,10 +225,11 @@ function mapStateToProps(state, ownProps) {
     const testObjects: ICodeTest[] = Object.values(tests);
     const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
+    const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
 
-    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, testObjects, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects } })
+    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, testObjects, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects } })
 }
 
 export default connect(mapStateToProps)(PuzzleEditor);

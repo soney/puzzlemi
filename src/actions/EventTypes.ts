@@ -1,6 +1,4 @@
 enum EventTypes {
-    RUN_CODE = 'run code',
-    DESCRIPTION_CHANGED = 'description changed',
     OPTION_ADDED = 'multiple-choice option added',
     OPTION_DELETED = 'multiple-choice option deleted',
     OPTION_DESCRIPTION_CHANGED = 'multiple-choice option description changed',
@@ -72,8 +70,6 @@ enum EventTypes {
     UPDATE_ACTIVE_FAILED_TEST_ID = 'update active failed test id',
     INIT_TEST_USER_DATA = 'init test in user data',
     INIT_USER_USER_DATA = 'init user in user data',
-    UPDATE_TEST_USER_INFO_USER_DATA = 'update test user info in user data',
-    PROBLEM_UPDATE_SKETCH = 'instructor draw or delete sketch',
     UPDATE_ACTIVE_HELP_SESSION = 'update active help session',
 };
 export default EventTypes;
