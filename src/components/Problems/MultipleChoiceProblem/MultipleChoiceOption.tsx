@@ -40,7 +40,7 @@ const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolu
     }
     if(isAdmin) {
         const optionSubDoc = problemsDoc.subDoc(['allProblems', problem.id, 'problemDetails', 'options', optionIndex, 'description']);
-        return <tr>
+        return <tr className={classNames({ 'alert-primary': selectedByCurrentUser })}>
             <td>
                 <CodeEditor shareDBSubDoc={optionSubDoc} focusOnMount={claimFocus} selectOnFocus={true} captureTabs={false} options={{lineNumbers: false, mode: 'python', lineWrapping: true, height: 30}} />
             </td>
@@ -65,7 +65,7 @@ const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolu
         const userCorrect = isCorrect === (selectedItems.indexOf(option.id)>=0);
         const optionDescription = { __html: converter.makeHtml(description) };
 
-        return <tr className={classNames({ 'alert-danger': revealSolution && !userCorrect, 'alert-primary': isAdmin && selectedByCurrentUser })}>
+        return <tr className={classNames({ 'alert-danger': revealSolution && !userCorrect })}>
             <td colSpan={revealSolution ? 2 : 3}>
                 <label><input disabled={revealSolution} type={selectionType === 'single' ? 'radio' : 'checkbox'} key={option.id} name={problem.id} value={option.id} checked={selectedItems.indexOf(option.id) >= 0} onChange={onSelectionChange} /> <span className='multiple-choice-option' dangerouslySetInnerHTML={optionDescription} /></label>
             </td>
@@ -81,7 +81,7 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { app, intermediateUserState, shareDBDocs, solutions, users } = state;
     const { isAdmin, awaitingFocus } = intermediateUserState;
     const problemsDoc = shareDBDocs.problems;
-
+    // const { aggregateData } = shareDBDocs.i;
 
     const { problem, option } = ownProps;
     const { problemDetails } = problem;
@@ -105,7 +105,7 @@ function mapStateToProps(state: IPMState, ownProps) {
             const problemSolutions = solutionsData!.allSolutions[problem.id];
             const currentSolution = problemSolutions[currentUser];
             if(currentSolution && currentSolution.hasOwnProperty('selectedItems')) {
-                selectedByCurrentUser = (currentSolution as IMultipleChoiceSolution).selectedItems.includes(problem.id);
+                selectedByCurrentUser = (currentSolution as IMultipleChoiceSolution).selectedItems.indexOf(option.id) >= 0;
             }
         }
     }

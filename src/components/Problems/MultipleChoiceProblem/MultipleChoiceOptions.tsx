@@ -60,7 +60,7 @@ function mapStateToProps(state: IPMState, ownProps) {
 
     let aggregateData: {[optionID: string]: number} = {};
     try {
-        if(revealSolution) {
+        if(isAdmin || revealSolution) {
             const aggData = shareDBDocs.i.aggregateData;
             const problemSelectionData = aggData!.userData[problem.id] as IMultipleChoiceSolutionAggregate;
             const optionSelectionData = problemSelectionData.selected;
