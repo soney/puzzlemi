@@ -39,6 +39,10 @@ html {
             color: #AAA;
             text-align: center;
         }
+
+        .btn-toolbar {
+            margin-bottom: 10px;
+        }
     }
     .no-problems {
         list-style: none;
@@ -87,6 +91,13 @@ html {
     .no_solution {
         color: #999;
         font-style: italic;
+    }
+
+    .solution {
+        margin-top: 10px;
+        .random-solution-selection {
+            text-align: center;
+        }
     }
 }
 .CodeMirror {
@@ -222,8 +233,6 @@ nav {
 }
 
 .config-panel {
-    margin-top: 20px;
-    margin-bottom: 20px;
 }
 
 .test-head {

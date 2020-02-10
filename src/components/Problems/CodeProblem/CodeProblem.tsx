@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import ProblemDescription from '../ProblemDescription';
 import ProblemNotes from './LiveCode/ProblemNotes';
 import update from 'immutability-helper';
-import ConfigPanel from './ConfigPanel';
+import CodeProblemConfigPanel from './CodeConfigPanel';
 import Files from './Files';
 import MySolution from './MySolution';
 import LiveCode from './LiveCode/LiveCode';
@@ -44,6 +44,9 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
                 <div className="col">
                     <ProblemDescription focusOnMount={claimFocus} problem={problem} />
                 </div>
+                <div className="col config-panel">
+                    <CodeProblemConfigPanel problem={problem} />
+                </div>
             </div>
             <div className="row">
                 <div className="col">
@@ -70,17 +73,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
                     </div>
                 </div>
             </div>
-            <div className="row">
-                <div className="col">
-                    <h5> Config: </h5>
-                    <ConfigPanel problem={problem} />
-                </div>
-            </div>
-            <div className="row">
-                <div className="col">
-                    <CodeSolutionView problem={problem} />
-                </div>
-            </div>
+            <CodeSolutionView problem={problem} />
         </>
     }
     else {

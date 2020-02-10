@@ -11,7 +11,6 @@ const ProblemDescription = ({ problem, isAdmin, problemsDoc, description, focusO
         const subDoc = problemsDoc.subDoc(p);
         return <div className="row">
             <div className="col">
-                <h4>Description:</h4>
                 <CodeEditor focusOnMount={focusOnMount} shareDBSubDoc={subDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 80}} />
             </div>
         </div>;

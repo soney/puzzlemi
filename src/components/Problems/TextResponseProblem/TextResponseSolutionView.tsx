@@ -9,8 +9,8 @@ const TextResponseSolutionView = ({ dispatch, problem, currentUser, solutionText
     const selectRandomUser = () => {
         dispatch(selectRandomUserForSolutionView(problem.id));
     };
-    return <div className="row">
-        <div className="col">
+    return <div className="row solution">
+        <div className="col random-solution-selection">
             <button className="btn btn-outline-secondary btn-sm" onClick={selectRandomUser}>Show random solution</button>
             {
                 currentUser && hasSolution &&

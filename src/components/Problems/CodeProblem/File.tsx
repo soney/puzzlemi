@@ -19,13 +19,21 @@ const File = ({ dispatch, problem, fileIndex, file, name, contents, isAdmin, pro
     const contentsSubDoc = problemsDoc.subDoc([...p, 'contents']);
     if (isAdmin) {
         return <div>
-            <div className='clearfix'>
-                <button className="btn btn-outline-danger btn-sm float-right" onClick={doDeleteFile}>
-                    <i className="fas fa-trash"></i>
-                </button>
+            <div className='row'>
+                <div className='col'>
+                    <CodeEditor shareDBSubDoc={nameSubDoc} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 30 }} captureTabs={false} selectOnFocus={true} />
+                </div>
+                <div className='col'>
+                    <button className="btn btn-outline-danger btn-sm float-right" onClick={doDeleteFile}>
+                        <i className="fas fa-trash"></i>&nbsp;Delete file
+                    </button>
+                </div>
             </div>
-            <CodeEditor shareDBSubDoc={nameSubDoc} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 30 }} />
-            <CodeEditor shareDBSubDoc={contentsSubDoc} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 120 }} />
+            <div className='row'>
+                <div className = 'col'>
+                    <CodeEditor shareDBSubDoc={contentsSubDoc} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 120 }} />
+                </div>
+            </div>
         </div>;
     } else {
         return <div className='file'>

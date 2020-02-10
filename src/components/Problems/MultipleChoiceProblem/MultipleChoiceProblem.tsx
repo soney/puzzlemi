@@ -2,22 +2,12 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import ProblemDescription from '../ProblemDescription';
 import update from 'immutability-helper';
-import { setMultipleChoiceSelectionEnabled, setRevealSolution } from '../../../actions/sharedb_actions';
 import * as classNames from 'classnames';
 import { IPMState } from '../../../reducers';
 import MultipleChoiceOptions from './MultipleChoiceOptions';
+import MultipleChoiceConfigPanel from './MultipleChoiceConfigPanel';
 
-const MultipleChoiceProblem = ({ problem, dispatch, allCorrect, isAdmin, selectionType, revealSolution, claimFocus }) => {
-    const doChangeMultipleChoiceSelectionType = (event) => {
-        const { target } = event;
-        const { checked } = target;
-        dispatch(setMultipleChoiceSelectionEnabled(problem.id, checked));
-    }
-    const doChangeRevealSolution = (event) => {
-        const { target } = event;
-        const { checked } = target;
-        dispatch(setRevealSolution(problem.id, checked));
-    }
+const MultipleChoiceProblem = ({ problem, allCorrect, isAdmin, revealSolution, claimFocus }) => {
     return <>
         <div className={classNames({
             row: true,
@@ -31,15 +21,8 @@ const MultipleChoiceProblem = ({ problem, dispatch, allCorrect, isAdmin, selecti
             </div>
             {
                 isAdmin &&
-                <div className="col">
-                    <div className="custom-control custom-switch">
-                        <input id={`multiple-item-selection-${problem.id}`} className="custom-control-input" type='checkbox' checked={selectionType==='multiple'} onChange={doChangeMultipleChoiceSelectionType} />
-                        <label htmlFor={`multiple-item-selection-${problem.id}`} className="custom-control-label">Multiple Item Selection</label>
-                    </div>
-                    <div className="custom-control custom-switch">
-                        <input id={`reveal-solution-${problem.id}`} className="custom-control-input" type='checkbox' checked={revealSolution} onChange={doChangeRevealSolution} />
-                        <label htmlFor={`reveal-solution-${problem.id}`} className="custom-control-label">Reveal Solution (and block futher edits)</label>
-                    </div>
+                <div className="col config-panel">
+                    <MultipleChoiceConfigPanel problem={problem} />
                 </div>
             }
             <MultipleChoiceOptions problem={problem} />
@@ -51,10 +34,10 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { isAdmin, awaitingFocus } = intermediateUserState;
     const { problem } = ownProps;
     const { problemDetails } = problem;
-    const { selectionType, revealSolution } = problemDetails;
+    const { revealSolution } = problemDetails;
 
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
 
-    return update(ownProps, { $merge: { isAdmin, selectionType, revealSolution, claimFocus, allCorrect: false } });
+    return update(ownProps, { $merge: { isAdmin, revealSolution, claimFocus, allCorrect: false } });
 }
 export default connect(mapStateToProps)(MultipleChoiceProblem);

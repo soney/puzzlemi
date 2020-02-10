@@ -15,9 +15,7 @@ const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin, claimFo
         return dispatch(setTextResponse(problem.id, value));
     };
     return <>
-            <div className="col">
-                <ProblemDescription focusOnMount={claimFocus} problem={problem} />
-            </div>
+            <ProblemDescription focusOnMount={claimFocus} problem={problem} />
             { isAdmin &&
                 <TextResponseSolutionView problem={problem} />
             }
