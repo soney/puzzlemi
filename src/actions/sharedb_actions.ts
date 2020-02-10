@@ -252,9 +252,13 @@ export function replaceProblems(newProblems: IProblems) {
                         completed: []
                     });
                 } else if(problemDetails.problemType === 'multiple-choice') {
+                    const selected = {};
+                    problemDetails.options.forEach((option) => {
+                        selected[option.id] = [];
+                    });
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
                         completed: [],
-                        selected: {}
+                        selected
                     });
                 } else if(problemDetails.problemType === 'text-response') {
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], { });
