@@ -2,10 +2,10 @@ import { Dispatch } from "redux";
 import '../js/skulpt/skulpt.min.js';
 import '../js/skulpt/skulpt-stdlib.js';
 import EventTypes from "./EventTypes";
-import { ICodeSolution } from "../reducers/solutions.js";
+import { ICodeSolution } from "../reducers/solutions";
 import { IProblem, ICodeProblem } from "../reducers/problems";
-import { ICodeTest } from "../reducers/aggregateData.js";
-import { ICodeSolutionState } from "../reducers/intermediateUserState.js";
+import { ICodeTest, CodeTestType, CodeTestStatus } from "../reducers/aggregateData";
+import { ICodeSolutionState } from "../reducers/intermediateUserState";
 
 declare const Sk;
 
@@ -167,89 +167,6 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files,
     });
 }
 
-// function executeUniteTest(variableTest, codeSolution: ICodeSolution, problem: IProblem, intermediateSolutionState: ICodeSolutionState, graphics: HTMLDivElement | null) {
-//     return new Promise(function (resolve, reject) {
-//         const problemDetails = problem.problemDetails as ICodeProblem;
-//         const { afterCode, tests } = problemDetails;
-//         const { code } = codeSolution;
-//         const files = { problemFiles: problemDetails.files, userFiles: codeSolution.files };
-//         let beforeCode = "";
-//         variableTest.input.forEach(variable => {
-//             const snippet: string = variable.name + "=" + variable.value + ";\n";
-//             beforeCode = beforeCode.concat(snippet);
-//         });
-//         const fullCode = beforeCode.concat(code);
-
-//         let afterTest: any[] = [];
-//         variableTest.output.forEach((variable, i) => {
-//             const t = {
-//                 id: 'variable-' + variable.name,
-//                 actual: variable.name,
-//                 expected: variable.value,
-//                 description: 'expected variable ' + variable.name + ' = ' + variable.value
-//             }
-//             afterTest.push(t)
-//         });
-//         const outputChangeHandler = (output) => {
-//         }
-//         const writeFileHandler = (contents, fname) => {
-//         };
-//         const fullTests = afterTest.concat(tests);
-//         executeCode(fullCode, fullTests, afterCode, files, outputChangeHandler, writeFileHandler, graphics).then(result => {
-//             if (result.passedAll) resolve('True');
-//             else reject({ test: variableTest, result });
-//         });
-//     })
-// }
-
-// export function runVerifyTest(problem: IProblem, variableTest: ICodeVariableTest) {
-//     return async (dispatch: Dispatch, getState) => {
-//         const { id: problemID } = problem;
-//         const problemDetails = problem.problemDetails as ICodeProblem;
-//         const { afterCode, standardCode, tests } = problemDetails;
-//         const files = { problemFiles: problemDetails.files, userFiles: null };
-
-//         let beforeCode = "";
-//         variableTest.input.forEach(variable => {
-//             const snippet: string = variable.name + "=" + variable.value + ";\n";
-//             beforeCode = beforeCode.concat(snippet);
-//         })
-//         const fullCode = beforeCode.concat(standardCode);
-
-//         let afterTest: any[] = [];
-//         variableTest.output.forEach((variable, i) => {
-//             const t = {
-//                 id: 'variable-' + variable.name,
-//                 actual: variable.name,
-//                 expected: variable.value,
-//                 description: 'expected variable ' + variable.name + ' = ' + variable.value
-//             }
-//             afterTest.push(t)
-//         });
-//         const fullTests = afterTest.concat(tests);
-
-//         const outputChangeHandler = (output) => {
-//         }
-//         const writeFileHandler = (contents, fname) => {
-//         }
-
-//         const { shareDBDocs } = getState();
-//         const problemsDoc = shareDBDocs.problems;
-//         const updated_variableTests = problemsDoc.traverse(['allProblems', problemID, 'problemDetails', 'variableTests']);
-//         let testIndex = 0;
-//         updated_variableTests.forEach((t, i) => {
-//             if (t.id === variableTest.id) testIndex = i;
-//         })
-
-//         await executeCode(fullCode, fullTests, afterCode, files, outputChangeHandler, writeFileHandler, null).then(result => {
-//             const { passedAll } = result;
-//             const status = passedAll ? 'Passed' : 'Failed';
-//             problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'variableTests', testIndex, 'status'], status);
-//         })
-
-//     }
-// }
-
 export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermediateSolutionState: ICodeSolutionState, graphics: HTMLDivElement | null, test: ICodeTest) {
     return (dispatch: Dispatch, getState) => {
         const { id: problemID } = problem;
@@ -297,6 +214,30 @@ export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermed
                 testID: test.id,
                 type: EventTypes.DONE_RUNNING_CODE
             } as IDoneRunningCodeAction);
+        })
+    }
+}
+
+export function runVerifyTest(problem: IProblem, test:ICodeTest) {
+    return (dispatch: Dispatch, getState) => {
+        const { id: problemID } = problem;
+        const problemDetails = problem.problemDetails as ICodeProblem;
+        const { standardCode } = problemDetails;
+        const files = { problemFiles: problemDetails.files};
+       
+        const outputChangeHandler = (output) => {
+        }
+        const writeFileHandler = (contents, fname) => {
+        }
+        executeCode(test.before, standardCode, test.after, files, outputChangeHandler, writeFileHandler, null).then(result => {
+            const { errString } = result;
+            const passed = errString?false:true;
+            const { shareDBDocs } = getState();
+            const problemsDoc = shareDBDocs.problems;
+            const aggregateDataDoc = shareDBDocs.aggregateData;
+            const newStatus = passed?CodeTestStatus.PASSED:CodeTestStatus.FAILED;
+            if(test.type === CodeTestType.INSTRUCTOR) problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'tests', test.id, 'status'], newStatus);
+            else aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'tests', test.id, 'status'], newStatus)
         })
     }
 }

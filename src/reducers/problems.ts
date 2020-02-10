@@ -1,3 +1,4 @@
+import {ICodeTest} from './aggregateData';
 export interface IProblem {
     id: string;
     visible: boolean;
@@ -36,6 +37,9 @@ export interface ICodeProblem {
     files: ICodeFile[];
     config: ICodeProblemConfig;
     sketch: any[];
+    tests:{
+        [testID: string]: ICodeTest
+    };
     problemType: 'code';
 }
 
@@ -45,7 +49,6 @@ export interface ICodeProblemConfig {
     addTests: boolean;
     displayInstructor: boolean;
     peerHelp: boolean;
-    autoVerify: boolean;
 }
 
 export interface ICodeFile {

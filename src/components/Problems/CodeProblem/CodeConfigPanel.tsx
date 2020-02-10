@@ -30,10 +30,6 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config }) => {
             <input type="checkbox" className="custom-control-input" id={"peerHelp-" + problem.id} onClick={onSwitch} defaultChecked={config.peerHelp} />
             <label className="custom-control-label" htmlFor={"peerHelp-" + problem.id}>Peer Help</label>
         </div>
-        <div className="custom-control custom-switch">
-            <input type="checkbox" className="custom-control-input" id={"autoVerify-" + problem.id} onClick={onSwitch} defaultChecked={config.autoVerify} />
-            <label className="custom-control-label" htmlFor={"autoVerify-" + problem.id}>Verify Tests Automatically</label>
-        </div>
     </>
 }
 
