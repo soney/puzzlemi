@@ -57,7 +57,7 @@ const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentT
                         {!config.disableTest &&
                             <div className="col-3">
                                 {config.runTests &&
-                                    <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunAll}>Run All</button>
+                                    <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunAll}>Run All Tests</button>
                                 }
                             </div>
                         }

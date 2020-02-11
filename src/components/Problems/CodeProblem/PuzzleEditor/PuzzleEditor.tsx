@@ -71,7 +71,7 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                 break;
         }
         const adminClass = isAdmin ? " isadmin " : " ";
-        const passClass = result && result.hasOwnProperty('passed') ? result.passed : "";
+        const passClass = result && result.hasOwnProperty('passed') && result.passed ? 'passed' : '';
         return baseClasses + activeClass + isEditClass + validClass + adminClass + passClass;
     }
 
@@ -168,14 +168,11 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                     <small className="text-muted">My Tests</small>
                 }
                 {myTestObjects.length > 0 &&
-                    <>
-                        <div className="list-group test-lists">
-                            {myTestObjects.map((test, i) => <div key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
-                                {test.name}
-                            </div>)}
-                        </div>
-
-                    </>
+                    <ul className="list-group test-lists">
+                        {myTestObjects.map((test, i) => <li key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
+                            {test.name}
+                        </li>)}
+                    </ul>
                 }
                 {(config.addTests || isAdmin) &&
                     <div className="add-button">
@@ -183,20 +180,22 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                     </div>
                 }
                 <small className="text-muted">Instructor</small>
-                {instructorTestObjects.map((test, i) => <div key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
-                    {test.name}
-                    {test.author === username &&
-                        <span className="badge badge-light"><i className="fas fa-user"></i></span>
-                    }
-                </div>)}
+                <ul className="list-group test-lists">
+                    {instructorTestObjects.map((test, i) => <li key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
+                        {test.name}
+                        {test.author === username &&
+                            <span className="badge badge-light"><i className="fas fa-user"></i></span>
+                        }
+                    </li>)}
+                </ul>
                 {otherTestObjects.length > 0 &&
                     <>
                         <small className="text-muted">Students</small>
-                        <div className="list-group test-lists">
-                            {otherTestObjects.map((test, i) => <div key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
+                        <ul className="list-group test-lists">
+                            {otherTestObjects.map((test, i) => <li key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
                                 {test.name}
-                            </div>)}
-                        </div>
+                            </li>)}
+                        </ul>
                     </>
                 }
                 {isAdmin &&
