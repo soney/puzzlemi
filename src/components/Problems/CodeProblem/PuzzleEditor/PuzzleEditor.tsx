@@ -10,7 +10,7 @@ import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/ag
 import { addTest, deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
 import { runVerifyTest } from '../../../../actions/runCode_actions';
 
-const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, username, testObjects, dispatch, currentTest, testResults, flag, aggregateDataDoc, instructorTestObjects, allTestsObjects }) => {
+const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, username, myTestObjects, otherTestObjects, dispatch, currentTest, testResults, flag, aggregateDataDoc, instructorTestObjects, allTestsObjects }) => {
     const [count, setCount] = useState(0);
 
     if (!currentTest) { return null; }
@@ -144,42 +144,34 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                         <nav>
                             <div className="nav nav-tabs instructor-tab" id={"nav-instructor-code-tab-" + problem.id} role="tablist">
                                 <a className="nav-item nav-link active" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true">Given Code</a>
+                                <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={refreshCM}>Solution Code</a>
                                 <a className="nav-item nav-link" id={"nav-live-tab-" + problem.id} data-toggle="tab" href={"#nav-live-" + problem.id} role="tab" aria-controls={"nav-live-" + problem.id} aria-selected="false" onClick={refreshCM}>Live Code</a>
-                                <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={refreshCM}>Standard Code</a>
                             </div>
                         </nav>
                         <div className="tab-content" id={"nav-instructor-code-tabContent-" + problem.id}>
                             <div className="tab-pane fade show active" id={"nav-given-" + problem.id} role="tabpanel" aria-labelledby={"nav-given-tab-" + problem.id}>
                                 <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
                             </div>
-                            <div className="tab-pane fade" id={"nav-live-" + problem.id} role="tabpanel" aria-labelledby={"nav-live-tab-" + problem.id}>
-                                <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={count} />
-                            </div>
                             <div className="tab-pane fade" id={"nav-standard-" + problem.id} role="tabpanel" aria-labelledby={"nav-standard-tab-" + problem.id}>
                                 <CodeEditor shareDBSubDoc={standardCodeSubDoc} flag={count} />
+                            </div>
+                            <div className="tab-pane fade" id={"nav-live-" + problem.id} role="tabpanel" aria-labelledby={"nav-live-tab-" + problem.id}>
+                                <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={count} />
                             </div>
                         </div>
                     </>
                     : <CodeEditor value={codeSolution.code} onChange={doSetCode} flag={flag} />}
                 <CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} />
             </div>
-            <div className="col-3">
-                <div>Instructors' Tests</div>
-                {instructorTestObjects.map((test, i) => <div key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
-                    {test.name}
-                    {test.author === username &&
-                        <span className="badge badge-light"><i className="fas fa-user"></i></span>
-                    }
-                </div>)}
-                {testObjects.length > 0 &&
+            <div className="col-3 tests">
+                {(myTestObjects.length > 0 || (config.addTests && !isAdmin)) &&
+                    <small className="text-muted">My Tests</small>
+                }
+                {myTestObjects.length > 0 &&
                     <>
-                        <div>Students' Tests</div>
                         <div className="list-group test-lists">
-                            {testObjects.map((test, i) => <div key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
+                            {myTestObjects.map((test, i) => <div key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
                                 {test.name}
-                                {test.author === username &&
-                                    <span className="badge badge-light"><i className="fas fa-user"></i></span>
-                                }
                             </div>)}
                         </div>
 
@@ -189,6 +181,23 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                     <div className="add-button">
                         <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button>
                     </div>
+                }
+                <small className="text-muted">Instructor</small>
+                {instructorTestObjects.map((test, i) => <div key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
+                    {test.name}
+                    {test.author === username &&
+                        <span className="badge badge-light"><i className="fas fa-user"></i></span>
+                    }
+                </div>)}
+                {otherTestObjects.length > 0 &&
+                    <>
+                        <small className="text-muted">Students</small>
+                        <div className="list-group test-lists">
+                            {otherTestObjects.map((test, i) => <div key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
+                                {test.name}
+                            </div>)}
+                        </div>
+                    </>
                 }
                 {isAdmin &&
                     <div className="add-button">
@@ -217,19 +226,17 @@ function mapStateToProps(state, ownProps) {
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveTest, testResults } = intermediateCodeState;
     const userSolution = solutions.allSolutions[problem.id][myuid];
-    let tests = {};
+    const tests: {[id: string]: ICodeTest} = aggregateData ? aggregateData.userData[problem.id].tests : {};
 
-    if (aggregateData) {
-        tests = aggregateData.userData[problem.id].tests;
-    }
-    const testObjects: ICodeTest[] = Object.values(tests);
+    const myTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author === username);
+    const otherTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author !== username);
     const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
     const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
 
-    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, testObjects, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects } })
+    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, myTestObjects, otherTestObjects, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects } })
 }
 
 export default connect(mapStateToProps)(PuzzleEditor);

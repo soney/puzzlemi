@@ -117,6 +117,11 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
             this.codeMirror.on('focus', () => {
                 this.codeMirror.execCommand('selectAll');
             });
+            this.codeMirror.on('blur', () => {
+                const doc = this.codeMirror.getDoc();
+                const cursor = doc.getCursor();
+                doc.setSelection(cursor, cursor);
+            });
         }
         this.codeMirror.refresh();
 
