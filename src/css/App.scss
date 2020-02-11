@@ -287,6 +287,7 @@ nav {
     margin-top: 20px;
 }
 
+
 .test-list-item.invalid {
     display: none;
 }
@@ -468,4 +469,25 @@ nav {
         color: red;
         opacity: 0;
     }
+}
+
+.chat-header{
+    padding: 1px 10px;
+}
+
+.chat-message-container{
+    width: 80%;
+}
+
+.chat-I-am-sender{
+    float:right;
+}
+
+.chat-I-am-sender-header{
+    color: #eeeeee;
+    background-color: #444444;
+}
+
+.chat-other-sender{
+    float: left;
 }
