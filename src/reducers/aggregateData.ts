@@ -12,7 +12,13 @@ export interface ICodeSolutionAggregate {
     tests: {
         [testID: string]: ICodeTest
     },
-    helpSessions: IHelpSession[];
+    helpSessions: {
+        [helpSessionID: string]: IHelpSession
+    },
+    helpUserLists: {
+        [userID: string]: string
+    }
+
 }
 
 export enum CodeTestType { INSTRUCTOR, STUDENT };
@@ -29,11 +35,11 @@ export interface ICodeTest {
     completed: string[],
 }
 
+
 export interface IHelpSession {
     id: string;
     status: boolean;
     tutee: string;
-    tutors: string[];
     chatMessages: IMessage[];
     title: string;
     description: string;

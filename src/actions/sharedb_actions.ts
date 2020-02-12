@@ -338,7 +338,8 @@ export function addCodeProblem() {
             tests: {
                 // [newCodeTest.id]: newCodeTest
             },
-            helpSessions: []
+            helpSessions: {},
+            helpUserLists: {}
         };
 
         await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], newCodeSolutionAggregate);
@@ -461,6 +462,14 @@ export function changeTestStatus(problemID: string, test: ICodeTest, newStatus: 
     }
 }
 
+export function changeHelpSessionStatus(problemID: string, sessionID: string, newStatus:boolean){
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'helpSessions', sessionID, 'status'], newStatus);
+    }
+}
+
 
 export interface ITestAddedAction {
     type: EventTypes.TEST_ADDED,
@@ -486,13 +495,12 @@ export function addHelpSession(problemID: string, username: string, userSolution
             timestamp: getTimeStamp(),
             status: true,
             tutee: username,
-            tutors: [],
             chatMessages: [],
-            title: 'no title',
-            description: '**no description**',
+            title: '**no title**',
+            description: 'no *description*',
             solution: userSolution as ICodeSolution
         }
-        aggregateDataDoc.submitListPushOp(['userData', problemID, 'helpSessions'], newHelpSession);
+        aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'helpSessions', newHelpSession.id], newHelpSession);
     }
 }
 

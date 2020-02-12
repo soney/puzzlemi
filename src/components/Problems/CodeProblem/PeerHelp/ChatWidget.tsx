@@ -3,7 +3,6 @@ import { connect } from "react-redux";
 import update from 'immutability-helper';
 import { timeAgo, getTimeStamp } from '../../../../utils/timestamp';
 import { ISolutionState, ICodeSolutionState } from '../../../../reducers/intermediateUserState';
-import { CodeEditor } from '../../../CodeEditor';
 import { addMessage } from '../../../../actions/sharedb_actions';
 import { IMessage } from '../../../../reducers/aggregateData';
 import * as showdown from 'showdown';
@@ -58,7 +57,6 @@ class ChatWidget extends React.Component<ChatWidgetProps, ChatWidgetState>{// ({
     }
 
     componentDidUpdate(){
-        console.log('uppdate!')
         if(this.state.messageLength!=this.props.activeSession.chatMessages.length){
             this.scrollBottom();
         }
@@ -83,13 +81,10 @@ class ChatWidget extends React.Component<ChatWidgetProps, ChatWidgetState>{// ({
             content: message,
             timestamp: getTimeStamp()
         }
-        console.log(this.props.problem.id, newMessage, this.state.sessionIndex)
         this.props.dispatch(addMessage(this.props.problem.id, newMessage, this.state.sessionIndex))
         message='';
-        // console.log(this.refs.chatInput)
         if(this.chatInput.current){
             this.chatInput.current.value=''
-            // this.refs.chatInput.value=''
         }
     }
 

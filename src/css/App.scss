@@ -43,6 +43,32 @@ html {
     .btn-toolbar {
       margin-bottom: 10px;
     }
+    .session-open {
+      &::before {
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        content: "\f059  ";
+        color: #2cbe4e;
+      }
+      p{
+          display:inline-block;
+          margin: 0px;
+      }
+      margin: 0px;
+    }
+    .session-close {
+        &::before {
+          font-family: "Font Awesome 5 Free";
+          font-weight: 900;
+          content: "\f057  ";
+          color: #cb2431;
+        }
+        p{
+            display:inline-block;
+            margin: 0px;
+        }
+        margin: 0px;
+      }
   }
   .no-problems {
     list-style: none;
@@ -103,13 +129,13 @@ html {
     }
   }
   .puzzle-editor {
-      padding-right: 0px;
+    padding-right: 0px;
   }
   .puzzle-header {
-      padding: 10px;
-      background: white;
-      border: 1px solid #eee;
-      border-bottom: 0px;
+    padding: 10px;
+    background: white;
+    border: 1px solid #eee;
+    border-bottom: 0px;
   }
 
   .tests {
@@ -138,14 +164,14 @@ html {
       // @include box-shadow(inset 6px 0px 6px -6px #777);
     }
     .text-muted {
-      margin-top: 10px;   
+      margin-top: 10px;
     }
     .list-group-item {
       user-select: none;
       min-height: 15px;
       overflow-x: hidden;
       padding: 5px;
-      font-size: .8em;
+      font-size: 0.8em;
       p {
         display: none;
         margin-bottom: 0px;
@@ -614,23 +640,23 @@ nav {
   left: 0px;
 }
 
-.chat-header{
-    padding: 1px 10px;
+.chat-header {
+  padding: 1px 10px;
 }
 
-.chat-message-container{
-    width: 80%;
+.chat-message-container {
+  width: 80%;
 }
 
-.chat-I-am-sender{
-    float:right;
+.chat-I-am-sender {
+  float: right;
 }
 
-.chat-I-am-sender-header{
-    color: #eeeeee;
-    background-color: #444444;
+.chat-I-am-sender-header {
+  color: #eeeeee;
+  background-color: #444444;
 }
 
-.chat-other-sender{
-    float: left;
+.chat-other-sender {
+  float: left;
 }

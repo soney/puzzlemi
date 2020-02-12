@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import update from 'immutability-helper';
 import SessionList from './SessionList';
 import SessionPanel from './SessionPanel';
+import { IHelpSession } from '../../../../reducers/aggregateData';
 
 const PeerHelp = ({ sessions, problem }) => {
     return <div>
@@ -22,10 +23,12 @@ function mapStateToProps(state, ownProps) {
     const { problem } = ownProps;
     const aggregateData = shareDBDocs.i.aggregateData
 
-    let helpSessions = [];
+    let helpSessions = {};
     if(aggregateData){
         helpSessions = aggregateData.userData[problem.id].helpSessions
     }
-    return update(ownProps, { $merge: { sessions: helpSessions } });
+    const helpSessionObjects: IHelpSession[] = Object.values(helpSessions);
+
+    return update(ownProps, { $merge: { sessions: helpSessionObjects } });
 }
 export default connect(mapStateToProps)(PeerHelp);

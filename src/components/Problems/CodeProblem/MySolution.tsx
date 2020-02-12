@@ -6,7 +6,7 @@ import { addHelpSession } from '../../../actions/sharedb_actions';
 import { updateCurrentActiveHelpSession } from '../../../actions/user_actions';
 import Files from './Files';
 import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
-import { ICodeTest } from '../../../reducers/aggregateData';
+import { ICodeTest, IHelpSession } from '../../../reducers/aggregateData';
 import uuid from '../../../utils/uuid';
 import CodeOutput from './CodeOutput'
 
@@ -67,8 +67,10 @@ function mapStateToProps(state, ownProps) {
     const username = myuid.slice(0, 7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
 
     const userSolution = solutions.allSolutions[problem.id][myuid];
-    const helpSessions = aggregateData.userData[problem.id].helpSessions
-    let myHelpS = helpSessions.filter(s => s.tuteeID === myuid && s.status === true);
+    const helpSessions = aggregateData.userData[problem.id].helpSessions;
+    const helpSessionObjects: IHelpSession[] = Object.values(helpSessions);
+
+    let myHelpS = helpSessionObjects.filter(s => s.tutee === myuid && s.status);
     const myHelpSession = myHelpS.length > 0 ? myHelpS[0] : null;
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
 

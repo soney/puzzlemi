@@ -14,11 +14,9 @@ const SessionList = ({ session, currentActiveHelpSession, dispatch, problem }) =
 
     return <div onClick={onChangeActiveID} className={session.id === currentActiveHelpSession ? "list-group-item list-group-item-action active" : "list-group-item list-group-item-action"}>
         <div className="d-flex w-100 justify-content-between">
-            <h5 className="mb-1"><p dangerouslySetInnerHTML={{ __html: converter.makeHtml(session.title) }} /></h5>
-            <small>{timeAgo(parseInt(session.timestamp))}</small>
+            <h5 className="mb-1"><p className={session.status?"session-open":"session-close"} dangerouslySetInnerHTML={{ __html: converter.makeHtml(session.title) }} /></h5>
         </div>
-        <p className="mb-1" dangerouslySetInnerHTML={{ __html: converter.makeHtml(session.description) }} />
-        <small>{session.tutee}</small>
+        <small>opened {timeAgo(parseInt(session.timestamp))} by {session.tutee}</small>
     </div>
 }
 
