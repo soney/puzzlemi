@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 import { ICodeSolutionState } from '../../../reducers/intermediateUserState';
-import { addHelpSession } from '../../../actions/sharedb_actions';
+import { addHelpSession, changeHelperLists } from '../../../actions/sharedb_actions';
 import { updateCurrentActiveHelpSession } from '../../../actions/user_actions';
 import Files from './Files';
 import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
@@ -10,15 +10,16 @@ import { ICodeTest, IHelpSession } from '../../../reducers/aggregateData';
 import uuid from '../../../utils/uuid';
 import CodeOutput from './CodeOutput'
 
-const MySolution = ({ userSolution, currentResult, problem, config, flag, dispatch, myHelpSession, redirectCallback, username, allTestsObjects }) => {
+const MySolution = ({ userSolution, myuid, problem, config, flag, myHelpSession, dispatch, redirectCallback, username }) => {
     const graphicsRef = React.createRef<HTMLDivElement>();
     const messageRef = React.createRef<HTMLDivElement>();
 
     const doRequestHelp = () => {
         const helpID = uuid();
-        dispatch(addHelpSession(problem.id, username, userSolution, helpID)).then(
-            dispatch(updateCurrentActiveHelpSession(problem.id, helpID))
-        );
+        dispatch(addHelpSession(problem.id, username, userSolution, helpID)).then(()=>{
+            dispatch(updateCurrentActiveHelpSession(problem.id, helpID));
+            dispatch(changeHelperLists(problem.id, helpID, myuid))
+        });
         redirectCallback();
     }
 
@@ -64,13 +65,13 @@ function mapStateToProps(state, ownProps) {
     const instructorTests = problemDetails.tests;
     const { config } = problemDetails;
     const myuid = users.myuid as string;
-    const username = myuid.slice(0, 7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
+    const username = users.allUsers[myuid].username;
 
     const userSolution = solutions.allSolutions[problem.id][myuid];
     const helpSessions = aggregateData.userData[problem.id].helpSessions;
     const helpSessionObjects: IHelpSession[] = Object.values(helpSessions);
 
-    let myHelpS = helpSessionObjects.filter(s => s.tutee === myuid && s.status);
+    let myHelpS = helpSessionObjects.filter(s => s.tutee === username && s.status);
     const myHelpSession = myHelpS.length > 0 ? myHelpS[0] : null;
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
 

@@ -55,7 +55,8 @@ function mapDispatchToProps(dispatch, ownProps) {
         return response.json();
     }).then((myInfo) => {
         if (appState.debugMode) {
-            myInfo = update(myInfo, { uid: { $set: 'testuid-' + uuid() } })
+            let id = uuid();
+            myInfo = update(myInfo, { uid: { $set: 'testuid-' + id }, username: {$set: 'user-' + id.slice(-4)} })
         }
         dispatch(setUser(myInfo));
         if (myInfo.isInstructor) {

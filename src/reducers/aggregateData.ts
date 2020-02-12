@@ -15,7 +15,7 @@ export interface ICodeSolutionAggregate {
     helpSessions: {
         [helpSessionID: string]: IHelpSession
     },
-    helpUserLists: {
+    helperLists: {
         [userID: string]: string
     }
 

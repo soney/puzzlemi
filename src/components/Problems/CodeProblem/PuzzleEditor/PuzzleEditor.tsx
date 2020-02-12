@@ -204,7 +204,7 @@ function mapStateToProps(state, ownProps) {
     const { config } = problemDetails;
 
     const myuid = users.myuid as string;
-    const username = myuid.slice(0, 7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
+    const username = users.allUsers[myuid].username;
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveTest } = intermediateCodeState;
     const userSolution = solutions.allSolutions[problem.id][myuid];

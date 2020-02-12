@@ -177,6 +177,7 @@ html {
         margin-bottom: 0px;
         padding: 5px;
       }
+      
       // @include box-shadow(inset 6px 0px 6px -6px #777;
       &.active {
         p {
@@ -310,6 +311,18 @@ html {
 }
 
 .import-export {
+}
+
+.session-list-button-open-close{
+    display:inline-block;
+    float: left;
+    button{
+        margin-right: 20px;
+    }
+}
+.session-list-button-new{
+  display:inline-block;
+  float: right;
 }
 
 nav {
@@ -565,7 +578,11 @@ nav {
 }
 
 .session-head {
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.session-body {
+    margin-bottom: 20px;
 }
 
 .content {

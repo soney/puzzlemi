@@ -19,7 +19,7 @@ interface ChatWidgetProps{
 
 interface ChatWidgetState{
     // chatInput: any,
-    sessionIndex: any,
+    sessionId: any,
     messageLength: any,
     converter: any,
 }
@@ -41,7 +41,7 @@ class ChatWidget extends React.Component<ChatWidgetProps, ChatWidgetState>{// ({
 
         this.state = {
             // chatInput: React.createRef<HTMLInputElement>(),
-            sessionIndex: this.props.sessions.indexOf(this.props.activeSession),
+            sessionId: this.props.activeSession.id,
             messageLength: this.props.activeSession.chatMessages.length,
             converter: new showdown.Converter(),
         };
@@ -81,7 +81,8 @@ class ChatWidget extends React.Component<ChatWidgetProps, ChatWidgetState>{// ({
             content: message,
             timestamp: getTimeStamp()
         }
-        this.props.dispatch(addMessage(this.props.problem.id, newMessage, this.state.sessionIndex))
+
+        this.props.dispatch(addMessage(this.props.problem.id, newMessage, this.props.activeSession.id))
         message='';
         if(this.chatInput.current){
             this.chatInput.current.value=''
@@ -142,7 +143,7 @@ function mapStateToProps(state, ownProps) {
     const activeSession = activeS.length > 0 ? activeS[0] : null;
     
     const myuid = users.myuid as string;
-    const username = myuid.slice(0,7) === "testuid" ? "testuser-"+myuid.slice(-4) : users.allUsers[myuid].username;
+    const username = users.allUsers[myuid].username;
     return update(ownProps, { $merge: { activeSession, sessions, username } });
 }
 export default connect(mapStateToProps)(ChatWidget);

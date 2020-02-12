@@ -339,7 +339,7 @@ export function addCodeProblem() {
                 // [newCodeTest.id]: newCodeTest
             },
             helpSessions: {},
-            helpUserLists: {}
+            helperLists: {}
         };
 
         await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], newCodeSolutionAggregate);
@@ -462,6 +462,14 @@ export function changeTestStatus(problemID: string, test: ICodeTest, newStatus: 
     }
 }
 
+export function changeHelperLists(problemID: string, sessionID: string, helperID: string){
+    return (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'helperLists', helperID], sessionID);
+    }
+}
+
 export function changeHelpSessionStatus(problemID: string, sessionID: string, newStatus:boolean){
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
@@ -504,11 +512,11 @@ export function addHelpSession(problemID: string, username: string, userSolution
     }
 }
 
-export function addMessage(problemID: string, newMessage: IMessage, helpIndex: number) {
+export function addMessage(problemID: string, newMessage: IMessage, sessionID: number) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
-        aggregateDataDoc.submitListPushOp(['userData', problemID, 'helpSessions', helpIndex, 'chatMessages'], newMessage)
+        aggregateDataDoc.submitListPushOp(['userData', problemID, 'helpSessions', sessionID, 'chatMessages'], newMessage)
     }
 }
 
