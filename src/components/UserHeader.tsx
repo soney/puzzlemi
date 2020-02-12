@@ -44,6 +44,7 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
             }
             reader.readAsText(file);
         }
+        target.value = ''; // Reset in case the same file gets imported again
     }
 
     const allUserDisplays = allUsers.map((u) => {

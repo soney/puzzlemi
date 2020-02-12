@@ -2,10 +2,10 @@ import { Dispatch } from "redux";
 import '../js/skulpt/skulpt.min.js';
 import '../js/skulpt/skulpt-stdlib.js';
 import EventTypes from "./EventTypes";
-import { ICodeSolution } from "../reducers/solutions";
-import { IProblem, ICodeProblem } from "../reducers/problems";
+import { IProblem, ICodeProblem, ICodeFile } from "../reducers/problems";
 import { ICodeTest, CodeTestType, CodeTestStatus } from "../reducers/aggregateData";
-import { ICodeSolutionState } from "../reducers/intermediateUserState";
+import { ICodeSolutionState, CodePassedState } from "../reducers/intermediateUserState";
+import { IPMState } from "../reducers/index.js";
 
 declare const Sk;
 
@@ -32,7 +32,7 @@ if (Sk.externalLibraries) {
 export interface IDoneRunningCodeAction {
     type: EventTypes.DONE_RUNNING_CODE,
     problemID: string,
-    passed: boolean|null,
+    passed: CodePassedState,
     testID: string
 }
 
@@ -167,12 +167,11 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files,
     });
 }
 
-export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermediateSolutionState: ICodeSolutionState, graphics: HTMLDivElement | null, test: ICodeTest) {
+export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem, graphics: HTMLDivElement | null, test: ICodeTest) {
     return (dispatch: Dispatch, getState) => {
         const { id: problemID } = problem;
         const problemDetails = problem.problemDetails as ICodeProblem;
-        const { code } = codeSolution;
-        const files = { problemFiles: problemDetails.files, userFiles: codeSolution.files };
+        const files = { problemFiles: problemDetails.files, userFiles};
         // const fullCode = test.before.concat(' \n' + code, ' \n' + test.after);
         const outputChangeHandler = (output) => {
             dispatch({
@@ -199,7 +198,7 @@ export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermed
 
         executeCode(test.before, code, test.after, files, outputChangeHandler, writeFileHandler, graphics).then(result => {
             const { errString } = result;
-            const passed = errString?false:true;
+            const passed = errString ? CodePassedState.FAILED : CodePassedState.PASSED;
             if (errString) {
                 dispatch({
                     errors: [errString],
@@ -214,7 +213,34 @@ export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermed
                 testID: test.id,
                 type: EventTypes.DONE_RUNNING_CODE
             } as IDoneRunningCodeAction);
-        })
+
+            const state: IPMState = getState();
+            const { intermediateUserState, shareDBDocs, users } = state;
+            const { intermediateSolutionState } = intermediateUserState;
+            const intermediateCodeState: ICodeSolutionState = intermediateSolutionState[problem.id]!;
+            const { testResults } = intermediateCodeState;
+            let passedAll: boolean = true;
+            for(let testID in testResults) {
+                if(testResults.hasOwnProperty(testID)) {
+                    const testResult = testResults[testID];
+                    if(testResult.passed !== CodePassedState.PASSED) {
+                        passedAll = false;
+                        break;
+                    }
+                }
+            }
+
+            const myuid = users.myuid as string;
+            const aggregateDataDoc = shareDBDocs.aggregateData!;
+            const aggregateData = aggregateDataDoc.getData();
+            const completedIndex = aggregateData.userData[problem.id].completed!.indexOf(myuid);
+            const isMarkedAsPassedAll = completedIndex >= 0;
+            if(passedAll && !isMarkedAsPassedAll) {
+                aggregateDataDoc.submitListPushOp(['userData', problem.id, 'completed'], myuid);
+            } else if(!passedAll && isMarkedAsPassedAll) {
+                aggregateDataDoc.submitListDeleteOp(['userData', problem.id, 'completed', completedIndex]);
+            }
+        });
     }
 }
 
@@ -229,15 +255,20 @@ export function runVerifyTest(problem: IProblem, test:ICodeTest) {
         }
         const writeFileHandler = (contents, fname) => {
         }
-        executeCode(test.before, standardCode, test.after, files, outputChangeHandler, writeFileHandler, null).then(result => {
-            const { errString } = result;
-            const passed = errString?false:true;
+        const standardCodePromise = executeCode(test.before, standardCode, test.after, files, outputChangeHandler, writeFileHandler, null);
+        // const emptyCodePromise = executeCode(test.before, '', test.after, files, outputChangeHandler, writeFileHandler, null);
+        Promise.all([standardCodePromise]).then(([standardCodeResult]) => {
+            const passedStandard = !standardCodeResult.errString;
+            // const passedEmpty = !emptyCodeResult.errString;
             const { shareDBDocs } = getState();
             const problemsDoc = shareDBDocs.problems;
             const aggregateDataDoc = shareDBDocs.aggregateData;
-            const newStatus = passed?CodeTestStatus.PASSED:CodeTestStatus.FAILED;
-            if(test.type === CodeTestType.INSTRUCTOR) problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'tests', test.id, 'status'], newStatus);
-            else aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'tests', test.id, 'status'], newStatus)
+            const newStatus = passedStandard ? CodeTestStatus.PASSED : CodeTestStatus.FAILED;
+            if(test.type === CodeTestType.INSTRUCTOR) {
+                problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'tests', test.id, 'status'], newStatus);
+            } else {
+                aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'tests', test.id, 'status'], newStatus);
+            }
         })
     }
 }

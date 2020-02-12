@@ -24,7 +24,7 @@ const CodeSolutionView = ({ dispatch, problem, currentUser, solutionText, hasSol
             </div>
             {
                 currentUser && hasSolution &&
-                <div>
+                <div className="solution-details">
                     <h4>Solution:</h4>
                     <pre>{solutionText}</pre>
                 </div>

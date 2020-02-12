@@ -61,11 +61,11 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
     public componentDidUpdate(prevProps: ICodeEditorProps): void {
         const { value, shareDBSubDoc, flag, refreshDoc, options } = this.props;
         if (refreshDoc !== prevProps.refreshDoc) {
-            if (prevProps.shareDBSubDoc === undefined)
+            if (prevProps.shareDBSubDoc === undefined) {
                 this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
-            else if (shareDBSubDoc === undefined)
+            } else if (shareDBSubDoc === undefined) {
                 this.codemirrorBinding.destroy();
-            else {
+            } else {
                 this.codemirrorBinding.destroy();
                 this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
             }
@@ -74,10 +74,11 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
             this.codeMirror.setOption('readOnly', options.readOnly)
         }
         if (shareDBSubDoc !== prevProps.shareDBSubDoc) {
-            if (prevProps.shareDBSubDoc === undefined)
+            if (prevProps.shareDBSubDoc === undefined) {
                 this.codemirrorBinding = new ShareDBCodeMirrorBinding(this.codeMirror, shareDBSubDoc as SDBSubDoc<string>);
-            else if (shareDBSubDoc === undefined)
+            } else if (shareDBSubDoc === undefined) {
                 this.codemirrorBinding.destroy();
+            }
         }
         if (value !== prevProps.value) {
             this.setState({ code: value as string });
@@ -116,6 +117,11 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         if(this.props.selectOnFocus) {
             this.codeMirror.on('focus', () => {
                 this.codeMirror.execCommand('selectAll');
+            });
+            this.codeMirror.on('blur', () => {
+                const doc = this.codeMirror.getDoc();
+                const cursor = doc.getCursor();
+                doc.setSelection(cursor, cursor);
             });
         }
         this.codeMirror.refresh();
@@ -156,7 +162,7 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
     }
 
     public render(): React.ReactNode {
-        return <div className="code-editor">
+        return <div className={"code-editor" + (this.props.options.readOnly ? ' readOnly' : '')}>
             <textarea
                 ref={(ref: HTMLTextAreaElement) => this.codeNode = ref}
                 defaultValue={this.props.value}

@@ -428,7 +428,7 @@ export function addTest(problemID: string, username: string, isAdmin: boolean) {
 
         const newCodeTest: ICodeTest = {
             id: uuid(),
-            name: 'new',
+            name: isAdmin ? 'instructor test' : 'student test',
             author: username,
             type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
             before: '# given variables',

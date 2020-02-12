@@ -14,7 +14,7 @@ const TextResponseSolutionView = ({ dispatch, problem, currentUser, solutionText
             <button className="btn btn-outline-secondary btn-sm" onClick={selectRandomUser}>Show random solution</button>
             {
                 currentUser && hasSolution &&
-                <div>
+                <div className="solution-details">
                     <h4>Solution:</h4>
                     <pre>{solutionText}</pre>
                 </div>
