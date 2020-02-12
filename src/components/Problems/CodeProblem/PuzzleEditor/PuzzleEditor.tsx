@@ -5,12 +5,12 @@ import { connect } from "react-redux";
 import { CodeEditor } from '../../../CodeEditor';
 import { ICodeSolution } from '../../../../reducers/solutions';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
-import { codeChanged, setActiveTest } from '../../../../actions/user_actions';
+import { codeChanged } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
-import { addTest, deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
-import { runVerifyTest } from '../../../../actions/runCode_actions';
+import { deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
+import TestList from './TestList';
 
-const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, username, myTestObjects, otherTestObjects, dispatch, currentTest, testResults, flag, aggregateDataDoc, instructorTestObjects, allTestsObjects }) => {
+const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, username, dispatch, currentTest, flag, aggregateDataDoc }) => {
     const [count, setCount] = useState(0);
 
     if (!currentTest) { return null; }
@@ -30,50 +30,16 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
         return dispatch(codeChanged(problem, value));
     };
 
-    const doAddTest = () => {
-        dispatch(addTest(problem.id, username, isAdmin));
+
+    const doChangeTestStatus = () => {
+        const newStatus = currentTest.status === CodeTestStatus.PASSED ? CodeTestStatus.FAILED : CodeTestStatus.PASSED;
+        dispatch(changeTestStatus(problem.id, currentTest, newStatus))
     }
 
     const doDeleteTest = () => {
         dispatch(deleteTest(problem.id, currentTest));
     }
 
-    const doSetCurrentTest = (e) => {
-        const testID = e.target.getAttribute('data-tag');
-        dispatch(setActiveTest(testID, problem.id))
-    }
-
-    const doChangeTestStatus = () => {
-        const newStatus = currentTest.status === CodeTestStatus.PASSED ? CodeTestStatus.FAILED : CodeTestStatus.PASSED;
-        dispatch(changeTestStatus(problem.id, currentTest, newStatus))
-    }
-    const doVerifyAll = () => {
-        allTestsObjects.forEach(test => {
-            dispatch(runVerifyTest(problem, test))
-        })
-    }
-
-    const getTestClassName = (test) => {
-        const baseClasses = "list-group-item list-group-item-action test-list-item " + (test.type === CodeTestType.INSTRUCTOR ? 'instructor' : 'student');
-        const activeClass = test.id === currentTest.id ? " active " : " ";
-        const result = testResults[test.id];
-        const isEditClass = test.author === username ? " isedit " : " ";
-        let validClass;
-        switch (test.status) {
-            case CodeTestStatus.PASSED:
-                validClass = " valid ";
-                break;
-            case CodeTestStatus.FAILED:
-                validClass = " invalid ";
-                break;
-            case CodeTestStatus.UNVERIFIED:
-                validClass = " unknown ";
-                break;
-        }
-        const adminClass = isAdmin ? " isadmin " : " ";
-        const passClass = result && result.hasOwnProperty('passed') && result.passed ? 'passed' : '';
-        return baseClasses + activeClass + isEditClass + validClass + adminClass + passClass;
-    }
 
     const refreshCM = () => {
         setCount(count + 1);
@@ -104,7 +70,7 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                                 </div>
                             </div>
                         </>
-                        : <CodeEditor value={codeSolution.code} onChange={doSetCode} flag={flag} />
+                        : <CodeEditor value={codeSolution.code} options={{height: 100, lineNumbers: true}} onChange={doSetCode} flag={flag} />
                     }
                 </div>
             </div>
@@ -114,30 +80,28 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
     return <>
         <div className="row">
             <div className="col-9">
-                <div className="row">
-                    <div className="col-4">Current Test: </div>
-                    <div className="col-5">
-                        {isEdit
-                            ? <CodeEditor shareDBSubDoc={testNameSubDoc} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 30 }} refreshDoc={currentTest.id} />
-                            : <div>{currentTest.name}</div>
-                        }
-                    </div>
-                    <div className="col-3">
-                        {isEdit && currentTest.author !== 'null' &&
-                            <button className="btn btn-outline-danger btn-sm btn-block" onClick={doDeleteTest}>
-                                <i className="fas fa-trash"></i> Delete
-                            </button>
-                        }
-                        {isAdmin && currentTest.author !== 'null' &&
-                            <div>{
-                                (currentTest.status === CodeTestStatus.PASSED
-                                    ? <button className="btn btn-outline-success btn-sm" onClick={doChangeTestStatus}>Passed</button>
-                                    : <button className="btn btn-outline-danger btn-sm" onClick={doChangeTestStatus}>{currentTest.status === CodeTestStatus.FAILED ? 'Failed' : 'Unverified'}</button>)
+                {isEdit && 
+                    <div className="row">
+                        <div className="col">
+                            {isEdit
+                                ? <CodeEditor shareDBSubDoc={testNameSubDoc} captureTabs={false} selectOnFocus={true} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 30 }} refreshDoc={currentTest.id} />
+                                : <div>{currentTest.name}</div>
                             }
+                        </div>
+                        <div className="col">
+                            <div className="btn-group btn-block">
+                                {
+                                    isAdmin && currentTest.author !== 'null' && (currentTest.status === CodeTestStatus.PASSED
+                                        ? <button className="btn btn-outline-warning btn-sm" onClick={doChangeTestStatus}><i className="fas fa-times-circle"></i> Unverify</button>
+                                        : <button className="btn btn-outline-info btn-sm" onClick={doChangeTestStatus}><i className="fas fa-check-circle"></i> {currentTest.status === CodeTestStatus.FAILED ? 'Verify' : 'Verify'}</button>)
+                                }
+                                {currentTest.author !== 'null' &&
+                                    <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}><i className="fas fa-trash"></i> Delete</button>
+                                }
                             </div>
-                        }
+                        </div>
                     </div>
-                </div>
+                }
                 <CodeEditor shareDBSubDoc={beforeCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} />
                 {isAdmin
                     ? <>
@@ -160,53 +124,14 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                             </div>
                         </div>
                     </>
-                    : <CodeEditor value={codeSolution.code} onChange={doSetCode} flag={flag} />}
+                    : <CodeEditor value={codeSolution.code} options={{ lineNumbers: true, height: 100 }} onChange={doSetCode} flag={flag} />}
                 <CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} />
             </div>
             <div className="col-3 tests">
-                {(myTestObjects.length > 0 || (config.addTests && !isAdmin)) &&
-                    <small className="text-muted">My Tests</small>
-                }
-                {myTestObjects.length > 0 &&
-                    <ul className="list-group test-lists">
-                        {myTestObjects.map((test, i) => <li key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
-                            {test.name}
-                        </li>)}
-                    </ul>
-                }
-                {(config.addTests || isAdmin) &&
-                    <div className="add-button">
-                        <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddTest}>+ Test</button>
-                    </div>
-                }
-                <small className="text-muted">Instructor</small>
-                <ul className="list-group test-lists">
-                    {instructorTestObjects.map((test, i) => <li key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
-                        {test.name}
-                        {test.author === username &&
-                            <span className="badge badge-light"><i className="fas fa-user"></i></span>
-                        }
-                    </li>)}
-                </ul>
-                {otherTestObjects.length > 0 &&
-                    <>
-                        <small className="text-muted">Students</small>
-                        <ul className="list-group test-lists">
-                            {otherTestObjects.map((test, i) => <li key={i} data-tag={test.id} className={getTestClassName(test)} onClick={doSetCurrentTest}>
-                                {test.name}
-                            </li>)}
-                        </ul>
-                    </>
-                }
-                {isAdmin &&
-                    <div className="add-button">
-                        <button className="btn btn-outline-primary btn-sm btn-block" onClick={doVerifyAll}>Verify All</button>
-                    </div>
-                }
+                <TestList problem={problem} />
             </div>
         </div>
-    </>
-
+    </>;
 }
 
 function mapStateToProps(state, ownProps) {
@@ -223,19 +148,16 @@ function mapStateToProps(state, ownProps) {
     const myuid = users.myuid as string;
     const username = myuid.slice(0, 7) === "testuid" ? "testuser-" + myuid.slice(-4) : users.allUsers[myuid].username;
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
-    const { currentActiveTest, testResults } = intermediateCodeState;
+    const { currentActiveTest } = intermediateCodeState;
     const userSolution = solutions.allSolutions[problem.id][myuid];
     const tests: {[id: string]: ICodeTest} = aggregateData ? aggregateData.userData[problem.id].tests : {};
 
-    const myTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author === username);
-    const otherTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author !== username);
     const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
-    const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
 
-    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, myTestObjects, otherTestObjects, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects } })
+    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, aggregateDataDoc, currentTest, problemsDoc, config } })
 }
 
 export default connect(mapStateToProps)(PuzzleEditor);

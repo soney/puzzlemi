@@ -77,7 +77,7 @@ const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentT
                 {config.peerHelp &&
                     <div>
                         {myHelpSession === null &&
-                            <button type="button" className="btn btn-outline-primary" onClick={doRequestHelp}>Enable a Help Session</button>
+                            <button type="button" className="btn btn-outline-primary" onClick={doRequestHelp}><i className="fas fa-comment"></i> Start a Help Session</button>
                         }
                         {myHelpSession !== null &&
                             <button type="button" className="btn btn-outline-primary">Check My Help Session</button>
@@ -124,7 +124,7 @@ function mapStateToProps(state, ownProps) {
     const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
-    const currentResult = testResults[currentTest.id];
+    const currentResult = currentTest && testResults[currentTest.id];
     return update(ownProps, { $merge: { isAdmin, username, problemsDoc, config, myuid, userSolution, intermediateCodeState, myHelpSession, currentTest, currentResult, testObjects, allTestsObjects } });
 }
 export default connect(mapStateToProps)(MySolution);

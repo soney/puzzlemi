@@ -101,6 +101,12 @@ html {
     }
     
     .tests {
+        .add-button {
+            .btn {
+                font-size: 0.8em;
+                padding: 1px;
+            }
+        }
         max-height: 500px;
         overflow-y: scroll;
         overflow-x: hidden;
@@ -110,7 +116,7 @@ html {
             text-transform: uppercase;
             margin: 0px;
             display: block;
-            font-weight: lighter;
+            // font-weight: lighter;
             // border-left: 1px solid rgba(0,0,0,.125);
             // @include box-shadow(inset 6px 0px 6px -6px #777);
         }
@@ -151,6 +157,25 @@ html {
                     color: #721c24;
                 }
             }
+            
+            &.verified {
+                border-right: 10px solid #17a2b8;
+            }
+            &.unverified {
+                border-right: 10px solid #ffc107;
+            }
+            &.not-verified {
+                border-right: 10px solid #ffc107;
+            }
+
+            .test-actions {
+                text-align: right;
+                button {
+                    font-size: 0.8em;
+                    padding: 2px;
+                }
+            }
+
             // &:first-child {
             //     border-top-left-radius: 0px;
             //     border-top-right-radius: 0px;
