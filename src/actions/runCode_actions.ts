@@ -2,8 +2,7 @@ import { Dispatch } from "redux";
 import '../js/skulpt/skulpt.min.js';
 import '../js/skulpt/skulpt-stdlib.js';
 import EventTypes from "./EventTypes";
-import { ICodeSolution } from "../reducers/solutions";
-import { IProblem, ICodeProblem } from "../reducers/problems";
+import { IProblem, ICodeProblem, ICodeFile } from "../reducers/problems";
 import { ICodeTest, CodeTestType, CodeTestStatus } from "../reducers/aggregateData";
 import { ICodeSolutionState, CodePassedState } from "../reducers/intermediateUserState";
 import { IPMState } from "../reducers/index.js";
@@ -168,12 +167,11 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files,
     });
 }
 
-export function runCode(codeSolution: ICodeSolution, problem: IProblem, intermediateSolutionState: ICodeSolutionState, graphics: HTMLDivElement | null, test: ICodeTest) {
+export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem, graphics: HTMLDivElement | null, test: ICodeTest) {
     return (dispatch: Dispatch, getState) => {
         const { id: problemID } = problem;
         const problemDetails = problem.problemDetails as ICodeProblem;
-        const { code } = codeSolution;
-        const files = { problemFiles: problemDetails.files, userFiles: codeSolution.files };
+        const files = { problemFiles: problemDetails.files, userFiles};
         // const fullCode = test.before.concat(' \n' + code, ' \n' + test.after);
         const outputChangeHandler = (output) => {
             dispatch({

@@ -13,6 +13,7 @@ import { ISolutionState } from '../../../reducers/intermediateUserState';
 import { IPMState } from '../../../reducers';
 import CodeSolutionView from './CodeSolutionView';
 import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
+import CodeOutput from './CodeOutput';
 
 const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
     const [count, setCount] = useState(0);
@@ -55,14 +56,18 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
                 <div className="col">
                     <nav>
                         <div className="nav nav-tabs instructor-tab" id={"nav-instructor-note-tab-" + problem.id} role="tablist">
-                            <a className="nav-item nav-link active" id={"nav-notes-tab-" + problem.id} data-toggle="tab" href={"#nav-notes-" + problem.id} role="tab" aria-controls={"nav-notes-" + problem.id} aria-selected="true">Notes</a>
-                            <a className="nav-item nav-link" id={"nav-draw-tab-" + problem.id} data-toggle="tab" href={"#nav-draw-" + problem.id} role="tab" aria-controls={"nav-draw-" + problem.id} aria-selected="false">Draw</a>
-                            <a className="nav-item nav-link" id={"nav-files-tab-" + problem.id} data-toggle="tab" href={"#nav-files-" + problem.id} role="tab" aria-controls={"nav-files-" + problem.id} aria-selected="false">Files</a>
+                            <a className="nav-item nav-link active" id={"nav-output-tab-" + problem.id} data-toggle="tab" href={"#nav-output-" + problem.id} role="tab" aria-controls={"nav-output-" + problem.id} aria-selected="true" onClick={refreshCM}>Output</a>
+                            <a className="nav-item nav-link" id={"nav-notes-tab-" + problem.id} data-toggle="tab" href={"#nav-notes-" + problem.id} role="tab" aria-controls={"nav-notes-" + problem.id} aria-selected="false" onClick={refreshCM}>Notes</a>
+                            <a className="nav-item nav-link" id={"nav-draw-tab-" + problem.id} data-toggle="tab" href={"#nav-draw-" + problem.id} role="tab" aria-controls={"nav-draw-" + problem.id} aria-selected="false" onClick={refreshCM}>Draw</a>
+                            <a className="nav-item nav-link" id={"nav-files-tab-" + problem.id} data-toggle="tab" href={"#nav-files-" + problem.id} role="tab" aria-controls={"nav-files-" + problem.id} aria-selected="false" onClick={refreshCM}>Files</a>
                         </div>
                     </nav>
                     <div className="tab-content" id="nav-instructor-note-tabContent">
-                        <div className="tab-pane fade show active" id={"nav-notes-" + problem.id} role="tabpanel" aria-labelledby={"nav-notes-tab-" + problem.id}>
-                            <ProblemNotes problem={problem} isRender={false} />
+                    <div className="tab-pane fade show active" id={"nav-output-" + problem.id} role="tabpanel" aria-labelledby={"nav-output-tab-" + problem.id}>
+                            <CodeOutput problem={problem} />
+                        </div>
+                        <div className="tab-pane fade" id={"nav-notes-" + problem.id} role="tabpanel" aria-labelledby={"nav-notes-tab-" + problem.id}>
+                            <ProblemNotes problem={problem} isRender={false} flag={count}/>
                         </div>
                         <div className="tab-pane fade" id={"nav-draw-" + problem.id} role="tabpanel" aria-labelledby={"nav-draw-tab-" + problem.id}>
                             <ProblemNotes problem={problem} isRender={true} />
@@ -87,7 +92,9 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
                 <div className="col">
                     <nav>
                         <div className="nav nav-tabs student-tab" id={"nav-student-tab-" + problem.id} role="tablist">
+                            {(config.displayInstructor || config.peerHelp) &&
                             <a ref={mySolutionTabRef} className="nav-item nav-link active" id={"nav-home-tab-" + problem.id} data-toggle="tab" href={"#nav-home-" + problem.id} role="tab" aria-controls={"nav-home-" + problem.id} aria-selected="true" onClick={refreshCM}>My Solution</a>
+                            }
                             {config.displayInstructor &&
                                 <a className="nav-item nav-link" id={"nav-profile-tab-" + problem.id} data-toggle="tab" href={"#nav-profile-" + problem.id} role="tab" aria-controls={"nav-profile-" + problem.id} aria-selected="false" onClick={refreshCM}>Instructor</a>
                             }

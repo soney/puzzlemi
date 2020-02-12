@@ -8,10 +8,12 @@ import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { codeChanged } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
 import { deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
+import { runCode } from '../../../../actions/runCode_actions';
 import TestList from './TestList';
 
-const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, username, dispatch, currentTest, flag, aggregateDataDoc }) => {
+const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, currentTest, flag, aggregateDataDoc }) => {
     const [count, setCount] = useState(0);
+    const [codeTab, setCodeTab] = useState('g');
 
     if (!currentTest) { return null; }
     const codeSolution = userSolution as ICodeSolution;
@@ -38,6 +40,48 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
 
     const doDeleteTest = () => {
         dispatch(deleteTest(problem.id, currentTest));
+    }
+
+    const switchInstructorCode = (e) =>{
+        setCodeTab(e.target.id.slice(4,5))
+        refreshCM();
+    }
+
+    const doRunCode = () => {
+        const graphicsEl = graphicsRef?graphicsRef.current:null;
+        if (graphicsEl) {
+            graphicsEl.innerHTML = '';
+        }
+        if(isAdmin){
+            let code = "";
+            switch (codeTab){
+                case "g":
+                    code = givenCodeSubDoc.getData();
+                    break;
+                case "s":
+                    code = standardCodeSubDoc.getData();
+                    break;
+                case "l":
+                    code = liveCodeSubDoc.getData();
+                    break;
+            }
+            return dispatch(runCode(code, [], problem, graphicsEl, currentTest))
+        }
+        else return dispatch(runCode(codeSolution.code, codeSolution.files, problem, graphicsEl, currentTest));
+    };
+
+    const doRunAll = () => {
+        const graphicsEl_tmp = graphicsRef?graphicsRef.current:null;
+        if (graphicsEl_tmp) {
+            graphicsEl_tmp.innerHTML = '';
+        }
+        const allTestsObjects: ICodeTest[] = Object.values(allTests);
+
+        allTestsObjects.forEach(test => {
+            if(test.status === CodeTestStatus.PASSED) {
+                dispatch(runCode(codeSolution.code, codeSolution.files, problem, graphicsEl_tmp, test))
+            }
+        });
     }
 
 
@@ -70,7 +114,7 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                                 </div>
                             </div>
                         </>
-                        : <CodeEditor value={codeSolution.code} options={{height: 400, lineNumbers: true}} onChange={doSetCode} flag={flag} />
+                        : <CodeEditor value={codeSolution.code} options={{ height: 400, lineNumbers: true }} onChange={doSetCode} flag={flag} />
                     }
                 </div>
             </div>
@@ -79,25 +123,27 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
 
     return <>
         <div className="row">
-            <div className="col-9">
-                {isEdit && 
+            <div className="col-9 puzzle-editor">
+                {isEdit &&
+                    <div className="puzzle-header">
                     <div className="row">
-                        <div className="col">
-                            {isEdit
-                                ? <CodeEditor shareDBSubDoc={testNameSubDoc} captureTabs={false} selectOnFocus={true} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 30 }} refreshDoc={currentTest.id} />
-                                : <div>{currentTest.name}</div>
-                            }
-                        </div>
-                        <div className="col">
-                            <div className="btn-group btn-block">
-                                {
-                                    isAdmin && currentTest.author !== 'null' && (currentTest.status === CodeTestStatus.PASSED
-                                        ? <button className="btn btn-outline-warning btn-sm" onClick={doChangeTestStatus}><i className="fas fa-times-circle"></i> Unverify</button>
-                                        : <button className="btn btn-outline-info btn-sm" onClick={doChangeTestStatus}><i className="fas fa-check-circle"></i> {currentTest.status === CodeTestStatus.FAILED ? 'Verify' : 'Verify'}</button>)
+                            <div className="col">
+                                {isEdit
+                                    ? <CodeEditor shareDBSubDoc={testNameSubDoc} captureTabs={false} selectOnFocus={true} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 30 }} refreshDoc={currentTest.id} />
+                                    : <div>{currentTest.name}</div>
                                 }
-                                {currentTest.author !== 'null' &&
-                                    <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}><i className="fas fa-trash"></i> Delete</button>
-                                }
+                            </div>
+                            <div className="col">
+                                <div className="btn-group btn-block">
+                                    {
+                                        isAdmin && currentTest.author !== 'null' && (currentTest.status === CodeTestStatus.PASSED
+                                            ? <button className="btn btn-outline-warning btn-sm" onClick={doChangeTestStatus}><i className="fas fa-times-circle"></i> Unverify</button>
+                                            : <button className="btn btn-outline-info btn-sm" onClick={doChangeTestStatus}><i className="fas fa-check-circle"></i> {currentTest.status === CodeTestStatus.FAILED ? 'Verify' : 'Verify'}</button>)
+                                    }
+                                    {currentTest.author !== 'null' &&
+                                        <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}><i className="fas fa-trash"></i> Delete</button>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -107,9 +153,9 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                     ? <>
                         <nav>
                             <div className="nav nav-tabs instructor-tab" id={"nav-instructor-code-tab-" + problem.id} role="tablist">
-                                <a className="nav-item nav-link active" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true">Given Code</a>
-                                <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={refreshCM}>Solution Code</a>
-                                <a className="nav-item nav-link" id={"nav-live-tab-" + problem.id} data-toggle="tab" href={"#nav-live-" + problem.id} role="tab" aria-controls={"nav-live-" + problem.id} aria-selected="false" onClick={refreshCM}>Live Code</a>
+                                <a className="nav-item nav-link active" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true" onClick={switchInstructorCode}>Given Code</a>
+                                <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={switchInstructorCode}>Solution Code</a>
+                                <a className="nav-item nav-link" id={"nav-live-tab-" + problem.id} data-toggle="tab" href={"#nav-live-" + problem.id} role="tab" aria-controls={"nav-live-" + problem.id} aria-selected="false" onClick={switchInstructorCode}>Live Code</a>
                             </div>
                         </nav>
                         <div className="tab-content" id={"nav-instructor-code-tabContent-" + problem.id}>
@@ -131,6 +177,18 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                 <TestList problem={problem} />
             </div>
         </div>
+        <div className="row">
+                        <div className={config.disableTest ? "col" : "col-9 puzzle-editor"}>
+                            <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
+                        </div>
+                        {!config.disableTest &&
+                            <div className="col-3">
+                                {config.runTests &&
+                                    <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunAll}>Run All Tests</button>
+                                }
+                            </div>
+                        }
+                    </div>
     </>;
 }
 
@@ -150,14 +208,14 @@ function mapStateToProps(state, ownProps) {
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveTest } = intermediateCodeState;
     const userSolution = solutions.allSolutions[problem.id][myuid];
-    const tests: {[id: string]: ICodeTest} = aggregateData ? aggregateData.userData[problem.id].tests : {};
+    const tests: { [id: string]: ICodeTest } = aggregateData ? aggregateData.userData[problem.id].tests : {};
 
     const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
 
-    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, aggregateDataDoc, currentTest, problemsDoc, config } })
+    return update(ownProps, { $merge: { isAdmin, username, allTests, userSolution, tests, aggregateDataDoc, currentTest, problemsDoc, config } })
 }
 
 export default connect(mapStateToProps)(PuzzleEditor);

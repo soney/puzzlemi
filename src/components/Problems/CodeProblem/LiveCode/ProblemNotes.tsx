@@ -5,7 +5,7 @@ import update from 'immutability-helper';
 import SketchOverlay from './SketchOverlay';
 import { CodeEditor } from '../../../CodeEditor';
 
-const ProblemNotes = ({ problem, problemsDoc, notes, isRender, isAdmin }) => {
+const ProblemNotes = ({ problem, problemsDoc, notes, isRender, isAdmin, flag }) => {
     if (isAdmin) {
         if (isRender) {
             const converter = new showdown.Converter();
@@ -23,7 +23,7 @@ const ProblemNotes = ({ problem, problemsDoc, notes, isRender, isAdmin }) => {
             const subDoc = problemsDoc.subDoc([...p, 'problemDetails', 'notes']);
             return <div className="row">
                 <div className="col">
-                    <CodeEditor shareDBSubDoc={subDoc} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true }} />
+                    <CodeEditor shareDBSubDoc={subDoc} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true }} flag={flag} />
                 </div>
             </div>;
         }

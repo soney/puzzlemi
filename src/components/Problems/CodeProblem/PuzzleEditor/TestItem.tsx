@@ -40,7 +40,7 @@ const PuzzleEditor = ({ isAdmin, problem, test, username, dispatch, selected, te
     }
     const classValue = baseClasses + activeClass + isEditClass + validClass + adminClass + passClass;
 
-    return <li data-tag={testResults.id} className={classValue} onClick={doSetCurrentTest}>{test.name}</li>;
+    return <li data-tag={testResults.id} className={classValue} onClick={doSetCurrentTest}><p>{test.name}</p></li>;
 }
 
 function mapStateToProps(state, ownProps) {
