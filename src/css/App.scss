@@ -613,3 +613,24 @@ nav {
   bottom: 0px;
   left: 0px;
 }
+
+.chat-header{
+    padding: 1px 10px;
+}
+
+.chat-message-container{
+    width: 80%;
+}
+
+.chat-I-am-sender{
+    float:right;
+}
+
+.chat-I-am-sender-header{
+    color: #eeeeee;
+    background-color: #444444;
+}
+
+.chat-other-sender{
+    float: left;
+}
