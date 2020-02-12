@@ -2,7 +2,7 @@ import * as React from 'react';
 import update from 'immutability-helper';
 import { connect } from "react-redux";
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
-import { ICodeTest } from '../../../../reducers/aggregateData';
+import { ICodeTest, CodeTestStatus } from '../../../../reducers/aggregateData';
 import { addTest } from '../../../../actions/sharedb_actions';
 import { runVerifyTest } from '../../../../actions/runCode_actions';
 import TestItem from './TestItem';
@@ -73,7 +73,7 @@ function mapStateToProps(state, ownProps) {
     const tests: {[id: string]: ICodeTest} = aggregateData ? aggregateData.userData[problem.id].tests : {};
 
     const myTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author === username);
-    const otherTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author !== username);
+    const otherTestObjects: ICodeTest[] = Object.values(tests).filter((t) => ((t.author !== username) && ((t.status === CodeTestStatus.PASSED)||isAdmin) ) );
     const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
     const allTestsObjects: ICodeTest[] = Object.values(allTests);

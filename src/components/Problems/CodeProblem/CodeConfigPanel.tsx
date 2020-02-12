@@ -16,7 +16,7 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config }) => {
         </div>
         <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"runTests-" + problem.id} onClick={onSwitch} defaultChecked={config.runTests} />
-            <label className="custom-control-label" htmlFor={"runTests-" + problem.id}>Run All Test</label>
+            <label className="custom-control-label" htmlFor={"runTests-" + problem.id}>Run All Tests</label>
         </div>
         <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"addTests-" + problem.id} onClick={onSwitch} defaultChecked={config.addTests} />
