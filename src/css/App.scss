@@ -107,8 +107,8 @@ html {
                 padding: 1px;
             }
         }
-        max-height: 500px;
-        overflow-y: scroll;
+        max-height: 350px;
+        overflow-y: auto;
         overflow-x: hidden;
         small {
             text-align: center;
@@ -121,14 +121,16 @@ html {
             // @include box-shadow(inset 6px 0px 6px -6px #777);
         }
         .list-group-item {
+            user-select: none;
+            min-height: 15px;
+            overflow-x: hidden;
             padding: 1px;
             font-size: 0.7em;
             // @include box-shadow(inset 6px 0px 6px -6px #777;
             &.active {
                 // background-color: inherit;
-                background-color: #EEE !important;
                 // border: 1px solid #856404;
-                color: inherit;
+                // color: inherit;
                 // border-color: #AAA;
                 // border-left: none;
                 // @include box-shadow(0px 6px 6px -6px #777);
@@ -140,32 +142,47 @@ html {
                 // border-right: 10px solid #007bff;
             }
 
-            &.passed {
-                background-color: #d0e6d0;
+            &.passed.verified {
+                &:not(.active) {
+                    background-color: #d0e6d0;
+                    color: #155724;
+                }
                 &::before {
                     font-family: "Font Awesome 5 Free"; font-weight: 900;
                     content: "\f00c  ";
-                    color: #155724;
                 }
             }
-
-            &.false {
-                background-color: #f8d6da;
+            &.failed.verified {
+                &:not(.active) {
+                    background-color: #f8d6da;
+                    color: #721c24;
+                }
                 &::before {
                     font-family: "Font Awesome 5 Free"; font-weight: 900;
                     content: "\f00d  ";
-                    color: #721c24;
+                }
+            }
+            &.pending.verified {
+                &:not(.active) {
+                    background-color: #fff3cd;
+                    color: #856404;
+                }
+                &::before {
+                    font-family: "Font Awesome 5 Free"; font-weight: 900;
+                    content: "\f141  ";
                 }
             }
             
-            &.verified {
-                border-right: 10px solid #17a2b8;
-            }
-            &.unverified {
-                border-right: 10px solid #ffc107;
-            }
-            &.not-verified {
-                border-right: 10px solid #ffc107;
+            // &.verified {
+            //     border-right: 10px solid #17a2b8;
+            // }
+            &.unverified, &.not-verified {
+                &::after {
+                    font-family: "Font Awesome 5 Free"; font-weight: 900;
+                    content: "\f110  ";
+                    color: #BBB;
+                    float: right;
+                }
             }
 
             .test-actions {
@@ -247,7 +264,7 @@ nav {
         // overflow-wrap: break-word;
         // height: 100px;
         // overflow-x: hidden;
-        overflow-y: scroll;
+        overflow-y: auto;
         max-height: 200px;
 
         border: 1px solid #EEE;

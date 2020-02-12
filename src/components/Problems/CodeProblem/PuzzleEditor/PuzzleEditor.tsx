@@ -70,7 +70,7 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                                 </div>
                             </div>
                         </>
-                        : <CodeEditor value={codeSolution.code} options={{height: 100, lineNumbers: true}} onChange={doSetCode} flag={flag} />
+                        : <CodeEditor value={codeSolution.code} options={{height: 150, lineNumbers: true}} onChange={doSetCode} flag={flag} />
                     }
                 </div>
             </div>
@@ -124,7 +124,7 @@ const PuzzleEditor = ({ userSolution, problemsDoc, isAdmin, problem, config, use
                             </div>
                         </div>
                     </>
-                    : <CodeEditor value={codeSolution.code} options={{ lineNumbers: true, height: 100 }} onChange={doSetCode} flag={flag} />}
+                    : <CodeEditor value={codeSolution.code} options={{ lineNumbers: true, height: 150 }} onChange={doSetCode} flag={flag} />}
                 <CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} />
             </div>
             <div className="col-3 tests">

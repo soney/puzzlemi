@@ -31,10 +31,10 @@ const MySolution = ({ userSolution, intermediateCodeState, testObjects, currentT
             graphicsEl_tmp.innerHTML = '';
         }
         allTestsObjects.forEach(test => {
-            if(test.status === CodeTestStatus.PASSED){
+            if(test.status === CodeTestStatus.PASSED) {
                 dispatch(runCode(codeSolution, problem, intermediateCodeState, graphicsEl_tmp, test))
             }
-        })
+        });
     }
 
     const doRequestHelp = () => {

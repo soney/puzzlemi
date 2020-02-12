@@ -30,8 +30,10 @@ export interface ICodeSolutionTestResultsState {
     [testID: string]: ICodeTestResult
 }
 
+export enum CodePassedState { PASSED, FAILED, PENDING };
+
 export interface ICodeTestResult {
-    passed: boolean | null;
+    passed: CodePassedState;
     errors: string[];
     output: string
 }
@@ -145,7 +147,7 @@ export const intermediateUserState = (state: IIntermediateUserState = { isAdmin:
     } else if (type === EventTypes.BEGIN_RUN_CODE) {
         const { problemID, testID } = action as IBeginRunningCodeAction;
         let { testResults } = state.intermediateSolutionState[problemID] as ICodeSolutionState;
-        testResults[testID] = { passed: null, errors: [], output: '' }
+        testResults[testID] = { passed: CodePassedState.PENDING, errors: [], output: '' }
         return update(state, {
             intermediateSolutionState: {
                 [problemID]: {

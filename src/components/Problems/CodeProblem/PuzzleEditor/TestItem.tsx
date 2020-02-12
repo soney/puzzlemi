@@ -1,9 +1,9 @@
 import * as React from 'react';
 import update from 'immutability-helper';
 import { connect } from "react-redux";
-import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
+import { ICodeSolutionState, CodePassedState } from '../../../../reducers/intermediateUserState';
 import { setActiveTest } from '../../../../actions/user_actions';
-import { CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
+import { CodeTestType, CodeTestStatus, ICodeTest } from '../../../../reducers/aggregateData';
 
 const PuzzleEditor = ({ isAdmin, problem, test, username, dispatch, selected, testResults }) => {
     const doSetCurrentTest = (e) => {
@@ -27,14 +27,24 @@ const PuzzleEditor = ({ isAdmin, problem, test, username, dispatch, selected, te
             break;
     }
     const adminClass = isAdmin ? " isadmin " : " ";
-    const passClass = result && result.hasOwnProperty('passed') && result.passed ? 'passed' : '';
+    let passClass = 'pending';
+    if(result && result.hasOwnProperty('passed')) {
+        const { passed } = result;
+        if(passed === CodePassedState.PASSED) {
+            passClass = 'passed';
+        } else if(passed === CodePassedState.FAILED) {
+            passClass = 'failed';
+        } else if(passed === CodePassedState.PENDING) {
+            passClass = 'pending';
+        }
+    }
     const classValue = baseClasses + activeClass + isEditClass + validClass + adminClass + passClass;
 
     return <li data-tag={testResults.id} className={classValue} onClick={doSetCurrentTest}>{test.name}</li>;
 }
 
 function mapStateToProps(state, ownProps) {
-    const { intermediateUserState, solutions, users } = state;
+    const { shareDBDocs, intermediateUserState, solutions, users } = state;
     const { isAdmin } = intermediateUserState;
     const { problem } = ownProps;
     const { problemDetails } = problem;
@@ -45,7 +55,15 @@ function mapStateToProps(state, ownProps) {
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveTest, testResults } = intermediateCodeState;
     const userSolution = solutions.allSolutions[problem.id][myuid];
-    const selected = currentActiveTest === ownProps.test.id;
+
+    const instructorTests = problemDetails.tests;
+    const aggregateData = shareDBDocs.i.aggregateData;
+    const tests: {[id: string]: ICodeTest} = aggregateData ? aggregateData.userData[problem.id].tests : {};
+    const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
+    const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
+    const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
+
+    const selected = currentTest.id === ownProps.test.id;
 
     return update(ownProps, { $merge: { isAdmin, username, userSolution, testResults, config, selected } })
 }
