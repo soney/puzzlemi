@@ -570,7 +570,7 @@ nav {
   margin-top: 10px;
 }
 .chat-messages-wrapper {
-  height: 250px;
+  max-height: 400px;
   overflow-y: scroll;
   border: 1px solid #eee;
   margin-bottom: 12px;
@@ -599,18 +599,28 @@ nav {
     }
 }
 
-.sender {
-  font-weight: bold;
-}
-
 .chat-message-item {
-  margin-bottom: 10px;
+  .chat-content{
+    padding: 1px 10px;
+  }
+  .timestamp {
+    margin-left: 5px;
+    color: #bbb;
+    font-size: 0.7em;
+  }
+  .sender {
+    font-weight: bold;
+    color: #aaa;
+  }
 }
 
-.timestamp {
-  margin-left: 5px;
-  color: #bbb;
+.isSender{
+  text-align: right;
+  .sender{
+    color: #359457;
+  }
 }
+
 
 .sketchAdmin {
   position: absolute;
@@ -670,19 +680,7 @@ nav {
   padding: 1px 10px;
 }
 
-.chat-message-container {
-  width: 80%;
+.chat-message-container:hover {
+  background:#f7f7f7
 }
 
-.chat-I-am-sender {
-  float: right;
-}
-
-.chat-I-am-sender-header {
-  color: #eeeeee;
-  background-color: #444444;
-}
-
-.chat-other-sender {
-  float: left;
-}

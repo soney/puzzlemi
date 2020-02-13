@@ -46,16 +46,16 @@ const ChatWidget = ({ activeSession, dispatch, problem, sessions, username }) =>
     return <div>
         <div className="chat-container">
             <div className="chat-messages-wrapper" ref={chatWrapper} >
-                {activeSession.chatMessages.map((message, i) => <div className={"chat-message-container" + ((message.sender === username) ? ' chat-I-am-sender' : ' chat-other-sender')} key={i}>
+                {activeSession.chatMessages.map((message, i) => <div className={"chat-message-container" + ((message.sender === username) ? ' isSender' : '')} key={i}>
 
-                    <div className="card chat-message-item">
-                        <div className={"card-header chat-header" + ((message.sender === username) ? ' chat-I-am-sender-header' : '')}>
+                    <div className="chat-message-item">
+                        <div className="chat-header">
                             <span className="sender">{message.sender}</span>
                             <span className="timestamp">
                                 ({timeAgo(parseInt(message.timestamp))})
                             </span>
                         </div>
-                        <div className="card-body content">
+                        <div className="chat-content">
                             <p dangerouslySetInnerHTML={{ __html: converter.makeHtml(message.content) }} />
                         </div>
                     </div>
