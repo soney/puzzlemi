@@ -5,7 +5,7 @@ import update from 'immutability-helper';
 import { addCodeProblem, addMultipleChoiceProblem, addTextResponseProblem } from '../../actions/sharedb_actions';
 import { IProblem } from '../../reducers/problems';
 import { IPMState } from '../../reducers';
-import Hotkeys from 'react-hot-keys';
+// import Hotkeys from 'react-hot-keys';
 
 const Problems = ({ isAdmin, dispatch, problems }) => {
     const doAddCodeProblem = (event): void => {
@@ -29,10 +29,9 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
         {
             isAdmin &&
             <div className="row">
-                <Hotkeys keyName="j" onKeyDown={() => { console.log('down'); }}></Hotkeys>
-                <Hotkeys keyName="ctrl+shift+c" onKeyUp={doAddCodeProblem} filter={()=>true}></Hotkeys>
+                {/* <Hotkeys keyName="ctrl+shift+c" onKeyUp={doAddCodeProblem} filter={()=>true}></Hotkeys>
                 <Hotkeys keyName="ctrl+shift+m" onKeyUp={doAddMultipleChoiceProblem} filter ={()=>true}></Hotkeys>
-                <Hotkeys keyName="ctrl+shift+t" onKeyUp={doAddTextResponseProblem} filter ={()=>true}></Hotkeys>
+                <Hotkeys keyName="ctrl+shift+t" onKeyUp={doAddTextResponseProblem} filter ={()=>true}></Hotkeys> */}
                 <div className="btn-group btn-block" role="group">
                     <button className="btn btn-outline-success btn-sm" onClick={doAddCodeProblem}>
                         <i className="fas fa-plus"></i> Code
@@ -47,9 +46,7 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
             </div>
         }
         <div className="feedback">
-                <a className="alert alert-primary" role="alert" target="_blank" href="https://forms.gle/6Gh4r8qiCtSRAEVo9">
-            PuzzleMI feedback collection
-            </a>
+            <a className="btn btn-outline-secondary" role="alert" rel="noopener noreferrer" target="_blank" href="https://forms.gle/6Gh4r8qiCtSRAEVo9">PuzzleMI site feedback</a>
         </div>
     </>
 }

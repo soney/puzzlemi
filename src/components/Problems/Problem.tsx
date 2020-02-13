@@ -14,14 +14,14 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
 
     const elementRef: React.Ref<HTMLLIElement> = React.createRef();
 
-    React.useEffect(() => {
-        if (claimFocus) {
-            const el = elementRef.current;
-            if (el) {
-                el.scrollIntoView({block: 'start', inline: 'nearest'});
-            }
-        }
-    });
+    // React.useEffect(() => {
+    //     if (claimFocus) {
+    //         const el = elementRef.current;
+    //         if (el) {
+    //             el.scrollIntoView({block: 'start', inline: 'nearest'});
+    //         }
+    //     }
+    // });
 
     const doDeleteProblem = () => {
         return dispatch(deleteProblem(problemID));
@@ -48,7 +48,7 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
         problemDisplay = <TextResponseProblem problem={problem} />;
     }
 
-    return <li className={classNames({'problem': true, 'container': true, 'passedAll': passedAll&&!isAdmin})} tabIndex={tabIndex} ref={elementRef}>
+    return <li className={classNames({'problem': true, 'container': true, 'passedAll': passedAll&&!isAdmin})} ref={elementRef}>
         { isAdmin &&
             <div className="btn-toolbar justify-content-between">
                 <div className="btn-group btn-group-toggle" data-toggle="buttons">

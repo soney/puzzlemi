@@ -26,6 +26,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
     const liveCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'liveCode']);
     const standardCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'standardCode']);
     const isEdit = isAdmin ? true : currentTest !== undefined && currentTest.author === username;
+
     const doSetCode = (ev) => {
         const { value } = ev;
         return dispatch(codeChanged(problem, value));
@@ -51,6 +52,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
         if (graphicsEl) {
             graphicsEl.innerHTML = '';
         }
+
         if (isAdmin) {
             let code = "";
             switch (codeTab) {
@@ -65,8 +67,9 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
                     break;
             }
             return dispatch(runCode(code, [], problem, graphicsEl, currentTest))
+        } else {
+            return dispatch(runCode(codeSolution.code, codeSolution.files, problem, graphicsEl, currentTest));
         }
-        else return dispatch(runCode(codeSolution.code, codeSolution.files, problem, graphicsEl, currentTest));
     };
 
     const doRunAll = () => {
@@ -103,17 +106,17 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
                             </nav>
                             <div className="tab-content" id={"nav-instructor-code-tabContent-" + problem.id}>
                                 <div className="tab-pane fade show active" id={"nav-given-" + problem.id} role="tabpanel" aria-labelledby={"nav-given-tab-" + problem.id}>
-                                    <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
+                                    <CodeEditor run={doRunCode} shareDBSubDoc={givenCodeSubDoc} />
                                 </div>
                                 <div className="tab-pane fade" id={"nav-live-" + problem.id} role="tabpanel" aria-labelledby={"nav-live-tab-" + problem.id}>
-                                    <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={count} />
+                                    <CodeEditor run={doRunCode} shareDBSubDoc={liveCodeSubDoc} flag={count} />
                                 </div>
                                 <div className="tab-pane fade" id={"nav-standard-" + problem.id} role="tabpanel" aria-labelledby={"nav-standard-tab-" + problem.id}>
-                                    <CodeEditor shareDBSubDoc={standardCodeSubDoc} flag={count} />
+                                    <CodeEditor run={doRunCode} shareDBSubDoc={standardCodeSubDoc} flag={count} />
                                 </div>
                             </div>
                         </>
-                        : <CodeEditor value={codeSolution.code} options={{ height: 400, lineNumbers: true }} onChange={doSetCode} flag={flag} />
+                        : <CodeEditor run={doRunCode} value={codeSolution.code} options={{ height: 300, lineNumbers: true }} onChange={doSetCode} flag={flag} />
                     }
                 </div>
             </div>
@@ -152,7 +155,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
                         </div>
                     </div>
                 }
-                <CodeEditor shareDBSubDoc={beforeCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} />
+                <CodeEditor run={doRunCode} shareDBSubDoc={beforeCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} />
                 {isAdmin
                     ? <>
                         <nav>
@@ -164,17 +167,17 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
                         </nav>
                         <div className="tab-content" id={"nav-instructor-code-tabContent-" + problem.id}>
                             <div className="tab-pane fade show active" id={"nav-given-" + problem.id} role="tabpanel" aria-labelledby={"nav-given-tab-" + problem.id}>
-                                <CodeEditor shareDBSubDoc={givenCodeSubDoc} />
+                                <CodeEditor shareDBSubDoc={givenCodeSubDoc} options={{lineNumbers: true, height: 150}} />
                             </div>
                             <div className="tab-pane fade" id={"nav-standard-" + problem.id} role="tabpanel" aria-labelledby={"nav-standard-tab-" + problem.id}>
-                                <CodeEditor shareDBSubDoc={standardCodeSubDoc} flag={count} />
+                                <CodeEditor run={doRunCode} shareDBSubDoc={standardCodeSubDoc} options={{lineNumbers: true, height: 150}} flag={count} />
                             </div>
                             <div className="tab-pane fade" id={"nav-live-" + problem.id} role="tabpanel" aria-labelledby={"nav-live-tab-" + problem.id}>
-                                <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={count} />
+                                <CodeEditor run={doRunCode} shareDBSubDoc={liveCodeSubDoc} options={{lineNumbers: true, height: 150}} flag={count} />
                             </div>
                         </div>
                     </>
-                    : <CodeEditor value={codeSolution.code} options={{ lineNumbers: true, height: 400 }} onChange={doSetCode} flag={flag} />}
+                    : <CodeEditor run={doRunCode} value={codeSolution.code} options={{ lineNumbers: true, height: 300 }} onChange={doSetCode} flag={flag} />}
                 <CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} />
             </div>
             <div className="col-3 tests">

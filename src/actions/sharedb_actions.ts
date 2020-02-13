@@ -298,7 +298,7 @@ export function addCodeProblem() {
 
         const newCodeTest: ICodeTest = {
             id: uuid(),
-            name: 'default',
+            name: 'Instructor test',
             author: 'null',
             type: CodeTestType.INSTRUCTOR,
             before: '# given variables',
@@ -321,7 +321,7 @@ export function addCodeProblem() {
                 sketch: [],
                 config: {
                     disableTest: false,
-                    runTests: false,
+                    runTests: true,
                     addTests: false,
                     displayInstructor: false,
                     peerHelp: false
