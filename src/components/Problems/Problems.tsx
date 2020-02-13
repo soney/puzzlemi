@@ -46,6 +46,11 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
                 </div>
             </div>
         }
+        <div className="feedback">
+                <a className="alert alert-primary" role="alert" target="_blank" href="https://forms.gle/6Gh4r8qiCtSRAEVo9">
+            PuzzleMI feedback collection
+            </a>
+        </div>
     </>
 }
 function mapStateToProps(state:IPMState, givenProps) {
