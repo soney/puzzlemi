@@ -13,7 +13,10 @@ const TestList = ({ isAdmin, problem, config, username, myTestObjects, otherTest
     if (!currentTest) { return null; }
 
     const doAddInstructorTest = () => {
-        dispatch(addTest(problem.id, username, true));
+        const testID = uuid();
+        dispatch(addTest(problem.id, username, true, testID)).then(()=>{
+            dispatch(setActiveTest(testID, problem.id))
+        });
     }
     const doAddUserTest = () => {
         const testID = uuid();
