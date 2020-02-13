@@ -17,6 +17,7 @@ interface ICodeEditorProps {
     options?: any;
     value?: string;
     flag?: any;
+    run?: ()=>void,
     shareDBSubDoc?: SDBSubDoc<string>;
     onChange?: (e: ICodeChangeEvent) => void;
     refreshDoc?: any;
@@ -111,7 +112,16 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
                     }
                     node = node.parentElement;
                 }
-
+            },
+            "Ctrl-Enter": () => {
+                if(this.props.run) {
+                    this.props.run();
+                }
+            },
+            "Cmd-Enter": () => {
+                if(this.props.run) {
+                    this.props.run();
+                }
             }
         });
         if(this.props.selectOnFocus) {

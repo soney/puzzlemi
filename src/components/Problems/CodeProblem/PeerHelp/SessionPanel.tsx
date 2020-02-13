@@ -42,7 +42,7 @@ const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionI
             <div className="row">
                 <div className="col-10">
                     {isEdit
-                        ? <div><CodeEditor shareDBSubDoc={titleSubDoc} refreshDoc={sessionIndex} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 50 }} /></div>
+                        ? <div><CodeEditor shareDBSubDoc={titleSubDoc} refreshDoc={sessionIndex} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 250 }} /></div>
                         : <div><p dangerouslySetInnerHTML={{ __html: converter.makeHtml(activeSession.title) }} />
                         </div>}
                     {isEdit
