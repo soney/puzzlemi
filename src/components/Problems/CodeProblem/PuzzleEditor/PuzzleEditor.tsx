@@ -41,19 +41,19 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
         dispatch(deleteTest(problem.id, currentTest));
     }
 
-    const switchInstructorCode = (e) =>{
-        setCodeTab(e.target.id.slice(4,5))
+    const switchInstructorCode = (e) => {
+        setCodeTab(e.target.id.slice(4, 5))
         refreshCM();
     }
 
     const doRunCode = () => {
-        const graphicsEl = graphicsRef?graphicsRef.current:null;
+        const graphicsEl = graphicsRef ? graphicsRef.current : null;
         if (graphicsEl) {
             graphicsEl.innerHTML = '';
         }
-        if(isAdmin){
+        if (isAdmin) {
             let code = "";
-            switch (codeTab){
+            switch (codeTab) {
                 case "g":
                     code = givenCodeSubDoc.getData();
                     break;
@@ -70,14 +70,14 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
     };
 
     const doRunAll = () => {
-        const graphicsEl_tmp = graphicsRef?graphicsRef.current:null;
+        const graphicsEl_tmp = graphicsRef ? graphicsRef.current : null;
         if (graphicsEl_tmp) {
             graphicsEl_tmp.innerHTML = '';
         }
         const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
         allTestsObjects.forEach(test => {
-            if(test.status === CodeTestStatus.PASSED) {
+            if (test.status === CodeTestStatus.PASSED) {
                 dispatch(runCode(codeSolution.code, codeSolution.files, problem, graphicsEl_tmp, test))
             }
         });
@@ -117,6 +117,11 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
                     }
                 </div>
             </div>
+            <div className="row">
+                <div className={config.disableTest ? "col" : "col-9 puzzle-editor"}>
+                    <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
+                </div>
+            </div>
         </>
     }
 
@@ -125,7 +130,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
             <div className="col-9 puzzle-editor">
                 {isEdit &&
                     <div className="puzzle-header">
-                    <div className="row">
+                        <div className="row">
                             <div className="col">
                                 {isEdit
                                     ? <CodeEditor shareDBSubDoc={testNameSubDoc} captureTabs={false} selectOnFocus={true} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 30 }} refreshDoc={currentTest.id} />
@@ -177,17 +182,17 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
             </div>
         </div>
         <div className="row">
-                        <div className={config.disableTest ? "col" : "col-9 puzzle-editor"}>
-                            <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
-                        </div>
-                        {!config.disableTest &&
-                            <div className="col-3">
-                                {config.runTests &&
-                                    <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunAll}>Run All Tests</button>
-                                }
-                            </div>
-                        }
-                    </div>
+            <div className={config.disableTest ? "col" : "col-9 puzzle-editor"}>
+                <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
+            </div>
+            {!config.disableTest &&
+                <div className="col-3">
+                    {config.runTests &&
+                        <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunAll}>Run All Tests</button>
+                    }
+                </div>
+            }
+        </div>
     </>;
 }
 
