@@ -6,6 +6,8 @@ import { ICodeTest, CodeTestStatus } from '../../../../reducers/aggregateData';
 import { addTest } from '../../../../actions/sharedb_actions';
 import { runVerifyTest } from '../../../../actions/runCode_actions';
 import TestItem from './TestItem';
+import uuid from '../../../../utils/uuid';
+import { setActiveTest } from '../../../../actions/user_actions';
 
 const TestList = ({ isAdmin, problem, config, username, myTestObjects, otherTestObjects, dispatch, currentTest, instructorTestObjects, allTestsObjects }) => {
     if (!currentTest) { return null; }
@@ -14,7 +16,11 @@ const TestList = ({ isAdmin, problem, config, username, myTestObjects, otherTest
         dispatch(addTest(problem.id, username, true));
     }
     const doAddUserTest = () => {
-        dispatch(addTest(problem.id, username, false));
+        const testID = uuid();
+
+        dispatch(addTest(problem.id, username, false, testID)).then(()=>{
+            dispatch(setActiveTest(testID, problem.id))
+        });
     }
 
     const doVerifyAll = () => {

@@ -421,14 +421,14 @@ export function updateSketch(problemID: string, sketch: any[]) {
     };
 }
 
-export function addTest(problemID: string, username: string, isAdmin: boolean) {
+export function addTest(problemID: string, username: string, isAdmin: boolean, testID?:string) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
         const problemsDoc = shareDBDocs.problems;
 
         const newCodeTest: ICodeTest = {
-            id: uuid(),
+            id: testID?testID:uuid(),
             name: isAdmin ? 'instructor test' : 'student test',
             author: username,
             type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
@@ -437,8 +437,8 @@ export function addTest(problemID: string, username: string, isAdmin: boolean) {
             status: isAdmin? CodeTestStatus.PASSED: CodeTestStatus.UNVERIFIED,
             completed: []
         }
-        if(isAdmin) problemsDoc.submitObjectInsertOp(['allProblems', problemID, 'problemDetails', 'tests', newCodeTest.id], newCodeTest);
-        else aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'tests', newCodeTest.id], newCodeTest);
+        if(isAdmin) await problemsDoc.submitObjectInsertOp(['allProblems', problemID, 'problemDetails', 'tests', newCodeTest.id], newCodeTest);
+        else await aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'tests', newCodeTest.id], newCodeTest);
     };
 }
 
