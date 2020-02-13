@@ -478,6 +478,14 @@ export function changeHelpSessionStatus(problemID: string, sessionID: string, ne
     }
 }
 
+export function changeHelpSessionAccessControl(problemID: string, sessionID: string, readOnly: boolean){
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'helpSessions', sessionID, 'readOnly'], readOnly);
+    }
+}
+
 
 export interface ITestAddedAction {
     type: EventTypes.TEST_ADDED,
@@ -506,6 +514,7 @@ export function addHelpSession(problemID: string, username: string, userSolution
             chatMessages: [],
             title: '**no title**',
             description: 'no *description*',
+            readOnly: false,
             solution: userSolution as ICodeSolution
         }
         aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'helpSessions', newHelpSession.id], newHelpSession);

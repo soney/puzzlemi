@@ -6,7 +6,7 @@ import { CodeEditor } from '../../../CodeEditor';
 import ChatWidget from './ChatWidget';
 import * as showdown from 'showdown';
 import { timeAgo } from '../../../../utils/timestamp';
-import { changeHelpSessionStatus } from '../../../../actions/sharedb_actions';
+import { changeHelpSessionStatus, changeHelpSessionAccessControl } from '../../../../actions/sharedb_actions';
 
 const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionIndex, isInstructor, problem, aggregateDataDoc, sessions, isTutee, clickCallback }) => {
     const [isEdit, setIsEdit] = React.useState(false);
@@ -26,14 +26,18 @@ const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionI
     const doChangeSessionStatus = () => {
         dispatch(changeHelpSessionStatus(problem.id, activeSession.id, !activeSession.status));
     }
-    const toggleListView = () =>{
+
+    const doChangeSessionAccessControl = () => {
+        dispatch(changeHelpSessionAccessControl(problem.id, activeSession.id, !activeSession.readOnly));
+    }
+    const toggleListView = () => {
         clickCallback(true);
     }
 
     return <>
-            <nav className="navbar navbar-light bg-light">
-                <button className="btn btn-link return-button" onClick={toggleListView}>Return to the Session List</button>
-                </nav>
+        <nav className="navbar navbar-light bg-light">
+            <button className="btn btn-link return-button" onClick={toggleListView}>Return to the Session List</button>
+        </nav>
         <div className="session-head">
             <div className="row">
                 <div className="col-10">
@@ -68,10 +72,16 @@ const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionI
                 }
             </div>
         </div>
-        <div className="session-body">    
+        <div className="session-body">
             <div className="row">
                 <div className="col">
-                    <CodeEditor shareDBSubDoc={sharedCodeSubDoc} refreshDoc={sessionIndex} />
+                    <CodeEditor shareDBSubDoc={sharedCodeSubDoc} refreshDoc={sessionIndex} options={(activeSession.readOnly && !isTutee) ? { readOnly: true } : {}} />
+                    {isTutee &&
+                        <div className="custom-control custom-switch">
+                            <input type="checkbox" className="custom-control-input" id={"readonly"} onClick={doChangeSessionAccessControl} defaultChecked={activeSession.readOnly} />
+                            <label className="custom-control-label" htmlFor={"readonly"}>Read Only</label>
+                        </div>
+                    }
                 </div>
                 <div className="col">
                     <ChatWidget problem={problem} sessions={sessions} />

@@ -39,6 +39,7 @@ export interface ICodeTest {
 export interface IHelpSession {
     id: string;
     status: boolean;
+    readOnly: boolean;
     tutee: string;
     chatMessages: IMessage[];
     title: string;
