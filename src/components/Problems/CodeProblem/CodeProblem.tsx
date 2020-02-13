@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useState } from 'react';
 import { connect } from "react-redux";
 import ProblemDescription from '../ProblemDescription';
 import ProblemNotes from './LiveCode/ProblemNotes';
@@ -16,7 +15,8 @@ import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 import CodeOutput from './CodeOutput';
 
 const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
-    const [count, setCount] = useState(0);
+    const [count, setCount] = React.useState(0);
+    const [peer, setPeer] = React.useState(0);
     const peerHelpTabRef = React.createRef<HTMLAnchorElement>();
     const peerHelpDivRef = React.createRef<HTMLDivElement>();
     const mySolutionTabRef = React.createRef<HTMLAnchorElement>();
@@ -37,6 +37,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
         peerHelpDiv.classList.toggle('show');
         mySolutionDiv.classList.toggle('active');
         mySolutionDiv.classList.toggle('show');
+        setPeer(peer + 1);
     }
 
     if (isAdmin) {
@@ -106,11 +107,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
                     <div className="tab-content" id="nav-student-tabContent">
                         <div ref={mySolutionDivRef} className="tab-pane fade show active" id={"nav-home-" + problem.id} role="tabpanel" aria-labelledby={"nav-home-tab-" + problem.id}>
                             <MySolution problem={problem} flag={count} redirectCallback={peerHelpRedirect} />
-                            <div className="row">
-                                <div className="col">
-                                    {/* <Tests index={index} /> */}
-                                </div>
-                            </div>
                         </div>
                         {config.displayInstructor &&
                             <div className="tab-pane fade" id={"nav-profile-" + problem.id} role="tabpanel" aria-labelledby={"nav-profile-tab-" + problem.id}>
@@ -119,7 +115,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
                         }
                         {config.peerHelp &&
                             <div ref={peerHelpDivRef} className="tab-pane fade" id={"nav-contact-" + problem.id} role="tabpanel" aria-labelledby={"nav-contact-tab-" + problem.id}>
-                                <PeerHelp problem={problem} />
+                                <PeerHelp problem={problem} listView={peer}/>
                             </div>
                         }
                     </div>

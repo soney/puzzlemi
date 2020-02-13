@@ -23,6 +23,10 @@ const MySolution = ({ userSolution, myuid, problem, config, flag, myHelpSession,
         redirectCallback();
     }
 
+    const doSwitchHelp=()=>{
+        redirectCallback();
+    }
+
     return <div>
         <div className="row">
             <div className={config.disableTest ? "col" : "col-7"}>
@@ -41,7 +45,7 @@ const MySolution = ({ userSolution, myuid, problem, config, flag, myHelpSession,
                             <button type="button" className="btn btn-outline-primary" onClick={doRequestHelp}><i className="fas fa-comment"></i> Start a Help Session</button>
                         }
                         {myHelpSession !== null &&
-                            <button type="button" className="btn btn-outline-primary">Check My Help Session</button>
+                            <button type="button" className="btn btn-outline-secondary" onClick={doSwitchHelp}>Check My Help Session</button>
                         }
                     </div>
                 }

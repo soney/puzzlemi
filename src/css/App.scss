@@ -578,6 +578,7 @@ nav {
 }
 
 .session-head {
+  margin-top: 20px;
   margin-bottom: 20px;
 }
 
@@ -588,6 +589,14 @@ nav {
 .content {
   padding-top: 10px;
   padding-bottom: 0px;
+}
+
+.return-button{
+    &::before{
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        content: "\f053  ";
+    }
 }
 
 .sender {

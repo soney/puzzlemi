@@ -7,16 +7,17 @@ import { updateCurrentActiveHelpSession } from '../../../../actions/user_actions
 import { changeHelperLists } from '../../../../actions/sharedb_actions';
 import * as showdown from 'showdown';
 
-const SessionList = ({ session, currentActiveHelpSession, dispatch, problem, myuid, helperLists }) => {
+const SessionList = ({ session, currentActiveHelpSession, dispatch, problem, myuid, helperLists, clickCallback }) => {
     const onChangeActiveID = () => {
         dispatch(updateCurrentActiveHelpSession(problem.id, session.id))
         dispatch(changeHelperLists(problem.id, session.id, myuid))
+        clickCallback(false)
     }
     const converter = new showdown.Converter();
     const sessionIDs = Object.values(helperLists);
     const helperNumber = sessionIDs.filter(s=>s===session.id).length;
 
-    return <div onClick={onChangeActiveID} className={session.id === currentActiveHelpSession ? "list-group-item list-group-item-action active" : "list-group-item list-group-item-action"}>
+    return <div onClick={onChangeActiveID} className="list-group-item list-group-item-action">
         <div className="d-flex w-100 justify-content-between">
             <h5 className="mb-1"><p className={session.status?"session-open":"session-close"} dangerouslySetInnerHTML={{ __html: converter.makeHtml(session.title) }} /></h5>
         </div>

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { connect } from "react-redux";
-import { useState } from 'react';
 import update from 'immutability-helper';
 import { ISolutionState, ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { CodeEditor } from '../../../CodeEditor';
@@ -9,8 +8,8 @@ import * as showdown from 'showdown';
 import { timeAgo } from '../../../../utils/timestamp';
 import { changeHelpSessionStatus } from '../../../../actions/sharedb_actions';
 
-const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionIndex, isInstructor, problem, aggregateDataDoc, sessions, isTutee }) => {
-    const [isEdit, setIsEdit] = useState(false);
+const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionIndex, isInstructor, problem, aggregateDataDoc, sessions, isTutee, clickCallback }) => {
+    const [isEdit, setIsEdit] = React.useState(false);
 
     if (activeSession === null) return <></>;
 
@@ -19,16 +18,6 @@ const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionI
     const titleSubDoc = aggregateDataDoc.subDoc([...p, 'title']);
     const descriptionSubDoc = aggregateDataDoc.subDoc([...p, 'description']);
     const converter = new showdown.Converter();
-    // let allUserDisplays:any[] = []
-
-    // for (let helperID in helperLists) {
-    //     if (helperLists.hasOwnProperty(helperID) && helperLists[helperID] === activeSession.id) {
-    //         if(allUsers.hasOwnProperty(helperID)) 
-    //         {
-    //             allUserDisplays.push(allUsers[helperID].username);
-    //         }
-    //     }
-    // }
 
     const toggleEdit = () => {
         setIsEdit(!isEdit);
@@ -37,8 +26,14 @@ const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionI
     const doChangeSessionStatus = () => {
         dispatch(changeHelpSessionStatus(problem.id, activeSession.id, !activeSession.status));
     }
+    const toggleListView = () =>{
+        clickCallback(true);
+    }
 
     return <>
+            <nav className="navbar navbar-light bg-light">
+                <button className="btn btn-link return-button" onClick={toggleListView}>Return to the Session List</button>
+                </nav>
         <div className="session-head">
             <div className="row">
                 <div className="col-10">

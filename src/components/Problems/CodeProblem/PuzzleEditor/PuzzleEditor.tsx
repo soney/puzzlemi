@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useState } from 'react';
 import update from 'immutability-helper';
 import { connect } from "react-redux";
 import { CodeEditor } from '../../../CodeEditor';
@@ -12,8 +11,8 @@ import { runCode } from '../../../../actions/runCode_actions';
 import TestList from './TestList';
 
 const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, currentTest, flag, aggregateDataDoc }) => {
-    const [count, setCount] = useState(0);
-    const [codeTab, setCodeTab] = useState('g');
+    const [count, setCount] = React.useState(0);
+    const [codeTab, setCodeTab] = React.useState('g');
 
     if (!currentTest) { return null; }
     const codeSolution = userSolution as ICodeSolution;
