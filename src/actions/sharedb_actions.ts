@@ -520,7 +520,15 @@ export function addHelpSession(problemID: string, username: string, userSolution
     }
 }
 
-export function addMessage(problemID: string, newMessage: IMessage, sessionID: number) {
+export function deleteHelpSession(problemID: string, sessionID: string) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs } = getState();
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        aggregateDataDoc.submitObjectDeleteOp(['userData', problemID, 'helpSessions', sessionID]);
+    }
+}
+
+export function addMessage(problemID: string, newMessage: IMessage, sessionID: string) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
