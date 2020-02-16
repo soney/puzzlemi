@@ -6,7 +6,7 @@ import { IProblem, ICodeProblem, ICodeFile } from "../reducers/problems";
 import { ICodeTest, CodeTestType, CodeTestStatus } from "../reducers/aggregateData";
 import { ICodeSolutionState, CodePassedState } from "../reducers/intermediateUserState";
 import { IPMState } from "../reducers/index.js";
-import uuid from "../utils/uuid.js";
+import uuid from "../utils/uuid";
 
 declare const Sk;
 
