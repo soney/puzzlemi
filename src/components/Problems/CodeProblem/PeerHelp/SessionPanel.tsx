@@ -16,7 +16,6 @@ const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionI
     const p = ['userData', problem.id, 'helpSessions', activeSession.id];
     const sharedCodeSubDoc = aggregateDataDoc.subDoc([...p, 'solution', 'code']);
     const titleSubDoc = aggregateDataDoc.subDoc([...p, 'title']);
-    const descriptionSubDoc = aggregateDataDoc.subDoc([...p, 'description']);
     const converter = new showdown.Converter();
 
     const toggleEdit = () => {
@@ -42,12 +41,9 @@ const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionI
             <div className="row">
                 <div className="col-10">
                     {isEdit
-                        ? <div><CodeEditor shareDBSubDoc={titleSubDoc} refreshDoc={sessionIndex} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 250 }} /></div>
+                        ? <div><CodeEditor shareDBSubDoc={titleSubDoc} refreshDoc={sessionIndex} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 50 }} /></div>
                         : <div><p dangerouslySetInnerHTML={{ __html: converter.makeHtml(activeSession.title) }} />
                         </div>}
-                    {isEdit
-                        ? <div><CodeEditor shareDBSubDoc={descriptionSubDoc} refreshDoc={sessionIndex} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 50 }} /></div>
-                        : <div><p dangerouslySetInnerHTML={{ __html: converter.makeHtml(activeSession.description) }} /></div>}
                     <div className={activeSession.status ? "session-open" : "session-close"}>
                         <small>{activeSession.tutee} opened this help session {timeAgo(parseInt(activeSession.timestamp))}</small>
                     </div>

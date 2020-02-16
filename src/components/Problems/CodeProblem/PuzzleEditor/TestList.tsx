@@ -28,7 +28,7 @@ const TestList = ({ isAdmin, problem, config, username, myTestObjects, otherTest
 
     const doVerifyAll = () => {
         allTestsObjects.forEach(test => {
-            dispatch(runVerifyTest(problem, test))
+            if(test.author!=='null') dispatch(runVerifyTest(problem, test))
         })
     }
 

@@ -256,14 +256,14 @@ export function runVerifyTest(problem: IProblem, test:ICodeTest) {
         const writeFileHandler = (contents, fname) => {
         }
         const standardCodePromise = executeCode(test.before, standardCode, test.after, files, outputChangeHandler, writeFileHandler, null);
-        // const emptyCodePromise = executeCode(test.before, '', test.after, files, outputChangeHandler, writeFileHandler, null);
-        Promise.all([standardCodePromise]).then(([standardCodeResult]) => {
+        const emptyCodePromise = executeCode(test.before, '', test.after, files, outputChangeHandler, writeFileHandler, null);
+        Promise.all([standardCodePromise, emptyCodePromise]).then(([standardCodeResult, emptyCodeResult]) => {
             const passedStandard = !standardCodeResult.errString;
-            // const passedEmpty = !emptyCodeResult.errString;
+            const passedEmpty = !emptyCodeResult.errString;
             const { shareDBDocs } = getState();
             const problemsDoc = shareDBDocs.problems;
             const aggregateDataDoc = shareDBDocs.aggregateData;
-            const newStatus = passedStandard ? CodeTestStatus.PASSED : CodeTestStatus.FAILED;
+            const newStatus = (passedStandard && !passedEmpty) ? CodeTestStatus.PASSED : CodeTestStatus.FAILED;
             if(test.type === CodeTestType.INSTRUCTOR) {
                 problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'tests', test.id, 'status'], newStatus);
             } else {

@@ -513,7 +513,6 @@ export function addHelpSession(problemID: string, username: string, userSolution
             tutee: username,
             chatMessages: [],
             title: '**no title**',
-            description: 'no *description*',
             readOnly: false,
             solution: userSolution as ICodeSolution
         }
