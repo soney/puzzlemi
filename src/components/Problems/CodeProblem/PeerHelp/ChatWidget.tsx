@@ -23,6 +23,7 @@ const ChatWidget = ({ activeSession, dispatch, problem, sessions, username }) =>
     }
 
     const onSendMessage = () => {
+        if(message.length===0) return;
         const newMessage: IMessage = {
             sender: username,
             content: message,
