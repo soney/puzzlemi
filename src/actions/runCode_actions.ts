@@ -6,6 +6,7 @@ import { IProblem, ICodeProblem, ICodeFile } from "../reducers/problems";
 import { ICodeTest, CodeTestType, CodeTestStatus } from "../reducers/aggregateData";
 import { ICodeSolutionState, CodePassedState } from "../reducers/intermediateUserState";
 import { IPMState } from "../reducers/index.js";
+import uuid from "../utils/uuid.js";
 
 declare const Sk;
 
@@ -79,7 +80,7 @@ export interface IExecuteCodeResult {
     output: string
 }
 
-function executeCode(beforeCode: string, code: string, afterCode: string, files, outputChangeHandler, writeFileHandler, graphics) {
+function executeCode(beforeCode: string, code: string, afterCode: string, files: { problemFiles: ICodeFile[], userFiles: ICodeFile[], tempFiles: ICodeFile[] }, outputChangeHandler, writeFileHandler, graphics) {
     beforeCode = beforeCode + '\n';
     afterCode = '\n' + afterCode;
     const fullCode = `${beforeCode}${code}${afterCode}`;
@@ -94,11 +95,11 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files,
         };
 
         const readf = (fname: string): string => {
-            const { problemFiles, userFiles } = files;
+            const { problemFiles, userFiles, tempFiles } = files;
 
             if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][fname] === undefined) {
                 let file;
-                [...problemFiles, ...userFiles].forEach((f) => {
+                [...problemFiles, ...userFiles, ...tempFiles].forEach((f) => {
                     const { name } = f;
                     if (name === fname) {
                         file = f;
@@ -169,7 +170,7 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
     return (dispatch: Dispatch, getState) => {
         const { id: problemID } = problem;
         const problemDetails = problem.problemDetails as ICodeProblem;
-        const files = { problemFiles: problemDetails.files, userFiles};
+        const files = { problemFiles: problemDetails.files, userFiles, tempFiles: [] };
         // const fullCode = test.before.concat(' \n' + code, ' \n' + test.after);
         const outputChangeHandler = (output) => {
             dispatch({
@@ -247,12 +248,20 @@ export function runVerifyTest(problem: IProblem, test:ICodeTest) {
         const { id: problemID } = problem;
         const problemDetails = problem.problemDetails as ICodeProblem;
         const { standardCode } = problemDetails;
-        const files = { problemFiles: problemDetails.files};
+        const tempFiles: ICodeFile[] = [];
+        const files = { problemFiles: problemDetails.files, userFiles: [], tempFiles };
        
-        const outputChangeHandler = (output) => {
-        }
-        const writeFileHandler = (contents, fname) => {
-        }
+        const outputChangeHandler = (output) => { };
+
+        const writeFileHandler = (contents, name) => {
+            const fIndex = tempFiles.findIndex((f) => f.name === name);
+            if(fIndex < 0) {
+                tempFiles.push({ id: uuid(), name, contents});
+            } else {
+                tempFiles[fIndex].contents = tempFiles[fIndex].contents + contents;
+            }
+        };
+
         const standardCodePromise = executeCode(test.before, standardCode, test.after, files, outputChangeHandler, writeFileHandler, null);
         // const emptyCodePromise = executeCode(test.before, '', test.after, files, outputChangeHandler, writeFileHandler, null);
         Promise.all([standardCodePromise]).then(([standardCodeResult]) => {
