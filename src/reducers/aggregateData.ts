@@ -21,13 +21,13 @@ export interface ICodeSolutionAggregate {
 
 }
 
-export enum CodeTestType { INSTRUCTOR, STUDENT };
-export enum CodeTestStatus { UNVERIFIED, FAILED, PASSED };
+export enum CodeTestType { INSTRUCTOR='instructor', STUDENT='student' };
+export enum CodeTestStatus { UNVERIFIED='unverified', VERIFICATION_FAILED='verification_failed', VERIFIED='verified' };
 
 export interface ICodeTest {
     id: string;
     name: string;
-    author: string;
+    author: string|null;
     type: CodeTestType;
     before: string;
     after: string;

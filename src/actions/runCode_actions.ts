@@ -129,11 +129,7 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files,
             return Sk.importMainWithBody("<stdin>", false, `${fullCode}\n`, true);
         });
         let errString: string;
-        const onFinally = () => {
-            const returnResult: IExecuteCodeResult = { errString, output };
-            resolve(returnResult);
-        };
-        myPromise.then(onFinally, (err) => {
+        myPromise.catch((err) => {
             const pretextLines = (beforeCode.match(/\n/g) || '').length;
  
             const matches = code.match(/\n/g);
@@ -161,7 +157,9 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files,
             } else {
                 errString = err.toString();
             }
-            onFinally();
+        }).finally(() => {
+            const returnResult: IExecuteCodeResult = { errString, output };
+            resolve(returnResult);
         });
 
     });
@@ -263,7 +261,7 @@ export function runVerifyTest(problem: IProblem, test:ICodeTest) {
             const { shareDBDocs } = getState();
             const problemsDoc = shareDBDocs.problems;
             const aggregateDataDoc = shareDBDocs.aggregateData;
-            const newStatus = passedStandard ? CodeTestStatus.PASSED : CodeTestStatus.FAILED;
+            const newStatus = passedStandard ? CodeTestStatus.VERIFIED : CodeTestStatus.VERIFICATION_FAILED;
             if(test.type === CodeTestType.INSTRUCTOR) {
                 problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'tests', test.id, 'status'], newStatus);
             } else {

@@ -6,7 +6,7 @@ import { IPMState } from "../reducers";
 import { selectUserForSolutionView } from "../actions/app_actions";
 import * as classNames from 'classnames';
 import { replaceProblems } from "../actions/sharedb_actions";
-import { IProblems, ICodeProblem, IMultipleChoiceOption, IMultipleChoiceProblem, ITextResponseProblem } from "../reducers/problems";
+import { IProblems, ICodeProblem, IMultipleChoiceOption, IMultipleChoiceProblem, ITextResponseProblem, IProblemType } from "../reducers/problems";
 import Hotkeys from 'react-hot-keys';
 import { CodeTestType, ICodeTest } from "../reducers/aggregateData";
 import copy from 'copy-to-clipboard';
@@ -41,7 +41,7 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
             const problem = allProblems[problemID];
             const { problemDetails } = problem;
             const { problemType } = problemDetails;
-            if(problemType === 'code') {
+            if(problemType === IProblemType.Code) {
                 const { description, givenCode, tests } = (problemDetails as ICodeProblem);
                 result += `${description}\n\n\n`;
                 let canonicalInstructorTest: ICodeTest|null = null;
@@ -61,13 +61,13 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
                 if(canonicalInstructorTest) {
                     result += `\`\`\`python\n${canonicalInstructorTest.after}\n\`\`\`\n\n\n`;
                 }
-            } else if(problemType === 'multiple-choice') {
+            } else if(problemType === IProblemType.MultipleChoice) {
                 const { description, options } = (problemDetails as IMultipleChoiceProblem);
                 result += `${description}\n\n\n`;
                 options.forEach((option: IMultipleChoiceOption) => {
                     result += `- ${option.description}\n`;
                 });
-            } else if(problemType === 'text-response') {
+            } else if(problemType === IProblemType.TextResponse) {
                 const { description } = (problemDetails as ITextResponseProblem);
                 result += `${description}\n\n\n`;
                 result += '```text\n\n\n```\n\n';

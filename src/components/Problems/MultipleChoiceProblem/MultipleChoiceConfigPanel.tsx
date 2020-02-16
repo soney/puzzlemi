@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import update from 'immutability-helper';
 import { setMultipleChoiceSelectionEnabled, setRevealSolution } from '../../../actions/sharedb_actions';
 import { IPMState } from '../../../reducers';
+import { IMultipleChoiceSelectionType } from '../../../reducers/problems';
 
 const MultipleChoiceProblemConfigPanel = ({ problem, dispatch, selectionType, revealSolution }) => {
     const doChangeMultipleChoiceSelectionType = (event) => {
@@ -17,7 +18,7 @@ const MultipleChoiceProblemConfigPanel = ({ problem, dispatch, selectionType, re
     }
     return <>
         <div className="custom-control custom-switch">
-            <input id={`multiple-item-selection-${problem.id}`} className="custom-control-input" type='checkbox' checked={selectionType==='multiple'} onChange={doChangeMultipleChoiceSelectionType} />
+            <input id={`multiple-item-selection-${problem.id}`} className="custom-control-input" type='checkbox' checked={selectionType===IMultipleChoiceSelectionType.Multiple} onChange={doChangeMultipleChoiceSelectionType} />
             <label htmlFor={`multiple-item-selection-${problem.id}`} className="custom-control-label">Multiple Item Selection</label>
         </div>
         <div className="custom-control custom-switch">

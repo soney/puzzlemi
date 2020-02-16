@@ -3,11 +3,11 @@ import update from 'immutability-helper';
 import { ISetIsAdminAction, ICodeChangedAction, IUpdateActiveHelpSessionAction, ISetActiveTestAction } from '../actions/user_actions';
 import { IOutputChangedAction, IErrorChangedAction, IDoneRunningCodeAction, IBeginRunningCodeAction, IPassedAddAction, IFailedAddAction } from '../actions/runCode_actions';
 import { IProblemAddedAction, ISDBDocFetchedAction, ITestAddedAction, ITestPartChangedAction, IMultipleChoiceOptionAddedAction } from '../actions/sharedb_actions';
-import { IProblem, ICodeFile, IMultipleChoiceOption } from './problems';
+import { IProblem, ICodeFile, IMultipleChoiceOption, IProblemType } from './problems';
 import { IPMState } from '.';
 import { ICodeTest } from './aggregateData';
 
-export enum ElementAwaitingFocus { NONE, PROBLEM, OPTION, TEST, FILE };
+export enum ElementAwaitingFocus { NONE='none', PROBLEM='problem', OPTION='option', TEST='test', FILE='file' };
 
 export interface IIntermediateUserState {
     isAdmin: boolean;
@@ -30,7 +30,7 @@ export interface ICodeSolutionTestResultsState {
     [testID: string]: ICodeTestResult
 }
 
-export enum CodePassedState { PASSED, FAILED, PENDING };
+export enum CodePassedState { PASSED='passed', FAILED='failed', PENDING='pending' };
 
 export interface ICodeTestResult {
     passed: CodePassedState;
@@ -211,7 +211,7 @@ export const crossSliceIntermediateUserStateReducer = (state: IPMState, action: 
 
 function getIntermediateSolutionState(problem: IProblem): ISolutionState {
     const { problemType } = problem.problemDetails;
-    if (problemType === 'code') {
+    if (problemType === IProblemType.Code) {
         return {
             modified: false,
             files: [],

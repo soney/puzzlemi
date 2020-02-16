@@ -34,7 +34,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
 
 
     const doChangeTestStatus = () => {
-        const newStatus = currentTest.status === CodeTestStatus.PASSED ? CodeTestStatus.FAILED : CodeTestStatus.PASSED;
+        const newStatus = currentTest.status === CodeTestStatus.VERIFIED ? CodeTestStatus.VERIFICATION_FAILED : CodeTestStatus.VERIFIED;
         dispatch(changeTestStatus(problem.id, currentTest, newStatus))
     }
 
@@ -80,7 +80,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
         const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
         allTestsObjects.forEach(test => {
-            if (test.status === CodeTestStatus.PASSED) {
+            if (test.status === CodeTestStatus.VERIFIED) {
                 dispatch(runCode(codeSolution.code, codeSolution.files, problem, graphicsEl_tmp, test))
             }
         });
@@ -143,11 +143,11 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
                             <div className="col">
                                 <div className="btn-group btn-block">
                                     {
-                                        isAdmin && currentTest.author !== 'null' && (currentTest.status === CodeTestStatus.PASSED
+                                        isAdmin && currentTest.author !== null && (currentTest.status === CodeTestStatus.VERIFIED
                                             ? <button className="btn btn-outline-warning btn-sm" onClick={doChangeTestStatus}><i className="fas fa-times-circle"></i> Unverify</button>
-                                            : <button className="btn btn-outline-info btn-sm" onClick={doChangeTestStatus}><i className="fas fa-check-circle"></i> {currentTest.status === CodeTestStatus.FAILED ? 'Verify' : 'Verify'}</button>)
+                                            : <button className="btn btn-outline-info btn-sm" onClick={doChangeTestStatus}><i className="fas fa-check-circle"></i> {currentTest.status === CodeTestStatus.VERIFICATION_FAILED ? 'Verify' : 'Verify'}</button>)
                                     }
-                                    {currentTest.author !== 'null' &&
+                                    {currentTest.author !== null &&
                                         <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}><i className="fas fa-trash"></i> Delete</button>
                                     }
                                 </div>

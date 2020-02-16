@@ -8,6 +8,7 @@ import { deleteMultipleChoiceOption, setMultipleChoiceOptionCorrect, moveMultipl
 import { IMultipleChoiceSolution } from '../../../reducers/solutions';
 import * as classNames from 'classnames';
 import { IPMState } from '../../../reducers';
+import { IMultipleChoiceSelectionType } from '../../../reducers/problems';
 
 const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolution, optionIndex, problem, description, dispatch, problemsDoc, isAdmin, isCorrect, numSelected, selectedByCurrentUser, claimFocus }) => {
     const doMoveOptionUp = () => {
@@ -26,7 +27,7 @@ const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolu
     }
     const onSelectionChange = (event) => {
         const { target } = event;
-        if(selectionType === 'single') {
+        if(selectionType === IMultipleChoiceSelectionType.Single) {
             dispatch(setUserSelectedOptions(problem.id, [option.id]));
         } else {
             const { checked } = target;
@@ -67,7 +68,7 @@ const MultipleChoiceOption = ({ option, selectedItems, selectionType, revealSolu
 
         return <tr className={classNames({ 'alert-danger': revealSolution && !userCorrect })}>
             <td colSpan={revealSolution ? 2 : 3}>
-                <label><input disabled={revealSolution} type={selectionType === 'single' ? 'radio' : 'checkbox'} key={option.id} name={problem.id} value={option.id} checked={selectedItems.indexOf(option.id) >= 0} onChange={onSelectionChange} /> <span className='multiple-choice-option' dangerouslySetInnerHTML={optionDescription} /></label>
+                <label><input disabled={revealSolution} type={selectionType === IMultipleChoiceSelectionType.Single ? 'radio' : 'checkbox'} key={option.id} name={problem.id} value={option.id} checked={selectedItems.indexOf(option.id) >= 0} onChange={onSelectionChange} /> <span className='multiple-choice-option' dangerouslySetInnerHTML={optionDescription} /></label>
             </td>
             {
                 revealSolution &&

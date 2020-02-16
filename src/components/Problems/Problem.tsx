@@ -7,6 +7,7 @@ import MultipleChoiceProblem from './MultipleChoiceProblem/MultipleChoiceProblem
 import * as classNames from 'classnames';
 import TextResponseProblem from './TextResponseProblem/TextResponseProblem';
 import { IPMState } from '../../reducers';
+import { IProblemType } from '../../reducers/problems';
 
 const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSolution, isAdmin, tabIndex, claimFocus }) => {
     const { id: problemID, problemDetails } = problem;
@@ -40,11 +41,11 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
     }
 
     let problemDisplay: JSX.Element|null = null;
-    if(problemType === 'code') {
+    if(problemType === IProblemType.Code) {
         problemDisplay = <CodeProblem problem={problem} />;
-    } else if(problemType === 'multiple-choice') {
+    } else if(problemType === IProblemType.MultipleChoice) {
         problemDisplay = <MultipleChoiceProblem problem={problem} />;
-    } else if(problemType === 'text-response') {
+    } else if(problemType === IProblemType.TextResponse) {
         problemDisplay = <TextResponseProblem problem={problem} />;
     }
 
@@ -81,7 +82,7 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
         }
         {problemDisplay}
         {
-            ((problemType === 'code') || (problemType === 'multiple-choice' && revealSolution)) &&
+            ((problemType === 'code') || (problemType === IProblemType.MultipleChoice && revealSolution)) &&
             <div className="row completion-info">
                 <div className="col">
                     {passedAll &&
@@ -108,7 +109,7 @@ function mapStateToProps(state: IPMState, ownProps) {
 
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
     const numCompleted = completed.length;
-    const passedAll = completed.indexOf(myuid) >= 0 && !(problemType==='multiple-choice'&&!revealSolution);
+    const passedAll = completed.indexOf(myuid) >= 0 && !(problemType===IProblemType.MultipleChoice&&!revealSolution);
 
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
 

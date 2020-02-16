@@ -4,7 +4,7 @@ import uuid from '../utils/uuid';
 import { getTimeStamp } from '../utils/timestamp';
 import EventTypes from './EventTypes';
 import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
-import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType } from '../reducers/problems';
+import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType, IProblemType, IMultipleChoiceOptionType } from '../reducers/problems';
 import { IAggregateData, IHelpSession, IMessage, ICodeSolutionAggregate, ICodeTest, CodeTestStatus, CodeTestType } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
 import { ISolutions, ICodeSolution } from '../reducers/solutions';
@@ -162,7 +162,7 @@ export async function multipleChoiceRevealSolutionChanged(problemID: string, rev
     await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
 }
 
-export function addMultipleChoiceOption(problemID: string, optionType: 'fixed' = 'fixed') {
+export function addMultipleChoiceOption(problemID: string, optionType: IMultipleChoiceOptionType = IMultipleChoiceOptionType.Fixed) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
@@ -246,7 +246,7 @@ export function setMultipleChoiceSelectionEnabled(problemID: string, enabled: bo
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
-        await problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'selectionType'], enabled ? 'multiple' : 'single');
+        await problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'selectionType'], enabled ? IMultipleChoiceSelectionType.Multiple : IMultipleChoiceSelectionType.Single);
     };
 }
 
@@ -266,13 +266,13 @@ export function replaceProblems(newProblems: IProblems) {
         for (let problemID in newProblems.allProblems) {
             if (newProblems.allProblems.hasOwnProperty(problemID)) {
                 const { problemDetails } = newProblems.allProblems[problemID];
-                if (problemDetails.problemType === 'code') {
+                if (problemDetails.problemType === IProblemType.Code) {
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
                         completed: [],
                         tests: {},
                         helpSessions: []
                     });
-                } else if(problemDetails.problemType === 'multiple-choice') {
+                } else if(problemDetails.problemType === IProblemType.MultipleChoice) {
                     const selected = {};
                     problemDetails.options.forEach((option) => {
                         selected[option.id] = [];
@@ -281,7 +281,7 @@ export function replaceProblems(newProblems: IProblems) {
                         completed: [],
                         selected
                     });
-                } else if (problemDetails.problemType === 'text-response') {
+                } else if (problemDetails.problemType === IProblemType.TextResponse) {
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {});
                 }
             }
@@ -299,11 +299,11 @@ export function addCodeProblem() {
         const newCodeTest: ICodeTest = {
             id: uuid(),
             name: 'Instructor test',
-            author: 'null',
+            author: null,
             type: CodeTestType.INSTRUCTOR,
             before: '# given variables',
             after: '# assertions',
-            status: CodeTestStatus.PASSED,
+            status: CodeTestStatus.VERIFIED,
             completed: []
         }
 
@@ -311,7 +311,7 @@ export function addCodeProblem() {
             id: uuid(),
             visible: true,
             problemDetails: {
-                problemType: 'code',
+                problemType: IProblemType.Code,
                 givenCode: `# code here`,
                 standardCode: `# standard solution`,
                 liveCode: `# live code demo`,
@@ -358,10 +358,10 @@ export function addMultipleChoiceProblem() {
             id: uuid(),
             visible: true,
             problemDetails: {
-                problemType: 'multiple-choice',
+                problemType: IProblemType.MultipleChoice,
                 description: '*no description*',
                 options: [],
-                selectionType: 'single',
+                selectionType: IMultipleChoiceSelectionType.Single,
                 revealSolution: false
             }
         };
@@ -385,7 +385,7 @@ export function addTextResponseProblem() {
             id: uuid(),
             visible: true,
             problemDetails: {
-                problemType: 'text-response',
+                problemType: IProblemType.TextResponse,
                 description: '*no description*',
             }
         };
@@ -434,7 +434,7 @@ export function addTest(problemID: string, username: string, isAdmin: boolean, t
             type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
             before: '# given variables',
             after: '# assertions',
-            status: isAdmin? CodeTestStatus.PASSED: CodeTestStatus.UNVERIFIED,
+            status: isAdmin ? CodeTestStatus.VERIFIED : CodeTestStatus.UNVERIFIED,
             completed: []
         }
         if(isAdmin) await problemsDoc.submitObjectInsertOp(['allProblems', problemID, 'problemDetails', 'tests', newCodeTest.id], newCodeTest);

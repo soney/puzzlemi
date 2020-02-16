@@ -82,7 +82,7 @@ function mapStateToProps(state, ownProps) {
     const tests: {[id: string]: ICodeTest} = aggregateData ? aggregateData.userData[problem.id].tests : {};
 
     const myTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author === username);
-    const otherTestObjects: ICodeTest[] = Object.values(tests).filter((t) => ((t.author !== username) && ((t.status === CodeTestStatus.PASSED)||isAdmin) ) );
+    const otherTestObjects: ICodeTest[] = Object.values(tests).filter((t) => ((t.author !== username) && ((t.status === CodeTestStatus.VERIFIED)||isAdmin) ) );
     const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
     const allTestsObjects: ICodeTest[] = Object.values(allTests);

@@ -2,7 +2,7 @@ import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
 import { IProblemAddedAction, IGivenCodeChangedAction, IMultipleChoiceSelectionTypeChangedAction, IMultipleChoiceOptionDeletedAction, ISDBDocFetchedAction } from '../actions/sharedb_actions';
 import { IPMState } from '.';
-import { IProblem, ICodeProblem, ICodeFile } from './problems';
+import { IProblem, ICodeProblem, ICodeFile, IProblemType } from './problems';
 import { ICodeChangedAction, ITextResponseChangedAction, IDeleteUserFileAction, IMultipleChoiceSelectedOptionsChangedAction } from '../actions/user_actions';
 import { IFileWrittenAction } from '../actions/runCode_actions';
 import uuid from '../utils/uuid';
@@ -313,11 +313,11 @@ function getDefaultSolution(problem: IProblem): IProblemSolution {
     const { problemDetails } = problem;
     const { problemType } = problemDetails;
 
-    if (problemType === 'code') {
+    if (problemType === IProblemType.Code) {
         return { code: (problemDetails as ICodeProblem).givenCode, files: [] };
-    } else if (problemType === 'multiple-choice') {
+    } else if (problemType === IProblemType.MultipleChoice) {
         return { selectedItems: [] };
-    } else if (problemType === 'text-response') {
+    } else if (problemType === IProblemType.TextResponse) {
         return { response: '' };
     } else {
         throw new Error(`Unknown problem type ${problemType}`);

@@ -5,28 +5,41 @@ export interface IProblem {
     problemDetails: IMultipleChoiceProblem | ICodeProblem | ITextResponseProblem
 };
 
+export enum IProblemType {
+    TextResponse='text-response',
+    MultipleChoice='multiple-choice',
+    Code='code'
+}
+
+export enum IMultipleChoiceOptionType {
+    Fixed='fixed'
+}
+
 export interface IMultipleChoiceOption {
     id: string;
     description: string;
-    optionType: 'fixed';
+    optionType: IMultipleChoiceOptionType.Fixed;
     freeResponse?: string | null;
     isCorrect: boolean;
 }
 
 export interface ITextResponseProblem {
     description: string;
-    problemType: 'text-response';
+    problemType: IProblemType.TextResponse;
 }
 
 export interface IMultipleChoiceProblem {
     description: string;
     options: IMultipleChoiceOption[];
-    problemType: 'multiple-choice';
+    problemType: IProblemType.MultipleChoice;
     selectionType: IMultipleChoiceSelectionType;
     revealSolution: boolean;
 }
 
-export type IMultipleChoiceSelectionType = 'single' | 'multiple';
+export enum IMultipleChoiceSelectionType {
+    Single='single',
+    Multiple='multiple'
+}
 
 export interface ICodeProblem {
     description: string;
@@ -40,7 +53,7 @@ export interface ICodeProblem {
     tests:{
         [testID: string]: ICodeTest
     };
-    problemType: 'code';
+    problemType: IProblemType.Code;
 }
 
 export interface ICodeProblemConfig {

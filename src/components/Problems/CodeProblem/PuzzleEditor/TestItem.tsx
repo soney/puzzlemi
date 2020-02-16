@@ -15,11 +15,12 @@ const PuzzleEditor = ({ isAdmin, problem, test, username, dispatch, selected, te
     const result = testResults[test.id];
     const isEditClass = test.author === username ? " isedit " : " ";
     let validClass;
+    console.log(test.status);
     switch (test.status) {
-        case CodeTestStatus.PASSED:
+        case CodeTestStatus.VERIFIED:
             validClass = " verified ";
             break;
-        case CodeTestStatus.FAILED:
+        case CodeTestStatus.VERIFICATION_FAILED:
             validClass = " not-verified ";
             break;
         case CodeTestStatus.UNVERIFIED:
