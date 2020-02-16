@@ -6,8 +6,10 @@ import { IPMState } from "../reducers";
 import { selectUserForSolutionView } from "../actions/app_actions";
 import * as classNames from 'classnames';
 import { replaceProblems } from "../actions/sharedb_actions";
-import { IProblems } from "../reducers/problems";
+import { IProblems, ICodeProblem, IMultipleChoiceOption, IMultipleChoiceProblem, ITextResponseProblem } from "../reducers/problems";
 import Hotkeys from 'react-hot-keys';
+import { CodeTestType, ICodeTest } from "../reducers/aggregateData";
+import copy from 'copy-to-clipboard';
 
 const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, problemsDoc, isAdmin, allUsers}) => {
     const { myuid } = users;
@@ -24,11 +26,60 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
         dispatch(setIsAdmin(checked));
     }
 
-    const downloadJSON = () => {
+    const downloadJSON = (event) => {
         const data = problemsDoc.getData();
         const stringifiedData = JSON.stringify(data);
         download('puzzlemi-saved.json', stringifiedData);
+        event.preventDefault();
     };
+
+    const getMarkdown = (event) => {
+        const problemsData: IProblems = problemsDoc.getData();
+        const { order, allProblems } = problemsData;
+        let result: string = '';
+        order.forEach((problemID: string, i: number) => {
+            const problem = allProblems[problemID];
+            const { problemDetails } = problem;
+            const { problemType } = problemDetails;
+            if(problemType === 'code') {
+                const { description, givenCode, tests } = (problemDetails as ICodeProblem);
+                result += `${description}\n\n\n`;
+                let canonicalInstructorTest: ICodeTest|null = null;
+                for(let testID in tests) {
+                    if(tests.hasOwnProperty(testID)) {
+                        const test = tests[testID];
+                        if(test.type === CodeTestType.INSTRUCTOR && test.author === 'null') {
+                            canonicalInstructorTest = test;
+                            break;
+                        }
+                    }
+                }
+                if(canonicalInstructorTest) {
+                    result += `\`\`\`python\n${canonicalInstructorTest.before}\n\`\`\`\n\n\n`;
+                }
+                result += `\`\`\`python\n${givenCode}\n\`\`\`\n\n\n`;
+                if(canonicalInstructorTest) {
+                    result += `\`\`\`python\n${canonicalInstructorTest.after}\n\`\`\`\n\n\n`;
+                }
+            } else if(problemType === 'multiple-choice') {
+                const { description, options } = (problemDetails as IMultipleChoiceProblem);
+                result += `${description}\n\n\n`;
+                options.forEach((option: IMultipleChoiceOption) => {
+                    result += `- ${option.description}\n`;
+                });
+            } else if(problemType === 'text-response') {
+                const { description } = (problemDetails as ITextResponseProblem);
+                result += `${description}\n\n\n`;
+                result += '```text\n\n\n```\n\n';
+            }
+            if(i < order.length - 1) {
+                result += `\n---\n\n`;
+            }
+        });
+        copy(result, { format: 'text/plain' });
+        event.preventDefault();
+    };
+
     const handleFile = (event) => {
         const { target } = event;
         const { files } = target;
@@ -44,6 +95,7 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
             }
             reader.readAsText(file);
         }
+        event.preventDefault();
         target.value = ''; // Reset in case the same file gets imported again
     }
 
@@ -92,11 +144,14 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
             {isAdmin && 
                 <form className="form-inline">
                     <div className="btn-group">
+                        <button onClick={getMarkdown} className='btn btn-sm btn-outline-secondary'>
+                            <i className="fas fa-copy"></i>&nbsp;Copy Markdown
+                        </button>
                         <button onClick={downloadJSON} className='btn btn-sm btn-outline-secondary'>
-                            <i className="fas fa-file-export"></i>&nbsp;Export problems
+                            <i className="fas fa-file-export"></i>&nbsp;Export JSON
                         </button>
                         <label className="file-upload btn btn-sm btn-outline-secondary">
-                            <i className="fas fa-file-import"></i>&nbsp;Import problems
+                            <i className="fas fa-file-import"></i>&nbsp;Import JSON
                             <input type="file" onChange={handleFile} className="form-control-file" />
                         </label>
                     </div>
