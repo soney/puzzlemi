@@ -71,7 +71,7 @@ const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionI
         <div className="session-body">
             <div className="row">
                 <div className="col">
-                    <CodeEditor shareDBSubDoc={sharedCodeSubDoc} refreshDoc={sessionIndex} options={(activeSession.readOnly && !isTutee) ? { readOnly: true } : {}} />
+                    <CodeEditor shareDBSubDoc={sharedCodeSubDoc} refreshDoc={sessionIndex} options={(activeSession.readOnly && !isTutee) ? { readOnly: true, lineNumbers: true, height: 300 } : {lineNumbers: true, height: 300}} />
                     {isTutee &&
                         <div className="custom-control custom-switch">
                             <input type="checkbox" className="custom-control-input" id={"readonly"} onClick={doChangeSessionAccessControl} defaultChecked={activeSession.readOnly} />
