@@ -32,10 +32,17 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
         return dispatch(codeChanged(problem, value));
     };
 
+    const doInitTestStatus = () => {
+        if(currentTest.status === CodeTestStatus.UNVERIFIED) return;
+        if(isAdmin) return;
+        const newStatus = CodeTestStatus.UNVERIFIED;
+        dispatch(changeTestStatus(problem.id, currentTest, newStatus));
+    }
+
 
     const doChangeTestStatus = () => {
         const newStatus = currentTest.status === CodeTestStatus.PASSED ? CodeTestStatus.FAILED : CodeTestStatus.PASSED;
-        dispatch(changeTestStatus(problem.id, currentTest, newStatus))
+        dispatch(changeTestStatus(problem.id, currentTest, newStatus));
     }
 
     const doDeleteTest = () => {
@@ -155,7 +162,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
                         </div>
                     </div>
                 }
-                <CodeEditor run={doRunCode} shareDBSubDoc={beforeCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} />
+                <CodeEditor run={doRunCode} shareDBSubDoc={beforeCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} onChange={doInitTestStatus}/>
                 {isAdmin
                     ? <>
                         <nav>
@@ -178,7 +185,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
                         </div>
                     </>
                     : <CodeEditor run={doRunCode} value={codeSolution.code} options={{ lineNumbers: true, height: 300 }} onChange={doSetCode} flag={flag} />}
-                <CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} />
+                <CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80 }} refreshDoc={currentTest.id} onChange={doInitTestStatus}/>
             </div>
             <div className="col-3 tests">
                 <TestList problem={problem} />
