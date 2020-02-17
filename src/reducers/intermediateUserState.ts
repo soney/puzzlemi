@@ -7,7 +7,7 @@ import { IProblem, ICodeFile, IMultipleChoiceOption, IProblemType } from './prob
 import { IPMState } from '.';
 import { ICodeTest } from './aggregateData';
 
-export enum ElementAwaitingFocus { NONE='none', PROBLEM='problem', OPTION='option', TEST='test', FILE='file' };
+export enum ElementAwaitingFocus { NONE = 'none', PROBLEM = 'problem', OPTION = 'option', TEST = 'test', FILE = 'file' };
 
 export interface IIntermediateUserState {
     isAdmin: boolean;
@@ -30,7 +30,7 @@ export interface ICodeSolutionTestResultsState {
     [testID: string]: ICodeTestResult
 }
 
-export enum CodePassedState { PASSED='passed', FAILED='failed', PENDING='pending' };
+export enum CodePassedState { PASSED = 'passed', FAILED = 'failed', PENDING = 'pending' };
 
 export interface ICodeTestResult {
     passed: CodePassedState;
@@ -168,11 +168,16 @@ export const intermediateUserState = (state: IIntermediateUserState = { isAdmin:
         })
     } else if (type === EventTypes.CODE_CHANGED) {
         const { problemID } = action as ICodeChangedAction;
+        const intermediateCodeState: ISolutionState = state.intermediateSolutionState[problemID];
+        const { testResults } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { testResults: {} };
+        Object.keys(testResults).forEach(key => {
+            testResults[key].passed = CodePassedState.PENDING;
+        })
         return update(state, {
             intermediateSolutionState: {
                 [problemID]: {
                     modified: { $set: true },
-                    testResults: { $set: {} }
+                    testResults: { $set: testResults }
                 }
             }
         });
@@ -181,7 +186,7 @@ export const intermediateUserState = (state: IIntermediateUserState = { isAdmin:
     }
 }
 
-export const crossSliceIntermediateUserStateReducer = (state: IPMState, action: IProblemAddedAction|ITestAddedAction|IMultipleChoiceOptionAddedAction): IPMState => {
+export const crossSliceIntermediateUserStateReducer = (state: IPMState, action: IProblemAddedAction | ITestAddedAction | IMultipleChoiceOptionAddedAction): IPMState => {
     const { type } = action;
     if (type === EventTypes.PROBLEM_ADDED) {
         const { problem } = action as IProblemAddedAction;
