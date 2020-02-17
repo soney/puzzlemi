@@ -24,6 +24,7 @@ const MySolution = ({ userSolution, myuid, problem, config, flag, myHelpSession,
     }
 
     const doSwitchHelp=()=>{
+        dispatch(updateCurrentActiveHelpSession(problem.id, myHelpSession.id))
         redirectCallback();
     }
 
