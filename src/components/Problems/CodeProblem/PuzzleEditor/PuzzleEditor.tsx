@@ -135,6 +135,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
         </>
     }
 
+
     return <>
         <div className="row">
             <div className="col-9 puzzle-editor">

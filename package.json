@@ -43,7 +43,8 @@
     "redux-persist": "^6.0.0",
     "redux-thunk": "^2.3.0",
     "sdb-ts": "^0.3.8",
-    "showdown": "^1.9.1"
+    "showdown": "^1.9.1",
+    "tippy.js": "^5.2.1"
   },
   "devDependencies": {
     "@types/jest": "^24.0.18",
