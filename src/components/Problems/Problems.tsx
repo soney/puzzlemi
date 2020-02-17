@@ -7,14 +7,21 @@ import { IProblem } from '../../reducers/problems';
 import { IPMState } from '../../reducers';
 // import Hotkeys from 'react-hot-keys';
 
-const Problems = ({ isAdmin, dispatch, problems }) => {
-    const doAddCodeProblem = (event): void => {
+interface IProblemsOwnProps {
+}
+interface IProblemsProps extends IProblemsOwnProps {
+    isAdmin: boolean;
+    dispatch: React.Dispatch<any>;
+    problems: IProblem[];
+}
+const Problems = ({ isAdmin, dispatch, problems }: IProblemsProps): React.ReactElement => {
+    const doAddCodeProblem = (): void => {
         dispatch(addCodeProblem());
     };
-    const doAddMultipleChoiceProblem = (event): void => {
+    const doAddMultipleChoiceProblem = (): void => {
         dispatch(addMultipleChoiceProblem());
     };
-    const doAddTextResponseProblem = (event): void => {
+    const doAddTextResponseProblem = (): void => {
         dispatch(addTextResponseProblem());
     };
 
@@ -50,7 +57,7 @@ const Problems = ({ isAdmin, dispatch, problems }) => {
         </div>
     </>
 }
-function mapStateToProps(state:IPMState, givenProps) {
+function mapStateToProps(state:IPMState, givenProps: IProblemsOwnProps): IProblemsProps {
     const { intermediateUserState, shareDBDocs } = state;
     const { isAdmin } = intermediateUserState;
     const problems = shareDBDocs.i.problems;
@@ -67,7 +74,7 @@ function mapStateToProps(state:IPMState, givenProps) {
         });
     }
 
-    return update(givenProps, { $merge: { problems: filteredProblems, isAdmin } });
+    return update(givenProps, { $merge: { problems: filteredProblems, isAdmin } }) as IProblemsProps;
 
 }
 export default connect(mapStateToProps)(Problems);

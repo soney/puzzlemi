@@ -49,7 +49,7 @@ render(
             <Helmet>
                 <title>PuzzleMI [{appState.channel}]</title>
             </Helmet>
-            <App isAdmin={false} />
+            <App />
         </PersistGate>
     </Provider>,
     document.getElementById('root')
