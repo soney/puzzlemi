@@ -34,7 +34,7 @@ const MySolution = ({ userSolution, myuid, problem, config, flag, myHelpSession,
                     <PuzzleEditor problem={problem} flag={flag} graphicsRef={graphicsRef} />
                 </div>
             </div>
-            <div className="col">
+            <div className={config.disableTest ? "col" : "col-5"}>
                 <CodeOutput problem={problem} />
                 <div ref={graphicsRef} className='graphics'></div>
 
