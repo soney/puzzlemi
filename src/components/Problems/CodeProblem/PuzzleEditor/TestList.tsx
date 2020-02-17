@@ -12,45 +12,55 @@ import { setActiveTest } from '../../../../actions/user_actions';
 const TestList = ({ isAdmin, problem, config, username, myTestObjects, otherTestObjects, dispatch, currentTest, instructorTestObjects, allTestsObjects }) => {
     if (!currentTest) { return null; }
 
+    const myWIP = myTestObjects.filter(o => o.status !== CodeTestStatus.PASSED).length;
+
     const doAddInstructorTest = () => {
         const testID = uuid();
-        dispatch(addTest(problem.id, username, true, testID)).then(()=>{
+        dispatch(addTest(problem.id, username, true, testID)).then(() => {
             dispatch(setActiveTest(testID, problem.id))
         });
     }
     const doAddUserTest = () => {
         const testID = uuid();
 
-        dispatch(addTest(problem.id, username, false, testID)).then(()=>{
+        dispatch(addTest(problem.id, username, false, testID)).then(() => {
             dispatch(setActiveTest(testID, problem.id))
         });
     }
 
     const doVerifyAll = () => {
         allTestsObjects.forEach(test => {
-            if(test.author!=='null') dispatch(runVerifyTest(problem, test))
+            if (test.author !== 'null') dispatch(runVerifyTest(problem, test))
         })
     }
 
     return <>
-        {(myTestObjects.length > 0 || (config.addTests && !isAdmin)) && <small className="text-muted">My Tests</small> }
+        {(myTestObjects.length > 0 || (config.addTests && !isAdmin)) && <small className="text-muted">My Tests</small>}
         {myTestObjects.length > 0 &&
             <ul className="list-group test-lists">
-                { myTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest===test} /> ) }
+                {myTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
             </ul>}
-        {(config.addTests && !isAdmin) &&  <div className="add-button"> <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddUserTest}>+ Test</button> </div> }
+        {(config.addTests && !isAdmin) &&
+            <div className="add-button">
+                {myWIP > 2
+                    ? <button className="btn btn-outline-success btn-sm btn-block" disabled >+ Test</button>
+                    : <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddUserTest} >+ Test</button>
+                }
+            </div>
 
-        {instructorTestObjects.length > 0 && <small className="text-muted">Instructor</small> }
+        }
+
+        {instructorTestObjects.length > 0 && <small className="text-muted">Instructor</small>}
         {instructorTestObjects.length > 0 &&
             <ul className="list-group test-lists">
-                { instructorTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest===test} /> ) }
+                {instructorTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
             </ul>}
-        {isAdmin && <div className="add-button"> <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddInstructorTest}>+ Test</button> </div> }
+        {isAdmin && <div className="add-button"> <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddInstructorTest}>+ Test</button> </div>}
 
-        {otherTestObjects.length > 0 && <small className="text-muted">Students</small> }
+        {otherTestObjects.length > 0 && <small className="text-muted">Students</small>}
         {otherTestObjects.length > 0 &&
             <ul className="list-group test-lists">
-                {otherTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest===test} /> ) }
+                {otherTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
             </ul>
         }
 
@@ -79,10 +89,10 @@ function mapStateToProps(state, ownProps) {
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveTest, testResults } = intermediateCodeState;
     const userSolution = solutions.allSolutions[problem.id][myuid];
-    const tests: {[id: string]: ICodeTest} = aggregateData ? aggregateData.userData[problem.id].tests : {};
+    const tests: { [id: string]: ICodeTest } = aggregateData ? aggregateData.userData[problem.id].tests : {};
 
     const myTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author === username);
-    const otherTestObjects: ICodeTest[] = Object.values(tests).filter((t) => ((t.author !== username) && ((t.status === CodeTestStatus.PASSED)||isAdmin) ) );
+    const otherTestObjects: ICodeTest[] = Object.values(tests).filter((t) => ((t.author !== username) && ((t.status === CodeTestStatus.PASSED) || isAdmin)));
     const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
     const allTestsObjects: ICodeTest[] = Object.values(allTests);
