@@ -43,7 +43,6 @@ export interface IHelpSession {
     tutee: string;
     chatMessages: IMessage[];
     title: string;
-    description: string;
     solution: ICodeSolution;
     timestamp: string;
 }
