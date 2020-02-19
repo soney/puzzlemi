@@ -9,7 +9,7 @@ import TextResponseProblem from './TextResponseProblem/TextResponseProblem';
 import { IPMState } from '../../reducers';
 import { IProblemType } from '../../reducers/problems';
 
-const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSolution, isAdmin, tabIndex, claimFocus }) => {
+const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSolution, isAdmin }) => {
     const { id: problemID, problemDetails } = problem;
     const { problemType } = problemDetails;
 
