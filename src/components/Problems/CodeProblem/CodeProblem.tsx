@@ -86,7 +86,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
         return <>
             <div className="row">
                 <div className="col">
-                    <ProblemDescription problem={problem} />
+                    <ProblemDescription focusOnMount={claimFocus} problem={problem} />
                 </div>
             </div>
             <div className="row">
