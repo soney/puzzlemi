@@ -9,21 +9,39 @@ import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 import { ICodeTest, IHelpSession } from '../../../reducers/aggregateData';
 import uuid from '../../../utils/uuid';
 import CodeOutput from './CodeOutput'
+import HelpMatch from './PeerHelp/HelpMatch';
 
-const MySolution = ({ userSolution, myuid, problem, config, flag, myHelpSession, dispatch, redirectCallback, username }) => {
+const MySolution = ({ userSolution, myuid, problem, config, currentResult, currentTest, flag, myHelpSession, dispatch, redirectCallback, username }) => {
     const graphicsRef = React.createRef<HTMLDivElement>();
-    const messageRef = React.createRef<HTMLDivElement>();
 
     const doRequestHelp = () => {
         const helpID = uuid();
-        dispatch(addHelpSession(problem.id, username, userSolution, helpID)).then(()=>{
+        let title = "";
+        let errorTags: string[] = [];
+        let testTags: string[] = [];
+        testTags.push(currentTest.id);
+        if (currentResult && currentResult.passed === "failed") {
+            if (currentResult.errors.length > 0) {
+                const errorMessages = currentResult.errors[0].split('\n');
+                const errorMessage = errorMessages[errorMessages.length - 1];
+                const errorType = errorMessage.split(':')[0];
+                errorTags.push(errorType);
+                if (errorType === "AssertionError") title = "Failed the assertion in **" + currentTest.name + "**";
+                else title = "`" + errorType + "` in my code"
+            }
+        }
+        else {
+            title = "Help me with **" + currentTest.name + "**";
+        }
+        const newCode = currentTest.before + "\n" + userSolution.code + "\n" + currentTest.after;
+        dispatch(addHelpSession(problem.id, username, newCode, helpID, errorTags, testTags, title)).then(() => {
             dispatch(updateCurrentActiveHelpSession(problem.id, helpID));
             dispatch(changeHelperLists(problem.id, helpID, myuid))
         });
         redirectCallback();
     }
 
-    const doSwitchHelp=()=>{
+    const doSwitchHelp = () => {
         dispatch(updateCurrentActiveHelpSession(problem.id, myHelpSession.id))
         redirectCallback();
     }
@@ -52,10 +70,9 @@ const MySolution = ({ userSolution, myuid, problem, config, flag, myHelpSession,
                 }
             </div>
         </div>
-        <div className="row">
-            <div className="col test-case-message" ref={messageRef}>
-            </div>
-        </div>
+        {config.peerHelp &&
+            <HelpMatch problem={problem} redirectCallback={redirectCallback} />
+        }
     </div>
 }
 

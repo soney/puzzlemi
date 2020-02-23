@@ -35,7 +35,7 @@ const PeerHelp = ({ sessions, problem, dispatch, myuid, username, userSolution, 
 
     const doRequestHelp = () => {
         const helpID = uuid();
-        dispatch(addHelpSession(problem.id, username, userSolution, helpID)).then(() => {
+        dispatch(addHelpSession(problem.id, username, userSolution.code, helpID, [], [])).then(() => {
             dispatch(updateCurrentActiveHelpSession(problem.id, helpID));
             dispatch(changeHelperLists(problem.id, helpID, myuid))
         });

@@ -1,4 +1,3 @@
-import { ICodeSolution } from './solutions';
 export interface IAggregateData {
     userData: {
         [problemID: string]: ISolutionAggregate
@@ -43,8 +42,10 @@ export interface IHelpSession {
     tutee: string;
     chatMessages: IMessage[];
     title: string;
-    solution: ICodeSolution;
+    code: string;
     timestamp: string;
+    errorTags: string[];
+    testTags: string[];
 }
 
 export interface IMessage {

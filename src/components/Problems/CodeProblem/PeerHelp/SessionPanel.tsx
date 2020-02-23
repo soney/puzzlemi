@@ -14,7 +14,7 @@ const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sess
     if (activeSession === null) return <></>;
 
     const p = ['userData', problem.id, 'helpSessions', activeSession.id];
-    const sharedCodeSubDoc = aggregateDataDoc.subDoc([...p, 'solution', 'code']);
+    const sharedCodeSubDoc = aggregateDataDoc.subDoc([...p, 'code']);
     const titleSubDoc = aggregateDataDoc.subDoc([...p, 'title']);
     const converter = new showdown.Converter();
 
