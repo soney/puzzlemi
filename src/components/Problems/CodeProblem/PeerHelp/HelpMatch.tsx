@@ -45,7 +45,7 @@ const HelpMatch = ({ redirectCallback, problem, username, helpSessionObjects, cu
     if ((currentResult && currentResult.passed === "passed") || matchedSessions.length === 0) {
         let activeSession = helpSessionObjects.filter(s => s.status)
         matchedSessions = []
-        matchedSessions.push(activeSession[activeSession.length - 1])
+        if (activeSession.length > 0) matchedSessions.push(activeSession[activeSession.length - 1])
     }
 
     return <div className="match-container">
@@ -57,6 +57,9 @@ const HelpMatch = ({ redirectCallback, problem, username, helpSessionObjects, cu
                         {currentResult.passed === "passed"
                             ? <h4 className="alert-heading">Could you help them?</h4>
                             : <h4 className="alert-heading">You may find these discussions useful.</h4>
+                        }
+                        {matchedSessions.length === 0 &&
+                            <div>No matched sessions right now. </div>
                         }
                         {matchedSessions.map((session, i) => <SessionList key={i} session={session} problem={problem} clickCallback={clickCallback} />)}
                     </div>
