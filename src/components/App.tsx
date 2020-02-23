@@ -16,18 +16,23 @@ import { ISolutions } from '../reducers/solutions';
 import { IUsers } from '../reducers/users';
 import uuid from '../utils/uuid';
 
-const PMApplication = ({ isAdmin, dispatch }) => {
+
+interface IPMAppOwnProps { } 
+interface IPMAppProps extends IPMAppOwnProps { }
+
+// eslint-disable-next-line
+const PMApplication = ({ }: IPMAppProps): React.ReactElement => {
     return <div className="container">
         <UserHeader />
         <Problems />
     </div>;
 };
 
-function mapStateToProps(state: IPMState, ownProps) {
+function mapStateToProps(state: IPMState, ownProps: IPMAppOwnProps): IPMAppProps {
     return ownProps;
 }
 
-function mapDispatchToProps(dispatch, ownProps) {
+function mapDispatchToProps(dispatch: React.Dispatch<any>, ownProps: IPMAppOwnProps): IPMAppOwnProps {
     const emptyProblemsDoc: IProblems = { allProblems: {}, order: [] };
     const emptyAggregateDataDoc: IAggregateData = { userData: {} };
 

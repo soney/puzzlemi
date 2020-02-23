@@ -10,8 +10,23 @@ import { IProblems, ICodeProblem, IMultipleChoiceOption, IMultipleChoiceProblem,
 import Hotkeys from 'react-hot-keys';
 import { CodeTestType, ICodeTest } from "../reducers/aggregateData";
 import copy from 'copy-to-clipboard';
+import download from "../utils/download";
+import { IUsers } from "../reducers/users";
+import { SDBDoc } from "sdb-ts";
 
-const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, problemsDoc, isAdmin, allUsers}) => {
+interface IUserHeaderOwnProps {
+}
+
+interface IUserHeaderProps extends IUserHeaderOwnProps {
+    isAdmin: boolean;
+    channel: string;
+    selectedUserForSolutionsView: string | false;
+    dispatch: React.Dispatch<any>;
+    users: IUsers;
+    allUsers: string[];
+    problemsDoc: SDBDoc<IProblems>;
+}
+const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, problemsDoc, isAdmin, allUsers}: IUserHeaderProps) => {
     const { myuid } = users;
     if(!myuid) { return <nav>fetching user information...</nav> }
 
@@ -99,7 +114,7 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
         target.value = ''; // Reset in case the same file gets imported again
     }
 
-    const allUserDisplays = allUsers.map((u) => {
+    const allUserDisplays: (React.ReactElement | string)[] = allUsers.map((u) => {
             const isSelectedUser = (u === selectedUserForSolutionsView);
             function selectUser() {
                 if(isSelectedUser) {
@@ -166,7 +181,7 @@ const PMUserHeader = ({users, channel, selectedUserForSolutionsView, dispatch, p
     </>;
 }
 
-function mapStateToProps(state: IPMState, ownProps) {
+function mapStateToProps(state: IPMState, ownProps: IUserHeaderOwnProps): IUserHeaderProps {
     const { app, users, shareDBDocs, intermediateUserState } = state;
     const { isAdmin } = intermediateUserState;
     const { channel, selectedUserForSolutionsView } = app;
@@ -184,20 +199,6 @@ function mapStateToProps(state: IPMState, ownProps) {
         }
     }
 
-    return update(ownProps, { $merge: { problemsDoc: shareDBDocs.problems, selectedUserForSolutionsView, isAdmin, users, allUsers, channel } });
+    return update(ownProps, { $merge: { problemsDoc: shareDBDocs.problems, selectedUserForSolutionsView, isAdmin, users, allUsers, channel } }) as IUserHeaderProps;
 }
 export default connect(mapStateToProps)(PMUserHeader);
-
-// https://stackoverflow.com/a/18197341
-function download(filename: string, text: string): void {
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
-}

@@ -15,18 +15,24 @@ Sk.configure({
     jsonpSites: ['https://itunes.apple.com'],
     python3: true,
 });
+
 const jsonExternalLibInfo = {
     dependencies: [
         `${window.location.origin}/json.sk-master/stringify.js`,
     ],
     path: `${window.location.origin}/json.sk-master/__init__.js`,
 };
+const puzzlemiExternalLibInfo = {
+    path : 'puzzleme_skulpt_lib.js'
+};
 
 if (Sk.externalLibraries) {
     Sk.externalLibraries.json = jsonExternalLibInfo;
+    Sk.externalLibraries.puzzlemi = puzzlemiExternalLibInfo;
 } else {
     Sk.externalLibraries = {
-        json: jsonExternalLibInfo
+        json: jsonExternalLibInfo,
+        puzzlemi: puzzlemiExternalLibInfo
     };
 }
 
@@ -80,13 +86,24 @@ export interface IExecuteCodeResult {
     output: string
 }
 
+const testFunctions = `\nimport puzzlemi\ndef getEditorText(): return puzzlemi.doFNCallReturnString('getEditorText')\ndef getOutput(): return puzzlemi.doFNCallReturnString('getOutput')`;
+const testFunctionsMatches = testFunctions.match(/\n/g);
+const testFunctionsLines = testFunctionsMatches ? testFunctionsMatches.length : 1;
 function executeCode(beforeCode: string, code: string, afterCode: string, files: { problemFiles: ICodeFile[], userFiles: ICodeFile[], tempFiles: ICodeFile[] }, outputChangeHandler, writeFileHandler, graphics) {
     beforeCode = beforeCode + '\n';
     afterCode = '\n' + afterCode;
-    const fullCode = `${beforeCode}${code}${afterCode}`;
+    const fullCode = `${beforeCode}${code}${testFunctions}${afterCode}`;
+    let oldGetEditorText: any;
+    let oldGetOutput: any;
+    const NONE = {};
     return new Promise<IExecuteCodeResult>(function (resolve, reject) {
         let output: string = '';
         const outputs: string[] = [];
+
+        oldGetEditorText = window.hasOwnProperty('getEditorText') ? window['getEditorText'] : NONE;
+        window['getEditorText'] = () => code;
+        oldGetOutput = window.hasOwnProperty('getOutput') ? window['getOutput'] : NONE;
+        window['getOutput'] = () => output;
 
         const outf = (outValue: string): void => {
             outputs.push(outValue);
@@ -138,13 +155,14 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files:
 
             let errorBefore: boolean = false;
             let errorAfter: boolean = false;
+
             if (err.traceback.length >= 1) {
                 const errorLine = err.traceback[0].lineno;
                 if (errorLine <= pretextLines) {
                     errorBefore = true;
-                } else if (errorLine > (progLines + pretextLines)) {
+                } else if (errorLine > (pretextLines + progLines + testFunctionsLines)) {
                     errorAfter = true;
-                    err.traceback[0].lineno = err.traceback[0].lineno - pretextLines - progLines;
+                    err.traceback[0].lineno = err.traceback[0].lineno - pretextLines - progLines - testFunctionsLines;
                 } else {
                     if (pretextLines > 0) {
                         err.traceback[0].lineno = err.traceback[0].lineno - pretextLines;
@@ -159,6 +177,20 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files:
                 errString = err.toString();
             }
         }).finally(() => {
+            if(oldGetEditorText === NONE) {
+                delete window['getEditorText'];
+            } else {
+                window['getEditorText'] = oldGetEditorText;
+            }
+            oldGetEditorText = undefined;
+
+            if(oldGetOutput === NONE) {
+                delete window['getOutput'];
+            } else {
+                window['getOutput'] = oldGetOutput;
+            }
+            oldGetOutput = undefined;
+
             const returnResult: IExecuteCodeResult = { errString, output };
             resolve(returnResult);
         });
