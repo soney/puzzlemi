@@ -15,13 +15,15 @@ import { appState } from '..';
 import { ISolutions } from '../reducers/solutions';
 import { IUsers } from '../reducers/users';
 import uuid from '../utils/uuid';
+import { analytics } from '../utils/Firebase';
 
 
-interface IPMAppOwnProps { } 
+interface IPMAppOwnProps {
+ } 
 interface IPMAppProps extends IPMAppOwnProps { }
 
 // eslint-disable-next-line
-const PMApplication = ({ }: IPMAppProps): React.ReactElement => {
+const PMApplication = ({}: IPMAppProps): React.ReactElement => {
     return <div className="container">
         <UserHeader />
         <Problems />
@@ -35,7 +37,6 @@ function mapStateToProps(state: IPMState, ownProps: IPMAppOwnProps): IPMAppProps
 function mapDispatchToProps(dispatch: React.Dispatch<any>, ownProps: IPMAppOwnProps): IPMAppOwnProps {
     const emptyProblemsDoc: IProblems = { allProblems: {}, order: [] };
     const emptyAggregateDataDoc: IAggregateData = { userData: {} };
-
     dispatch(setAppState(appState));
 
     const ws: ReconnectingWebsocket = new ReconnectingWebsocket(appState.websocketLocation);
@@ -63,6 +64,7 @@ function mapDispatchToProps(dispatch: React.Dispatch<any>, ownProps: IPMAppOwnPr
             let id = uuid();
             myInfo = update(myInfo, { uid: { $set: 'testuid-' + id }, username: {$set: 'user-' + id.slice(-4)} })
         }
+        analytics.logEvent("load_app", {debugMode: appState.debugMode, userInfo:JSON.stringify(myInfo)})
         dispatch(setUser(myInfo));
         if (myInfo.isInstructor) {
             const solutionsDoc: SDBDoc<ISolutions> = sdbClient.get(appState.channel, 'solutions');

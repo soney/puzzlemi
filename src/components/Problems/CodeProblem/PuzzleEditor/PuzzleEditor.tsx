@@ -10,7 +10,7 @@ import { deleteTest, changeTestStatus } from '../../../../actions/sharedb_action
 import { runCode } from '../../../../actions/runCode_actions';
 import TestList from './TestList';
 
-const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, currentTest, flag, aggregateDataDoc }) => {
+const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, currentTest, flag, aggregateDataDoc }) => {
     const [count, setCount] = React.useState(0);
     const [codeTab, setCodeTab] = React.useState('g');
 
@@ -59,9 +59,9 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
         if (graphicsEl) {
             graphicsEl.innerHTML = '';
         }
+        let code = codeSolution.code
 
         if (isAdmin) {
-            let code = "";
             switch (codeTab) {
                 case "g":
                     code = givenCodeSubDoc.getData();
@@ -73,9 +73,9 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
                     code = liveCodeSubDoc.getData();
                     break;
             }
-            return dispatch(runCode(code, [], problem, graphicsEl, currentTest))
+            dispatch(runCode(code, [], problem, graphicsEl, currentTest))
         } else {
-            return dispatch(runCode(codeSolution.code, codeSolution.files, problem, graphicsEl, currentTest));
+            dispatch(runCode(code, codeSolution.files, problem, graphicsEl, currentTest));
         }
     };
 
@@ -230,7 +230,7 @@ function mapStateToProps(state, ownProps) {
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
 
-    return update(ownProps, { $merge: { isAdmin, username, allTests, userSolution, tests, aggregateDataDoc, currentTest, problemsDoc, config } })
+    return update(ownProps, { $merge: { isAdmin, username, allTests, userSolution, tests, aggregateDataDoc, currentTest, problemsDoc, config, myuid } })
 }
 
 export default connect(mapStateToProps)(PuzzleEditor);

@@ -7,6 +7,7 @@ import { ICodeTest, CodeTestType, CodeTestStatus } from "../reducers/aggregateDa
 import { ICodeSolutionState, CodePassedState } from "../reducers/intermediateUserState";
 import { IPMState } from "../reducers/index.js";
 import uuid from "../utils/uuid";
+import { analytics } from '../utils/Firebase';
 
 declare const Sk;
 
@@ -228,7 +229,7 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
         } as IBeginRunningCodeAction);
 
         executeCode(test.before, code, test.after, files, outputChangeHandler, writeFileHandler, graphics).then(result => {
-            const { errString } = result;
+            const { errString, output } = result;
             const passed = errString ? CodePassedState.FAILED : CodePassedState.PASSED;
             if (errString) {
                 dispatch({
@@ -271,6 +272,9 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
             } else if(!passedAll && isMarkedAsPassedAll) {
                 aggregateDataDoc.submitListDeleteOp(['userData', problem.id, 'completed', completedIndex]);
             }
+            const {config} = problem.problemDetails as ICodeProblem;
+
+            analytics.logEvent("run_code", {code: code, test: JSON.stringify(test), uid: myuid, result: JSON.stringify({passed, errString, output}), config: JSON.stringify(config)});
         });
     }
 }
