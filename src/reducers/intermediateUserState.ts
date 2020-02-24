@@ -153,6 +153,7 @@ export const intermediateUserState = (state: IIntermediateUserState = { isAdmin:
                 [problemID]: {
                     passedAll: { $set: false },
                     testResults: { $set: testResults },
+                    files: { $set: [] }
                 }
             }
         }
