@@ -192,10 +192,10 @@ export const crossSliceSolutionsReducer = (state: IPMState, action: IProblemAdde
             }
         });
     } else if (type === EventTypes.DELETE_USER_FILE) {
-        const { problemID, fileID } = action as IDeleteUserFileAction;
+        const { problem, fileID } = action as IDeleteUserFileAction;
         const myuid = state.users.myuid as string;
 
-        const solution = state.solutions.allSolutions[problemID][myuid] as ICodeSolution;
+        const solution = state.solutions.allSolutions[problem.id][myuid] as ICodeSolution;
 
         const { files } = solution;
         const fIndex = files.findIndex((f) => f.id === fileID);
@@ -203,7 +203,7 @@ export const crossSliceSolutionsReducer = (state: IPMState, action: IProblemAdde
             return update(state, {
                 solutions: {
                     allSolutions: {
-                        [problemID]: {
+                        [problem.id]: {
                             [myuid]: {
                                 files: { $splice: [[fIndex, 1]] }
                             }

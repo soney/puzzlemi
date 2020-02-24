@@ -7,6 +7,7 @@ import { ICodeTest, CodeTestType, CodeTestStatus } from "../reducers/aggregateDa
 import { ICodeSolutionState, CodePassedState } from "../reducers/intermediateUserState";
 import { IPMState } from "../reducers/index.js";
 import uuid from "../utils/uuid";
+import { IDeleteUserFileAction } from "./user_actions.js";
 
 declare const Sk;
 
@@ -59,7 +60,7 @@ export interface IFileWrittenAction {
 
 export interface IBeginRunningCodeAction {
     type: EventTypes.BEGIN_RUN_CODE,
-    problemID: string,
+    problem: IProblem,
     testID: string
 }
 
@@ -203,6 +204,7 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
         const { id: problemID } = problem;
         const problemDetails = problem.problemDetails as ICodeProblem;
         const files = { problemFiles: problemDetails.files, userFiles, tempFiles: [] };
+        const writtenFiles: string[] = [];
         // const fullCode = test.before.concat(' \n' + code, ' \n' + test.after);
         const outputChangeHandler = (output) => {
             dispatch({
@@ -213,8 +215,26 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
             } as IOutputChangedAction);
         }
         const writeFileHandler = (contents, fname) => {
+            if(writtenFiles.indexOf(fname) < 0) {
+                let fileID: string|null = null;
+                for(let i: number = 0; i<userFiles.length; i++) {
+                    const userFile = userFiles[i];
+                    if(userFile.name === fname) {
+                        fileID = userFile.id;
+                        break;
+                    }
+                }
+                if(fileID) {
+                    dispatch({
+                        problem, fileID,
+                        type: EventTypes.DELETE_USER_FILE
+                    } as IDeleteUserFileAction);
+                }
+
+                writtenFiles.push(fname);
+            }
             dispatch({
-                contents: contents + '\n',
+                contents: contents,
                 problemID,
                 name: fname,
                 type: EventTypes.FILE_WRITTEN
@@ -222,7 +242,7 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
         }
 
         dispatch({
-            problemID,
+            problem,
             testID: test.id,
             type: EventTypes.BEGIN_RUN_CODE
         } as IBeginRunningCodeAction);

@@ -145,12 +145,12 @@ export const intermediateUserState = (state: IIntermediateUserState = { isAdmin:
             }
         });
     } else if (type === EventTypes.BEGIN_RUN_CODE) {
-        const { problemID, testID } = action as IBeginRunningCodeAction;
-        let { testResults } = state.intermediateSolutionState[problemID] as ICodeSolutionState;
+        const { problem, testID } = action as IBeginRunningCodeAction;
+        let { testResults } = state.intermediateSolutionState[problem.id] as ICodeSolutionState;
         testResults[testID] = { passed: CodePassedState.PENDING, errors: [], output: '' }
         return update(state, {
             intermediateSolutionState: {
-                [problemID]: {
+                [problem.id]: {
                     passedAll: { $set: false },
                     testResults: { $set: testResults },
                     files: { $set: [] }
