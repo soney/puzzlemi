@@ -62,7 +62,7 @@ function mapDispatchToProps(dispatch: React.Dispatch<any>, ownProps: IPMAppOwnPr
     }).then((myInfo) => {
         if (appState.debugMode) {
             let id = uuid();
-            myInfo = update(myInfo, { uid: { $set: 'testuid-' + id }, username: {$set: 'user-' + id.slice(-4)} })
+            myInfo = update(myInfo, { uid: { $set: 'testuid-' + id }, username: {$set: 'user-' + id.slice(-4)}, email: {$set:'testemail-' + id.slice(-4)} })
         }
         analytics.logEvent("load_app", {debugMode: appState.debugMode, userInfo:JSON.stringify(myInfo)})
         dispatch(setUser(myInfo));
