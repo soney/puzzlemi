@@ -67,11 +67,11 @@ export function setUserSelectedOptions(problemID: string, selectedItems: string[
 
 export interface IDeleteUserFileAction {
     type: EventTypes.DELETE_USER_FILE,
-    problemID: string,
+    problem: IProblem,
     fileID: string
 }
-export const deleteUserFile = (problemID: string, fileID: string): IDeleteUserFileAction => ({
-    fileID, problemID, type: EventTypes.DELETE_USER_FILE
+export const deleteUserFile = (problem: IProblem, fileID: string): IDeleteUserFileAction => ({
+    fileID, problem, type: EventTypes.DELETE_USER_FILE
 });
 
 export interface ICodeChangedAction {

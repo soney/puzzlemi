@@ -9,7 +9,7 @@ import { IPMState } from '../../../reducers';
 const File = ({ dispatch, problem, fileIndex, file, name, contents, isAdmin, problemsDoc, isUserFile }) => {
     const doDeleteFile = () => {
         if (isUserFile) {
-            dispatch(deleteUserFile(problem.id, file.id));
+            dispatch(deleteUserFile(problem, file.id));
         } else {
             dispatch(deleteProblemFile(problem.id, file.id));
         }
