@@ -267,11 +267,13 @@ export function replaceProblems(newProblems: IProblems) {
             if (newProblems.allProblems.hasOwnProperty(problemID)) {
                 const { problemDetails } = newProblems.allProblems[problemID];
                 if (problemDetails.problemType === IProblemType.Code) {
-                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], {
+                    const newUserData:ICodeSolutionAggregate = {
                         completed: [],
                         tests: {},
-                        helpSessions: []
-                    });
+                        helpSessions: {},
+                        helperLists: {}
+                    }
+                    aggregateDataDoc.submitObjectInsertOp(['userData', problemID], newUserData);
                 } else if(problemDetails.problemType === IProblemType.MultipleChoice) {
                     const selected = {};
                     problemDetails.options.forEach((option) => {
