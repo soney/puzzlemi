@@ -35,7 +35,7 @@ const PeerHelp = ({ sessions, problem, dispatch, myuid, username, userSolution, 
 
     const doRequestHelp = () => {
         const helpID = uuid();
-        dispatch(addHelpSession(problem.id, username, userSolution, helpID)).then(() => {
+        dispatch(addHelpSession(problem.id, username, userSolution.code, helpID, [], [])).then(() => {
             dispatch(updateCurrentActiveHelpSession(problem.id, helpID));
             dispatch(changeHelperLists(problem.id, helpID, myuid))
         });
@@ -57,13 +57,13 @@ const PeerHelp = ({ sessions, problem, dispatch, myuid, username, userSolution, 
                 <div className="list-group help-sessions-list-group">
                     <div className="list-group-item">
                         <div className="btn-group btn-group-toggle" data-toggle="buttons">
-                            <label className={viewNum===0?"btn btn-light action active":"btn btn-light"} onClick={toggleOpenView}>
+                            <label className={viewNum === 0 ? "btn btn-light action active" : "btn btn-light"} onClick={toggleOpenView}>
                                 <input type="radio" name="options" id="option1" /> {open_sessions.length} Open
                             </label>
-                            <label className={viewNum===1?"btn btn-light action active":"btn btn-light"} onClick={toggleCloseView}>
+                            <label className={viewNum === 1 ? "btn btn-light action active" : "btn btn-light"} onClick={toggleCloseView}>
                                 <input type="radio" name="options" id="option2" /> {close_sessions.length} Closed
                             </label>
-                            <label className={viewNum===2?"btn btn-light action active":"btn btn-light"} onClick={toggleMyView}>
+                            <label className={viewNum === 2 ? "btn btn-light action active" : "btn btn-light"} onClick={toggleMyView}>
                                 <input type="radio" name="options" id="option3" /> {my_sessions.length} My
                             </label>
                         </div>

@@ -7,7 +7,7 @@ import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
 import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType, IProblemType, IMultipleChoiceOptionType } from '../reducers/problems';
 import { IAggregateData, IHelpSession, IMessage, ICodeSolutionAggregate, ICodeTest, CodeTestStatus, CodeTestType } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
-import { ISolutions, ICodeSolution } from '../reducers/solutions';
+import { ISolutions } from '../reducers/solutions';
 
 export interface IProblemAddedAction {
     type: EventTypes.PROBLEM_ADDED,
@@ -502,7 +502,7 @@ export function changeProblemConfig(problemID: string, item: string, value: bool
     }
 }
 
-export function addHelpSession(problemID: string, username: string, userSolution: ICodeSolution, helpID: string) {
+export function addHelpSession(problemID: string, username: string, code: string, helpID: string, errorTags, testTags, title?: string) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
@@ -512,9 +512,11 @@ export function addHelpSession(problemID: string, username: string, userSolution
             status: true,
             tutee: username,
             chatMessages: [],
-            title: '**no title**',
+            title: title?title:'**no title**',
             readOnly: false,
-            solution: userSolution as ICodeSolution
+            errorTags,
+            testTags,
+            code
         }
         aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'helpSessions', newHelpSession.id], newHelpSession);
     }

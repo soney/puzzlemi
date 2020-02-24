@@ -68,11 +68,10 @@ function mapDispatchToProps(dispatch: React.Dispatch<any>, ownProps: IPMAppOwnPr
             const solutionsDoc: SDBDoc<ISolutions> = sdbClient.get(appState.channel, 'solutions');
             dispatch(setSolutionsDoc(solutionsDoc));
             dispatch(beginListeningOnDoc(solutionsDoc, 'solutions'));
-
-            const usersDoc: SDBDoc<IUsers> = sdbClient.get(appState.channel, 'users');
-            dispatch(setUsersDoc(usersDoc));
-            dispatch(beginListeningOnDoc(usersDoc, 'users'));
         }
+        const usersDoc: SDBDoc<IUsers> = sdbClient.get(appState.channel, 'users');
+        dispatch(setUsersDoc(usersDoc));
+        dispatch(beginListeningOnDoc(usersDoc, 'users'));
         return myInfo;
     });
     return ownProps;

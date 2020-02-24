@@ -6,17 +6,25 @@ import { CodeEditor } from '../../../CodeEditor';
 import ChatWidget from './ChatWidget';
 import * as showdown from 'showdown';
 import { timeAgo } from '../../../../utils/timestamp';
-import { changeHelpSessionStatus, changeHelpSessionAccessControl, deleteHelpSession } from '../../../../actions/sharedb_actions';
+import { changeHelpSessionStatus, changeHelpSessionAccessControl, deleteHelpSession, changeHelperLists } from '../../../../actions/sharedb_actions';
 
-const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionIndex, isInstructor, problem, aggregateDataDoc, sessions, isTutee, clickCallback }) => {
+const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sessionIndex, myuid, isInstructor, problem, aggregateDataDoc, sessions, isTutee, clickCallback }) => {
     const [isEdit, setIsEdit] = React.useState(false);
 
     if (activeSession === null) return <></>;
 
     const p = ['userData', problem.id, 'helpSessions', activeSession.id];
-    const sharedCodeSubDoc = aggregateDataDoc.subDoc([...p, 'solution', 'code']);
+    const sharedCodeSubDoc = aggregateDataDoc.subDoc([...p, 'code']);
     const titleSubDoc = aggregateDataDoc.subDoc([...p, 'title']);
     const converter = new showdown.Converter();
+
+    let allUserDisplaysList: any[] = [];
+    let helperIDs = Object.keys(helperLists)
+    helperIDs.forEach(helperID => {
+        if (usersDocData !== null && usersDocData.allUsers.hasOwnProperty(helperID)) allUserDisplaysList.push(usersDocData.allUsers[helperID].username);
+    })
+
+    const allUserDisplays = allUserDisplaysList.length === 0 ? 'can not display' : allUserDisplaysList.join(', ');
 
     const toggleEdit = () => {
         setIsEdit(!isEdit);
@@ -29,12 +37,13 @@ const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionI
     const doChangeSessionAccessControl = () => {
         dispatch(changeHelpSessionAccessControl(problem.id, activeSession.id, !activeSession.readOnly));
     }
-    const doDeleteSession = ()=>{
+    const doDeleteSession = () => {
         dispatch(deleteHelpSession(problem.id, activeSession.id));
         toggleListView();
     }
     const toggleListView = () => {
         clickCallback(true);
+        dispatch(changeHelperLists(problem.id, "", myuid))
     }
 
     return <>
@@ -73,16 +82,16 @@ const SessionPanel = ({ dispatch, activeSession, allUsers, helperLists, sessionI
                 </div>
             </div>
         </div>
-        {/* <div className="row">
-                        <div className='col'>
-                            Users:
+        <div className="row">
+            <div className='col'>
+                Users:
             </div>
-                    </div>
-                    <div className="row">
-                        <div className='col users'>
-                            {allUserDisplays}
-                        </div>
-                    </div> */}
+        </div>
+        <div className="row">
+            <div className='col users'>
+                {allUserDisplays}
+            </div>
+        </div>
         <div className="session-body">
             <div className="row">
                 <div className="col">
@@ -115,9 +124,10 @@ function mapStateToProps(state, ownProps) {
     const sessionIndex = sessions.indexOf(activeSession);
     const myuid = users.myuid as string;
     const { allUsers } = users;
+    const usersDocData = shareDBDocs.i.users;
     const { isInstructor } = allUsers[myuid];
     const username = users.allUsers[myuid].username;
     const isTutee = activeSession !== null ? activeSession.tutee === username : false;
-    return update(ownProps, { $merge: { username, sessionIndex, allUsers, aggregateDataDoc, sessions, activeSession, isTutee, isInstructor, helperLists } });
+    return update(ownProps, { $merge: { username, sessionIndex, allUsers, aggregateDataDoc, sessions, activeSession, isTutee, myuid, isInstructor, helperLists, usersDocData } });
 }
 export default connect(mapStateToProps)(SessionPanel);
