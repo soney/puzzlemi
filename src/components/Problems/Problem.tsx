@@ -13,7 +13,7 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
     const { id: problemID, problemDetails } = problem;
     const { problemType } = problemDetails;
 
-    const elementRef: React.Ref<HTMLLIElement> = React.createRef();
+    const elementRef: React.Ref<HTMLDivElement> = React.createRef();
 
     // React.useEffect(() => {
     //     if (claimFocus) {
@@ -49,7 +49,7 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
         problemDisplay = <TextResponseProblem problem={problem} />;
     }
 
-    return <li className={classNames({'problem': true, 'container': true, 'passedAll': passedAll&&!isAdmin})} ref={elementRef}>
+    return <div className={classNames({'problem': true, 'container': true, 'passedAll': passedAll&&!isAdmin})} ref={elementRef}>
         { isAdmin &&
             <div className="btn-toolbar justify-content-between">
                 <div className="btn-group btn-group-toggle" data-toggle="buttons">
@@ -92,7 +92,7 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
                 </div>
             </div>
         }
-    </li>;
+    </div>;
 }
 
 function mapStateToProps(state: IPMState, ownProps) {

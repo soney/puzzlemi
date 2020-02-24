@@ -26,13 +26,13 @@ const Problems = ({ isAdmin, dispatch, problems }: IProblemsProps): React.ReactE
     };
 
     return <>
-        <ul className='problems'>
+        <div className='problems'>
             {problems && problems.length
             ? problems.map((problem, i) =>
                     <Problem key={`${problem.id}-${i}`} problem={problem} tabIndex={0} />
             )
-            : <li className='container no-problems'>(no problems yet)</li>}
-        </ul>
+            : <div className='container no-problems'>(no problems yet)</div>}
+        </div>
         {
             isAdmin &&
             <div className="row">
