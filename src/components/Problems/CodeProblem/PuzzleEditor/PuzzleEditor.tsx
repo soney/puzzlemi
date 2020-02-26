@@ -38,6 +38,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
 
     const doInitTestStatus = () => {
         if (currentTest.status === CodeTestStatus.UNVERIFIED) return;
+        if (currentTest.author === null) return;
         if (isAdmin) return;
         const newStatus = CodeTestStatus.UNVERIFIED;
         dispatch(changeTestStatus(problem.id, currentTest, newStatus));
@@ -45,6 +46,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
 
 
     const doChangeTestStatus = () => {
+        if (currentTest.author === null) return;
         const newStatus = currentTest.status === CodeTestStatus.VERIFIED ? CodeTestStatus.VERIFICATION_FAILED : CodeTestStatus.VERIFIED;
         dispatch(changeTestStatus(problem.id, currentTest, newStatus))
         analytics.logEvent("verify_test", {problemID: problem.id, channel, user: myemail, test: JSON.stringify(currentTest), status: newStatus});
