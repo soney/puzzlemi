@@ -10,8 +10,10 @@ import { ICodeTest, IHelpSession } from '../../../reducers/aggregateData';
 import uuid from '../../../utils/uuid';
 import CodeOutput from './CodeOutput'
 import HelpMatch from './PeerHelp/HelpMatch';
+import getChannelName from '../../../utils/channelName';
+import { analytics } from '../../../utils/Firebase';
 
-const MySolution = ({ userSolution, myuid, problem, config, currentResult, currentTest, flag, myHelpSession, dispatch, redirectCallback, username }) => {
+const MySolution = ({ userSolution, myuid, problem, config, currentResult, myemail, currentTest, flag, myHelpSession, dispatch, redirectCallback, username }) => {
     const graphicsRef = React.createRef<HTMLDivElement>();
 
     const doRequestHelp = () => {
@@ -34,6 +36,8 @@ const MySolution = ({ userSolution, myuid, problem, config, currentResult, curre
             title = "Help me with **" + currentTest.name + "**";
         }
         const newCode = currentTest.before + "\n" + userSolution.code + "\n" + currentTest.after;
+        analytics.logEvent("add_help_session", {problemID: problem.id, channel: getChannelName(), user: myemail, helpID});
+
         dispatch(addHelpSession(problem.id, username, newCode, helpID, errorTags, testTags, title)).then(() => {
             dispatch(updateCurrentActiveHelpSession(problem.id, helpID));
             dispatch(changeHelperLists(problem.id, helpID, myuid))
@@ -87,6 +91,7 @@ function mapStateToProps(state, ownProps) {
     const instructorTests = problemDetails.tests;
     const { config } = problemDetails;
     const myuid = users.myuid as string;
+    const myemail = users.allUsers[myuid].email;
     const username = users.allUsers[myuid].username;
 
     const userSolution = solutions.allSolutions[problem.id][myuid];
@@ -110,6 +115,6 @@ function mapStateToProps(state, ownProps) {
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
     const currentResult = currentTest && testResults[currentTest.id];
-    return update(ownProps, { $merge: { isAdmin, username, problemsDoc, config, myuid, userSolution, intermediateCodeState, myHelpSession, currentTest, currentResult, testObjects, allTestsObjects } });
+    return update(ownProps, { $merge: { isAdmin, username, problemsDoc, config, myuid, myemail, userSolution, intermediateCodeState, myHelpSession, currentTest, currentResult, testObjects, allTestsObjects } });
 }
 export default connect(mapStateToProps)(MySolution);

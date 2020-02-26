@@ -8,11 +8,15 @@ import { codeChanged } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
 import { deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
 import { runCode } from '../../../../actions/runCode_actions';
+import { analytics } from '../../../../utils/Firebase';
 import TestList from './TestList';
+import getChannelName from '../../../../utils/channelName';
 
-const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, currentTest, flag, aggregateDataDoc }) => {
+const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, currentTest, flag, aggregateDataDoc }) => {
     const [count, setCount] = React.useState(0);
     const [codeTab, setCodeTab] = React.useState('g');
+    const channel = getChannelName();
+
 
     if (!currentTest) { return null; }
     const codeSolution = userSolution as ICodeSolution;
@@ -43,6 +47,8 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
     const doChangeTestStatus = () => {
         const newStatus = currentTest.status === CodeTestStatus.VERIFIED ? CodeTestStatus.VERIFICATION_FAILED : CodeTestStatus.VERIFIED;
         dispatch(changeTestStatus(problem.id, currentTest, newStatus))
+        analytics.logEvent("verify_test", {problemID: problem.id, channel, user: myemail, test: JSON.stringify(currentTest), status: newStatus});
+
     }
 
     const doDeleteTest = () => {
@@ -59,9 +65,9 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
         if (graphicsEl) {
             graphicsEl.innerHTML = '';
         }
+        let code = codeSolution.code
 
         if (isAdmin) {
-            let code = "";
             switch (codeTab) {
                 case "g":
                     code = givenCodeSubDoc.getData();
@@ -73,9 +79,9 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
                     code = liveCodeSubDoc.getData();
                     break;
             }
-            return dispatch(runCode(code, [], problem, graphicsEl, currentTest))
+            dispatch(runCode(code, [], problem, graphicsEl, currentTest))
         } else {
-            return dispatch(runCode(codeSolution.code, codeSolution.files, problem, graphicsEl, currentTest));
+            dispatch(runCode(code, codeSolution.files, problem, graphicsEl, currentTest));
         }
     };
 
@@ -85,6 +91,8 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
             graphicsEl_tmp.innerHTML = '';
         }
         const allTestsObjects: ICodeTest[] = Object.values(allTests);
+        analytics.logEvent("run_all", {code: codeSolution.code, tests: JSON.stringify(allTestsObjects), user: myemail, channel, problemID: problem.id});
+
 
         allTestsObjects.forEach(test => {
             if (test.status === CodeTestStatus.VERIFIED) {
@@ -219,6 +227,8 @@ function mapStateToProps(state, ownProps) {
     const { config } = problemDetails;
 
     const myuid = users.myuid as string;
+    const myemail = users.allUsers[myuid].email;
+
     const username = users.allUsers[myuid].username;
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveTest } = intermediateCodeState;
@@ -230,7 +240,7 @@ function mapStateToProps(state, ownProps) {
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
 
-    return update(ownProps, { $merge: { isAdmin, username, allTests, userSolution, tests, aggregateDataDoc, currentTest, problemsDoc, config } })
+    return update(ownProps, { $merge: { isAdmin, username, allTests, userSolution, tests, aggregateDataDoc, currentTest, problemsDoc, config, myuid, myemail } })
 }
 
 export default connect(mapStateToProps)(PuzzleEditor);
