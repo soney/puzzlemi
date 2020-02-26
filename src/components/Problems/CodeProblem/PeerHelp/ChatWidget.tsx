@@ -10,7 +10,7 @@ import getChannelName from '../../../../utils/channelName';
 import { analytics } from '../../../../utils/Firebase';
 
 let message = 'send your *message* here';
-const ChatWidget = ({ activeSession, dispatch, problem, sessions, myemail, username }) => {
+const ChatWidget = ({ activeSession, dispatch, problem, isInstructor, myemail, username }) => {
     const chatInput = React.createRef<HTMLInputElement>();
     const chatWrapper = React.createRef<HTMLDivElement>();
     const [isAnonymous, setIsAnonymous] = React.useState(false);
@@ -52,7 +52,8 @@ const ChatWidget = ({ activeSession, dispatch, problem, sessions, myemail, usern
 
         if(message.isAnonymous) {
             const index = anonymousNames.indexOf(message.sender);
-            return "Student-"+index;
+            if(isInstructor) return "Student-"+index+" ("+message.sender+")"
+            else return "Student-"+index;
         }
         else return message.sender;
     }
@@ -107,8 +108,8 @@ function mapStateToProps(state, ownProps) {
     let activeS = sessions.filter(s => s.id === currentActiveHelpSession);
     const activeSession = activeS.length > 0 ? activeS[0] : null;
     const myuid = users.myuid as string;
-    const myemail = users.allUsers[myuid].email;
-    const username = users.allUsers[myuid].username;
-    return update(ownProps, { $merge: { activeSession, sessions, username, myemail } });
+    const { isInstructor, username, email } = users.allUsers[myuid];
+
+    return update(ownProps, { $merge: { activeSession, sessions, username, myemail:email, isInstructor } });
 }
 export default connect(mapStateToProps)(ChatWidget);
