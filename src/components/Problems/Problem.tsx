@@ -82,7 +82,7 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
         }
         {problemDisplay}
         {
-            ((problemType === 'code') || (problemType === IProblemType.MultipleChoice && revealSolution)) &&
+            ((problemType === IProblemType.MultipleChoice && revealSolution)) &&
             <div className="row completion-info">
                 <div className="col">
                     {passedAll &&

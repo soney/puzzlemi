@@ -19,8 +19,10 @@ const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sess
     const converter = new showdown.Converter();
 
     let allUserDisplaysList: any[] = [];
-    let helperIDs = Object.keys(helperLists)
-    helperIDs.forEach(helperID => {
+
+    const helperIDs = Object.keys(helperLists)
+    const relatedHelperIDs = helperIDs.filter(i => helperLists[i] === activeSession.id)
+    relatedHelperIDs.forEach(helperID => {
         if (usersDocData !== null && usersDocData.allUsers.hasOwnProperty(helperID)) allUserDisplaysList.push(usersDocData.allUsers[helperID].username);
     })
 
@@ -55,47 +57,43 @@ const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sess
                 <div className="col-10">
                     {isEdit
                         ? <div><CodeEditor shareDBSubDoc={titleSubDoc} refreshDoc={sessionIndex} options={{ lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 50 }} /></div>
-                        : <div><p dangerouslySetInnerHTML={{ __html: converter.makeHtml(activeSession.title) }} />
+                        : <div><h4 dangerouslySetInnerHTML={{ __html: converter.makeHtml(activeSession.title) }} />
                         </div>}
                 </div>
                 <div className="col-2">
                     {(isTutee || isInstructor) &&
-                        <button type="button" className="btn btn-outline-secondary" onClick={toggleEdit}>{isEdit ? "Save" : "Edit the title"}</button>
+                        <button type="button" className="btn btn-outline-secondary" onClick={toggleEdit}>{isEdit ? <i className="fas fa-save"></i>: <i className="fas fa-edit"></i>}</button>
                     }
                 </div>
             </div>
             <div className="row">
-                <div className="col-8">
+                <div className="col-10">
                     <div className={activeSession.status ? "session-open" : "session-close"}>
                         <small>{activeSession.tutee} opened this help session {timeAgo(parseInt(activeSession.timestamp))}</small>
                     </div>
-                </div>
-                <div className="col-2">
                     {(isTutee || isInstructor) &&
-                        <button type="button" className="btn btn-outline-danger" onClick={doChangeSessionStatus}>{activeSession.status ? "Resolve" : "Reopen"}</button>
+                                    <div className="custom-control custom-switch related-button">
+                                    <input type="checkbox" className="custom-control-input" id={"help-session-button-" + problem.id} onClick={doChangeSessionStatus} defaultChecked={activeSession.status} />
+                                    <label className="custom-control-label" htmlFor={"help-session-button-" + problem.id}>Open</label>
+                                </div>
                     }
                 </div>
                 <div className="col-2">
                     {(isTutee || isInstructor) &&
-                        <button type="button" className="btn btn-outline-danger" onClick={doDeleteSession}>Delete</button>
+                        <button type="button" className="btn btn-outline-danger" onClick={doDeleteSession}><i className="fas fa-trash-alt"></i></button>
                     }
                 </div>
             </div>
         </div>
         <div className="row">
             <div className='col'>
-                Users:
-            </div>
-        </div>
-        <div className="row">
-            <div className='col users'>
-                {allUserDisplays}
+                Active Users: {allUserDisplays}
             </div>
         </div>
         <div className="session-body">
             <div className="row">
                 <div className="col">
-                    <CodeEditor shareDBSubDoc={sharedCodeSubDoc} refreshDoc={sessionIndex} options={(activeSession.readOnly && !isTutee) ? { readOnly: true, lineNumbers: true, height: 300 } : { lineNumbers: true, height: 300 }} />
+                    <CodeEditor shareDBSubDoc={sharedCodeSubDoc} refreshDoc={sessionIndex} options={(activeSession.readOnly && !isTutee) ? { readOnly: true, lineNumbers: true, height: 300, lineWrapping:true } : { lineNumbers: true, height: 300, lineWrapping:true }} />
                     {isTutee &&
                         <div className="custom-control custom-switch">
                             <input type="checkbox" className="custom-control-input" id={"readonly"} onClick={doChangeSessionAccessControl} defaultChecked={activeSession.readOnly} />

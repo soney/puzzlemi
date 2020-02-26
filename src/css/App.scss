@@ -597,6 +597,7 @@ nav {
 }
 .match-container{
   margin-top: 20px;
+  margin-bottom: 20px;
 }
 .chat-message-item {
   .chat-content{
@@ -611,6 +612,10 @@ nav {
     font-weight: bold;
     color: #aaa;
   }
+}
+
+.related-button {
+  margin-top: 20px;
 }
 
 .feedback{
