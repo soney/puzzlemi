@@ -83,7 +83,7 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
                 for (let testID in tests) {
                     if (tests.hasOwnProperty(testID)) {
                         const test = tests[testID];
-                        if (test.type === CodeTestType.INSTRUCTOR && test.author === null) {
+                        if (test.type === CodeTestType.INSTRUCTOR && test.author === 'default') {
                             canonicalInstructorTest = test;
                             break;
                         }

@@ -301,7 +301,7 @@ export function addCodeProblem() {
         const newCodeTest: ICodeTest = {
             id: uuid(),
             name: 'Instructor test',
-            author: null,
+            author: 'default',
             type: CodeTestType.INSTRUCTOR,
             before: '# given variables',
             after: '# assertions',
