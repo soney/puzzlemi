@@ -6,9 +6,11 @@ import { ISolutionState, ICodeSolutionState } from '../../../../reducers/interme
 import { addMessage } from '../../../../actions/sharedb_actions';
 import { IMessage } from '../../../../reducers/aggregateData';
 import * as showdown from 'showdown';
+import getChannelName from '../../../../utils/channelName';
+import { analytics } from '../../../../utils/Firebase';
 
 let message = 'send your *message* here';
-const ChatWidget = ({ activeSession, dispatch, problem, sessions, username }) => {
+const ChatWidget = ({ activeSession, dispatch, problem, sessions, myemail, username }) => {
     const chatInput = React.createRef<HTMLInputElement>();
     const chatWrapper = React.createRef<HTMLDivElement>();
 
@@ -34,6 +36,7 @@ const ChatWidget = ({ activeSession, dispatch, problem, sessions, username }) =>
         if (chatInput.current) {
             chatInput.current.value = ''
         }
+        analytics.logEvent("update_help_session", { problemID: problem.id, channel: getChannelName(), user: myemail, helpSession: activeSession });
     }
 
     React.useEffect(() => {
@@ -82,7 +85,8 @@ function mapStateToProps(state, ownProps) {
     let activeS = sessions.filter(s => s.id === currentActiveHelpSession);
     const activeSession = activeS.length > 0 ? activeS[0] : null;
     const myuid = users.myuid as string;
+    const myemail = users.allUsers[myuid].email;
     const username = users.allUsers[myuid].username;
-    return update(ownProps, { $merge: { activeSession, sessions, username } });
+    return update(ownProps, { $merge: { activeSession, sessions, username, myemail } });
 }
 export default connect(mapStateToProps)(ChatWidget);

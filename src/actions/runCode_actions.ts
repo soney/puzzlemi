@@ -7,7 +7,9 @@ import { ICodeTest, CodeTestType, CodeTestStatus } from "../reducers/aggregateDa
 import { ICodeSolutionState, CodePassedState } from "../reducers/intermediateUserState";
 import { IPMState } from "../reducers/index.js";
 import uuid from "../utils/uuid";
+import { analytics } from '../utils/Firebase';
 import { IDeleteUserFileAction } from "./user_actions.js";
+import getChannelName from "../utils/channelName";
 
 declare const Sk;
 
@@ -248,7 +250,7 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
         } as IBeginRunningCodeAction);
 
         executeCode(test.before, code, test.after, files, outputChangeHandler, writeFileHandler, graphics).then(result => {
-            const { errString } = result;
+            const { errString, output } = result;
             const passed = errString ? CodePassedState.FAILED : CodePassedState.PASSED;
             if (errString) {
                 dispatch({
@@ -291,6 +293,11 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
             } else if(!passedAll && isMarkedAsPassedAll) {
                 aggregateDataDoc.submitListDeleteOp(['userData', problem.id, 'completed', completedIndex]);
             }
+            const {config} = problem.problemDetails as ICodeProblem;
+            const email = users.allUsers[myuid].email;
+            const channel = getChannelName();
+
+            analytics.logEvent("run_code", {code: code, test: JSON.stringify(test), user: email, problemID: problem.id, channel, result: JSON.stringify({passed, errString, output}), config: JSON.stringify(config)});
         });
     }
 }
@@ -319,7 +326,7 @@ export function runVerifyTest(problem: IProblem, test:ICodeTest) {
         Promise.all([standardCodePromise, emptyCodePromise]).then(([standardCodeResult, emptyCodeResult]) => {
             const passedStandard = !standardCodeResult.errString;
             const passedEmpty = !emptyCodeResult.errString;
-            const { shareDBDocs } = getState();
+            const { shareDBDocs, users } = getState();
             const problemsDoc = shareDBDocs.problems;
             const aggregateDataDoc = shareDBDocs.aggregateData;
             const newStatus = (passedStandard && !passedEmpty) ? CodeTestStatus.VERIFIED : CodeTestStatus.VERIFICATION_FAILED;
@@ -328,6 +335,10 @@ export function runVerifyTest(problem: IProblem, test:ICodeTest) {
             } else {
                 aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'tests', test.id, 'status'], newStatus);
             }
+            const myuid = users.myuid as string;
+            const email = users.allUsers[myuid].email;
+            const channel = getChannelName();
+            analytics.logEvent("verify_test", {problemID: problem.id, channel, user: email, test: JSON.stringify(test), status: newStatus});
         })
     }
 }

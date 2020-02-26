@@ -8,17 +8,22 @@ import { runVerifyTest } from '../../../../actions/runCode_actions';
 import TestItem from './TestItem';
 import uuid from '../../../../utils/uuid';
 import { setActiveTest } from '../../../../actions/user_actions';
+import getChannelName from '../../../../utils/channelName';
+import { analytics } from '../../../../utils/Firebase';
 
-const TestList = ({ isAdmin, problem, config, username, myTestObjects, otherTestObjects, dispatch, currentTest, instructorTestObjects, allTestsObjects }) => {
+const TestList = ({ isAdmin, problem, config, username, myemail, myTestObjects, otherTestObjects, dispatch, currentTest, instructorTestObjects, allTestsObjects }) => {
     if (!currentTest) { return null; }
 
     const myWIP = myTestObjects.filter(o => o.status !== CodeTestStatus.VERIFIED).length;
+    const channel = getChannelName();
 
     const doAddInstructorTest = () => {
         const testID = uuid();
         dispatch(addTest(problem.id, username, true, testID)).then(() => {
             dispatch(setActiveTest(testID, problem.id))
         });
+        analytics.logEvent("add_test", {problemID: problem.id, channel, user: myemail, testID});
+
     }
     const doAddUserTest = () => {
         const testID = uuid();
@@ -29,9 +34,12 @@ const TestList = ({ isAdmin, problem, config, username, myTestObjects, otherTest
     }
 
     const doVerifyAll = () => {
+        const channel = getChannelName();
+        analytics.logEvent("run_all", {tests: JSON.stringify(allTestsObjects), user: myemail, channel, problemID: problem.id});
+
         allTestsObjects.forEach(test => {
-            if (test.author !== 'null') dispatch(runVerifyTest(problem, test))
-        })
+            if (test.author !== null) dispatch(runVerifyTest(problem, test))
+        })  
     }
 
     return <>
@@ -85,6 +93,7 @@ function mapStateToProps(state, ownProps) {
     const { config } = problemDetails;
 
     const myuid = users.myuid as string;
+    const myemail = users.allUsers[myuid].email;
     const username = users.allUsers[myuid].username;
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveTest, testResults } = intermediateCodeState;
@@ -99,7 +108,7 @@ function mapStateToProps(state, ownProps) {
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
 
-    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, myTestObjects, otherTestObjects, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects } })
+    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, myTestObjects, otherTestObjects, myemail, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects } })
 }
 
 export default connect(mapStateToProps)(TestList);

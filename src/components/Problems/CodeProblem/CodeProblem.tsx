@@ -14,7 +14,7 @@ import CodeSolutionView from './CodeSolutionView';
 import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 import CodeOutput from './CodeOutput';
 
-const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
+const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passedAll }) => {
     const [count, setCount] = React.useState(0);
     const [peer, setPeer] = React.useState(0);
     const peerHelpTabRef = React.createRef<HTMLAnchorElement>();
@@ -64,11 +64,11 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
                         </div>
                     </nav>
                     <div className="tab-content" id="nav-instructor-note-tabContent">
-                    <div className="tab-pane fade show active" id={"nav-output-" + problem.id} role="tabpanel" aria-labelledby={"nav-output-tab-" + problem.id}>
+                        <div className="tab-pane fade show active" id={"nav-output-" + problem.id} role="tabpanel" aria-labelledby={"nav-output-tab-" + problem.id}>
                             <CodeOutput problem={problem} />
                         </div>
                         <div className="tab-pane fade" id={"nav-notes-" + problem.id} role="tabpanel" aria-labelledby={"nav-notes-tab-" + problem.id}>
-                            <ProblemNotes problem={problem} isRender={false} flag={count}/>
+                            <ProblemNotes problem={problem} isRender={false} flag={count} />
                         </div>
                         <div className="tab-pane fade" id={"nav-draw-" + problem.id} role="tabpanel" aria-labelledby={"nav-draw-tab-" + problem.id}>
                             <ProblemNotes problem={problem} isRender={true} />
@@ -80,6 +80,16 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
                 </div>
             </div>
             <CodeSolutionView problem={problem} />
+            {!config.disableTest &&
+                <div className="row completion-info">
+                    <div className="col">
+                        {passedAll &&
+                            <span>You are one of </span>
+                        }
+                        {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{passedAll && <span> that</span>} answered correctly.
+                </div>
+                </div>
+            }
         </>
     }
     else {
@@ -94,7 +104,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
                     <nav>
                         <div className="nav nav-tabs student-tab" id={"nav-student-tab-" + problem.id} role="tablist">
                             {(config.displayInstructor || config.peerHelp) &&
-                            <a ref={mySolutionTabRef} className="nav-item nav-link active" id={"nav-home-tab-" + problem.id} data-toggle="tab" href={"#nav-home-" + problem.id} role="tab" aria-controls={"nav-home-" + problem.id} aria-selected="true" onClick={refreshCM}>My Solution</a>
+                                <a ref={mySolutionTabRef} className="nav-item nav-link active" id={"nav-home-tab-" + problem.id} data-toggle="tab" href={"#nav-home-" + problem.id} role="tab" aria-controls={"nav-home-" + problem.id} aria-selected="true" onClick={refreshCM}>My Solution</a>
                             }
                             {config.displayInstructor &&
                                 <a className="nav-item nav-link" id={"nav-profile-tab-" + problem.id} data-toggle="tab" href={"#nav-profile-" + problem.id} role="tab" aria-controls={"nav-profile-" + problem.id} aria-selected="false" onClick={refreshCM}>Instructor</a>
@@ -115,12 +125,22 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus }) => {
                         }
                         {config.peerHelp &&
                             <div ref={peerHelpDivRef} className="tab-pane fade" id={"nav-contact-" + problem.id} role="tabpanel" aria-labelledby={"nav-contact-tab-" + problem.id}>
-                                <PeerHelp problem={problem} listView={peer}/>
+                                <PeerHelp problem={problem} listView={peer} />
                             </div>
                         }
                     </div>
                 </div>
             </div>
+            {!config.disableTest &&
+                <div className="row completion-info">
+                    <div className="col">
+                        {passedAll &&
+                            <span>You are one of </span>
+                        }
+                        {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{passedAll && <span> that</span>} answered correctly.
+                </div>
+                </div>
+            }
         </>
     }
 }
@@ -132,13 +152,18 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { problem } = ownProps;
     const { problemDetails } = problem;
     const { config } = problemDetails;
-
+    const aggregateData = shareDBDocs.i.aggregateData;
+    const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
     const myuid = users.myuid as string;
+    const completed = (problemAggregateData && problemAggregateData.completed) || [];
+    const numCompleted = completed.length;
+    const passedAll = completed.indexOf(myuid) >= 0;
+
 
     const userSolution = solutions.allSolutions[ownProps.problem.id][myuid];
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
 
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus } });
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll } });
 }
 export default connect(mapStateToProps)(CodeProblem);
