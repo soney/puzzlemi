@@ -7,8 +7,10 @@ import { IHelpSession } from '../../../../reducers/aggregateData';
 import uuid from '../../../../utils/uuid';
 import { addHelpSession, changeHelperLists } from '../../../../actions/sharedb_actions';
 import { updateCurrentActiveHelpSession } from '../../../../actions/user_actions';
+import { analytics } from '../../../../utils/Firebase';
+import getChannelName from '../../../../utils/channelName';
 
-const PeerHelp = ({ sessions, problem, dispatch, myuid, username, userSolution, listView }) => {
+const PeerHelp = ({ sessions, problem, dispatch, myuid, username, myemail, userSolution, listView }) => {
     const [viewNum, setViewNum] = React.useState(0);
     const [isListView, setIsList] = React.useState(true);
 
@@ -35,6 +37,8 @@ const PeerHelp = ({ sessions, problem, dispatch, myuid, username, userSolution, 
 
     const doRequestHelp = () => {
         const helpID = uuid();
+        analytics.logEvent("add_help_session", { problemID: problem.id, channel: getChannelName(), user: myemail, helpID });
+
         dispatch(addHelpSession(problem.id, username, userSolution.code, helpID, [], [])).then(() => {
             dispatch(updateCurrentActiveHelpSession(problem.id, helpID));
             dispatch(changeHelperLists(problem.id, helpID, myuid))
@@ -84,6 +88,7 @@ function mapStateToProps(state, ownProps) {
     const { problem } = ownProps;
     const aggregateData = shareDBDocs.i.aggregateData
     const myuid = users.myuid as string;
+    const myemail = users.allUsers[myuid].email;
     const username = users.allUsers[myuid].username;
     const userSolution = solutions.allSolutions[problem.id][myuid];
 
@@ -93,6 +98,6 @@ function mapStateToProps(state, ownProps) {
     }
     const helpSessionObjects: IHelpSession[] = Object.values(helpSessions);
 
-    return update(ownProps, { $merge: { sessions: helpSessionObjects, myuid, username, userSolution } });
+    return update(ownProps, { $merge: { sessions: helpSessionObjects, myuid, username, userSolution, myemail } });
 }
 export default connect(mapStateToProps)(PeerHelp);
