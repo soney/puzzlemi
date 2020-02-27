@@ -4,10 +4,12 @@ import { ISetUserAction } from '../actions/user_actions';
 
 export interface IUserInfo {
     uid: string,
-    username: string,
-    email: string,
+    username: string|null,
+    email: string|null,
     isInstructor: boolean,
-    loggedIn: boolean
+    loggedIn: boolean,
+    fullName: string|null,
+    ip: string|null
 }
 
 export interface IUsers {

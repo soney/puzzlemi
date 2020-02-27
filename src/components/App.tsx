@@ -13,7 +13,7 @@ import { setAppState } from '../actions/app_actions';
 import update from 'immutability-helper';
 import { appState } from '..';
 import { ISolutions } from '../reducers/solutions';
-import { IUsers } from '../reducers/users';
+import { IUsers, IUserInfo } from '../reducers/users';
 import uuid from '../utils/uuid';
 import { analytics } from '../utils/Firebase';
 
@@ -74,6 +74,18 @@ function mapDispatchToProps(dispatch: React.Dispatch<any>, ownProps: IPMAppOwnPr
         const usersDoc: SDBDoc<IUsers> = sdbClient.get(appState.channel, 'users');
         dispatch(setUsersDoc(usersDoc));
         dispatch(beginListeningOnDoc(usersDoc, 'users'));
+
+        if(myInfo.isInstructor) {
+            window['getIPs'] = () => {
+                const usersData = usersDoc.getData();
+                const { allUsers } = usersData;
+                const userList = Object.values(allUsers);
+                userList.sort((a: IUserInfo, b: IUserInfo) => {
+                    return a.ip!.localeCompare(b.ip!);
+                });
+                return userList;
+            }
+        }
         return myInfo;
     });
     return ownProps;
