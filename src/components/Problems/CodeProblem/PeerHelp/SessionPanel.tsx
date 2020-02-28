@@ -125,7 +125,7 @@ function mapStateToProps(state, ownProps) {
     const usersDocData = shareDBDocs.i.users;
     const { isInstructor } = allUsers[myuid];
     const username = users.allUsers[myuid].username;
-    const isTutee = activeSession !== null ? activeSession.tutee === username : false;
+    const isTutee = activeSession !== null ? activeSession.userID === myuid : false;
     return update(ownProps, { $merge: { username, sessionIndex, allUsers, aggregateDataDoc, sessions, activeSession, isTutee, myuid, isInstructor, helperLists, usersDocData } });
 }
 export default connect(mapStateToProps)(SessionPanel);

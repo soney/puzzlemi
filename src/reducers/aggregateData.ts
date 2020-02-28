@@ -12,10 +12,13 @@ export interface ICodeSolutionAggregate {
         [testID: string]: ICodeTest
     },
     helpSessions: {
-        [helpSessionID: string]: IHelpSession
+        [helpSessionID: string]: ISharedSession
     },
     helperLists: {
         [userID: string]: string
+    }
+    allSolutions: {
+        [solutionID: string]: ISharedSession
     }
 
 }
@@ -35,17 +38,17 @@ export interface ICodeTest {
 }
 
 
-export interface IHelpSession {
+export interface ISharedSession {
     id: string;
     status: boolean;
     readOnly: boolean;
-    tutee: string;
+    userID: string;
     chatMessages: IMessage[];
-    title: string;
+    title?: string;
     code: string;
     timestamp: string;
-    errorTags: string[];
-    testTags: string[];
+    errorTags?: string[];
+    testTags?: string[];
 }
 
 export interface IMessage {

@@ -13,6 +13,7 @@ import { IPMState } from '../../../reducers';
 import CodeSolutionView from './CodeSolutionView';
 import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 import CodeOutput from './CodeOutput';
+import AllSolutions from './AllSolutions/AllSolutions';
 
 const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passedAll }) => {
     const [count, setCount] = React.useState(0);
@@ -21,6 +22,8 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
     const peerHelpDivRef = React.createRef<HTMLDivElement>();
     const mySolutionTabRef = React.createRef<HTMLAnchorElement>();
     const mySolutionDivRef = React.createRef<HTMLDivElement>();
+    const revealSolutionsTabRef = React.createRef<HTMLAnchorElement>();
+    const revealSolutionsDivRef = React.createRef<HTMLDivElement>();
 
 
     const refreshCM = () => {
@@ -112,6 +115,9 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                             {config.peerHelp &&
                                 <a ref={peerHelpTabRef} className="nav-item nav-link" id={"nav-contact-tab-" + problem.id} data-toggle="tab" href={"#nav-contact-" + problem.id} role="tab" aria-controls={"nav-contact-" + problem.id} aria-selected="false">Help Sessions</a>
                             }
+                            {config.revealSolutions &&
+                                <a ref={revealSolutionsTabRef} className="nav-item nav-link" id={"nav-solutions-tab-" + problem.id} data-toggle="tab" href={"#nav-solutions-" + problem.id} role="tab" aria-controls={"nav-solutions-" + problem.id} aria-selected="false">All Solutions</a>
+                            }
                         </div>
                     </nav>
                     <div className="tab-content" id="nav-student-tabContent">
@@ -126,6 +132,11 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         {config.peerHelp &&
                             <div ref={peerHelpDivRef} className="tab-pane fade" id={"nav-contact-" + problem.id} role="tabpanel" aria-labelledby={"nav-contact-tab-" + problem.id}>
                                 <PeerHelp problem={problem} listView={peer} />
+                            </div>
+                        }
+                        {config.revealSolutions &&
+                            <div ref={revealSolutionsDivRef} className="tab-pane fade" id={"nav-solutions-" + problem.id} role="tabpanel" aria-labelledby={"nav-solutions-tab-" + problem.id}>
+                                <AllSolutions problem={problem} />
                             </div>
                         }
                     </div>

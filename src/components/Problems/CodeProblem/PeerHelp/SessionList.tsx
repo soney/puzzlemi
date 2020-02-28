@@ -7,8 +7,7 @@ import { updateCurrentActiveHelpSession } from '../../../../actions/user_actions
 import { changeHelperLists } from '../../../../actions/sharedb_actions';
 import * as showdown from 'showdown';
 
-const SessionList = ({ session, currentActiveHelpSession, dispatch, problem, myuid, helperLists, clickCallback }) => {
-    console.log(session)
+const SessionList = ({ session, dispatch, problem, myuid, helperLists, clickCallback }) => {
     const onChangeActiveID = () => {
         dispatch(updateCurrentActiveHelpSession(problem.id, session.id))
         dispatch(changeHelperLists(problem.id, session.id, myuid))

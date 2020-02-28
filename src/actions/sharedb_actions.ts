@@ -5,7 +5,7 @@ import { getTimeStamp } from '../utils/timestamp';
 import EventTypes from './EventTypes';
 import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
 import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType, IProblemType, IMultipleChoiceOptionType } from '../reducers/problems';
-import { IAggregateData, IHelpSession, IMessage, ICodeSolutionAggregate, ICodeTest, CodeTestStatus, CodeTestType } from '../reducers/aggregateData';
+import { IAggregateData, ISharedSession, IMessage, ICodeSolutionAggregate, ICodeTest, CodeTestStatus, CodeTestType } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
 import { ISolutions } from '../reducers/solutions';
 
@@ -271,7 +271,8 @@ export function replaceProblems(newProblems: IProblems) {
                         completed: [],
                         tests: {},
                         helpSessions: {},
-                        helperLists: {}
+                        helperLists: {},
+                        allSolutions:{}
                     }
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], newUserData);
                 } else if(problemDetails.problemType === IProblemType.MultipleChoice) {
@@ -326,7 +327,8 @@ export function addCodeProblem() {
                     runTests: true,
                     addTests: false,
                     displayInstructor: false,
-                    peerHelp: false
+                    peerHelp: false,
+                    revealSolutions: false
                 },
                 tests: {
                     [newCodeTest.id]: newCodeTest
@@ -341,7 +343,8 @@ export function addCodeProblem() {
                 // [newCodeTest.id]: newCodeTest
             },
             helpSessions: {},
-            helperLists: {}
+            helperLists: {},
+            allSolutions: {}
         };
 
         await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], newCodeSolutionAggregate);
@@ -504,15 +507,15 @@ export function changeProblemConfig(problemID: string, item: string, value: bool
     }
 }
 
-export function addHelpSession(problemID: string, username: string, code: string, helpID: string, errorTags, testTags, title?: string) {
+export function addHelpSession(problemID: string, userID: string, code: string, helpID: string, errorTags, testTags, title?: string) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
-        const newHelpSession: IHelpSession = {
+        const newHelpSession: ISharedSession = {
             id: helpID,
             timestamp: getTimeStamp(),
             status: true,
-            tutee: username,
+            userID,
             chatMessages: [],
             title: title?title:'**no title**',
             readOnly: false,
@@ -521,6 +524,34 @@ export function addHelpSession(problemID: string, username: string, code: string
             code
         }
         aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'helpSessions', newHelpSession.id], newHelpSession);
+    }
+}
+
+export function initAllSolutions(problemID: string, flag:boolean) {
+    return async(dispatch: Dispatch, getState) =>{
+        const { shareDBDocs, solutions } = getState();
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        const sdbSolutions = shareDBDocs.i.solutions.allSolutions[problemID];
+        const localSolutions = solutions.allSolutions[problemID];
+        const allSolutions = sdbSolutions? sdbSolutions:localSolutions;
+        const users = Object.keys(allSolutions);
+        let sharedSolutions = {};
+        if(flag){
+            users.forEach(userID=>{
+                const newSharedSession: ISharedSession = {
+                    id: uuid(),
+                    timestamp: getTimeStamp(),
+                    status: true,
+                    userID,
+                    chatMessages: [],
+                    readOnly: true,
+                    code: allSolutions[userID].code
+                }
+                sharedSolutions[newSharedSession.id] = newSharedSession;
+            })    
+        }
+
+        aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'allSolutions'], sharedSolutions);
     }
 }
 

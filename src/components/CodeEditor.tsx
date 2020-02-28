@@ -83,6 +83,8 @@ export class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorSta
         }
         if (value !== prevProps.value) {
             this.setState({ code: value as string });
+            this.codeMirror.setValue(value as string);
+
             // if(value !== this.codeMirror.getValue()) {
             //     this.codeMirror.setValue(value as string);
             // }

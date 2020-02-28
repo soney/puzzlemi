@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
-import { IHelpSession, ICodeTest } from '../../../../reducers/aggregateData';
+import { ISharedSession, ICodeTest } from '../../../../reducers/aggregateData';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import SessionList from './SessionList';
 import getChannelName from '../../../../utils/channelName';
@@ -13,7 +13,8 @@ import { updateCurrentActiveHelpSession } from '../../../../actions/user_actions
 
 
 
-const HelpMatch = ({ dispatch, redirectCallback, problem, username, myemail, helpSessionObjects, myHelpSession, currentTest, currentResult, userSolution, myuid }) => {
+
+const HelpMatch = ({ dispatch, redirectCallback, problem, myemail, helpSessionObjects, myHelpSession, currentTest, currentResult, userSolution, myuid }) => {
     const [isDisplay, setIsDisplay] = React.useState(true);
 
     let errorTags: string[] = [];
@@ -30,14 +31,14 @@ const HelpMatch = ({ dispatch, redirectCallback, problem, username, myemail, hel
             })
         }
     }
-    let matchedSessions: IHelpSession[] = [];
+    let matchedSessions: ISharedSession[] = [];
     const findCommonElements = (arr1, arr2) => {
         return arr1.some(item => arr2.includes(item))
     }
 
-    helpSessionObjects.forEach(session => {
+    helpSessionObjects.forEach((session: ISharedSession) => {
         if (findCommonElements(session.errorTags, errorTags) || findCommonElements(session.testTags, testTags)) {
-            if (session.tutee !== username) matchedSessions.push(session);
+            if (session.userID !== myuid) matchedSessions.push(session);
         }
     })
 
@@ -69,7 +70,7 @@ const HelpMatch = ({ dispatch, redirectCallback, problem, username, myemail, hel
         const newCode = currentTest.before + "\n" + userSolution.code + "\n" + currentTest.after;
         analytics.logEvent("add_help_session", { problemID: problem.id, channel: getChannelName(), user: myemail, helpID });
 
-        dispatch(addHelpSession(problem.id, username, newCode, helpID, errorTags, testTags, title)).then(() => {
+        dispatch(addHelpSession(problem.id, myuid, newCode, helpID, errorTags, testTags, title)).then(() => {
             dispatch(updateCurrentActiveHelpSession(problem.id, helpID));
             dispatch(changeHelperLists(problem.id, helpID, myuid))
         });
@@ -147,9 +148,9 @@ function mapStateToProps(state, ownProps) {
     if (aggregateData) {
         helpSessions = aggregateData.userData[problem.id].helpSessions
     }
-    const helpSessionObjects: IHelpSession[] = Object.values(helpSessions);
+    const helpSessionObjects: ISharedSession[] = Object.values(helpSessions);
 
-    let myHelpS = helpSessionObjects.filter(s => s.tutee === username && s.status);
+    let myHelpS = helpSessionObjects.filter(s => s.userID === myuid && s.status);
     const myHelpSession = myHelpS.length > 0 ? myHelpS[0] : null;
 
     return update(ownProps, { $merge: { helpSessionObjects, currentTest, currentResult, username, myHelpSession, userSolution, myuid, myemail } });
