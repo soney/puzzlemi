@@ -21,7 +21,7 @@ const AllSolutions = ({ problem, allSolutions, completed }) => {
     }
     const currentID = solutionIDs[currentIndex];
     return <div>
-        {solutionIDs.map((id, index) => <div key={index}>
+        {solutionIDs.map((id, index) => <div key={index} className="solution-list-button">
             <button data-index={index} type="button" className={getSolutionClass(id, index)} onClick={onSelect}>Solution {index + 1}</button>
         </div>)}
         {currentID && <SolutionPanel problem={problem} session={allSolutions[currentID]} index={currentIndex} />
@@ -36,7 +36,6 @@ function mapStateToProps(state, ownProps) {
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const allSolutions = problemAggregateData && problemAggregateData.allSolutions;
     const completed = problemAggregateData && problemAggregateData.completed;
-
 
     return update(ownProps, { $merge: { allSolutions: allSolutions ? allSolutions : {}, completed } });
 }

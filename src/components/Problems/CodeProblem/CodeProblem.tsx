@@ -106,7 +106,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                 <div className="col">
                     <nav>
                         <div className="nav nav-tabs student-tab" id={"nav-student-tab-" + problem.id} role="tablist">
-                            {(config.displayInstructor || config.peerHelp) &&
+                            {(config.displayInstructor || config.peerHelp || config.revealSolutions) &&
                                 <a ref={mySolutionTabRef} className="nav-item nav-link active" id={"nav-home-tab-" + problem.id} data-toggle="tab" href={"#nav-home-" + problem.id} role="tab" aria-controls={"nav-home-" + problem.id} aria-selected="true" onClick={refreshCM}>My Solution</a>
                             }
                             {config.displayInstructor &&
@@ -136,7 +136,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         }
                         {config.revealSolutions &&
                             <div ref={revealSolutionsDivRef} className="tab-pane fade" id={"nav-solutions-" + problem.id} role="tabpanel" aria-labelledby={"nav-solutions-tab-" + problem.id}>
-                                <AllSolutions problem={problem} />
+                                <AllSolutions problem={problem} flag={count}/>
                             </div>
                         }
                     </div>
