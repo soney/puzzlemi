@@ -2,7 +2,6 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 import { timeAgo, getTimeStamp } from '../../../../utils/timestamp';
-import { ISolutionState, ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { addMessage } from '../../../../actions/sharedb_actions';
 import { IMessage } from '../../../../reducers/aggregateData';
 import * as showdown from 'showdown';
@@ -10,7 +9,7 @@ import getChannelName from '../../../../utils/channelName';
 import { analytics } from '../../../../utils/Firebase';
 
 let message = 'send your *message* here';
-const ChatWidget = ({ activeSession, dispatch, problem, sessions, myemail, username }) => {
+const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path }) => {
     const chatInput = React.createRef<HTMLInputElement>();
     const chatWrapper = React.createRef<HTMLDivElement>();
 
@@ -31,26 +30,26 @@ const ChatWidget = ({ activeSession, dispatch, problem, sessions, myemail, usern
             content: message,
             timestamp: getTimeStamp()
         }
-        dispatch(addMessage(problem.id, newMessage, activeSession.id))
+        dispatch(addMessage(newMessage, path))
         message = '';
         if (chatInput.current) {
             chatInput.current.value = ''
         }
-        analytics.logEvent("update_help_session", { problemID: problem.id, channel: getChannelName(), user: myemail, helpSession: activeSession });
+        analytics.logEvent("send_message", { problemID: problem.id, channel: getChannelName(), user: myemail, message: newMessage, path });
     }
 
     React.useEffect(() => {
         if (chatWrapper.current) {
             chatWrapper.current.scrollTop = chatWrapper.current.scrollHeight;
         }
-    }, [activeSession.chatMessages, chatWrapper])
+    }, [chatMessages, chatWrapper])
 
     const converter = new showdown.Converter();
 
     return <div>
         <div className="chat-container">
             <div className="chat-messages-wrapper" ref={chatWrapper} >
-                {activeSession.chatMessages.map((message, i) => <div className={"chat-message-container" + ((message.sender === username) ? ' isSender' : '')} key={i}>
+                {chatMessages.map((message, i) => <div className={"chat-message-container" + ((message.sender === username) ? ' isSender' : '')} key={i}>
 
                     <div className="chat-message-item">
                         <div className="chat-header">
@@ -78,15 +77,10 @@ const ChatWidget = ({ activeSession, dispatch, problem, sessions, myemail, usern
 }
 
 function mapStateToProps(state, ownProps) {
-    const { intermediateUserState, users } = state;
-    const { sessions } = ownProps;
-    const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
-    const { currentActiveHelpSession } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { currentActiveHelpSession: '' };
-    let activeS = sessions.filter(s => s.id === currentActiveHelpSession);
-    const activeSession = activeS.length > 0 ? activeS[0] : null;
+    const { users } = state;
     const myuid = users.myuid as string;
     const myemail = users.allUsers[myuid].email;
     const username = users.allUsers[myuid].username;
-    return update(ownProps, { $merge: { activeSession, sessions, username, myemail } });
+    return update(ownProps, { $merge: { username, myemail } });
 }
 export default connect(mapStateToProps)(ChatWidget);

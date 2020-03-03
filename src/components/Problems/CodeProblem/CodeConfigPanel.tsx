@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
-import { changeProblemConfig, initAllSolutions } from '../../../actions/sharedb_actions';
+import { changeProblemConfig, initAllGroups } from '../../../actions/sharedb_actions';
 import { IPMState } from '../../../reducers';
 
 const CodeProblemConfigPanel = ({ dispatch, problem, config }) => {
     const onSwitch = (e) => {
         const item = e.target.id.split('-')[0];
         dispatch(changeProblemConfig(problem.id, item, e.target.checked));
-        if(item === "revealSolutions") dispatch(initAllSolutions(problem.id, e.target.checked));
+        if(item === "revealSolutions") dispatch(initAllGroups(problem.id, e.target.checked));
     }
     return <>
         <div className="custom-control custom-switch">

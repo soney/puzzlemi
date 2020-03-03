@@ -17,10 +17,17 @@ export interface ICodeSolutionAggregate {
     helperLists: {
         [userID: string]: string
     }
-    allSolutions: {
-        [solutionID: string]: ISharedSession
+    allGroups:{
+        [groupID: string]: IGroupSolution   
     }
+}
 
+export interface IGroupSolution {
+    id: string;
+    solutions: {
+        [solutionID: string]: ISharedSession
+    };
+    chatMessages: IMessage[];
 }
 
 export enum CodeTestType { INSTRUCTOR='instructor', STUDENT='student' };
@@ -47,6 +54,7 @@ export interface ISharedSession {
     title?: string;
     code: string;
     timestamp: string;
+    completed?: boolean;
     errorTags?: string[];
     testTags?: string[];
 }
