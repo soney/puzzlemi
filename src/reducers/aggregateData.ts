@@ -63,6 +63,7 @@ export interface IMessage {
     sender: string;
     timestamp: string;
     content: string;
+    isAnonymous: boolean;
 }
 
 export interface IMultipleChoiceSolutionAggregate {

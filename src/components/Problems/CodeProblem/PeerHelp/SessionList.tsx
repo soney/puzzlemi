@@ -2,7 +2,6 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 import { timeAgo } from '../../../../utils/timestamp';
-import { ISolutionState, ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { updateCurrentActiveHelpSession } from '../../../../actions/user_actions';
 import { changeHelperLists } from '../../../../actions/sharedb_actions';
 import * as showdown from 'showdown';
@@ -23,7 +22,7 @@ const SessionList = ({ session, dispatch, problem, myuid, helperLists, clickCall
         </div>
         <div className="row">
             <div className="col-8">
-                <small>opened {timeAgo(parseInt(session.timestamp))} by {session.tutee}</small>
+                <small>opened {timeAgo(parseInt(session.timestamp))}</small>
             </div>
             <div className="col-4">
                 <small>Active Users: {helperNumber}</small>
@@ -33,15 +32,13 @@ const SessionList = ({ session, dispatch, problem, myuid, helperLists, clickCall
 }
 
 function mapStateToProps(state, ownProps) {
-    const { intermediateUserState, shareDBDocs, users } = state;
+    const { shareDBDocs, users } = state;
     const myuid = users.myuid as string;
 
     const { problem } = ownProps;
     const aggregateData = shareDBDocs.i.aggregateData;
     const { helperLists } = aggregateData.userData[problem.id];
 
-    const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
-    const { currentActiveHelpSession } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { currentActiveHelpSession: '' };
-    return update(ownProps, { $merge: { currentActiveHelpSession, myuid, helperLists } });
+    return update(ownProps, { $merge: { myuid, helperLists } });
 }
 export default connect(mapStateToProps)(SessionList);

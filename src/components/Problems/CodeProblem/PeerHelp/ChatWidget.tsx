@@ -7,11 +7,13 @@ import { IMessage } from '../../../../reducers/aggregateData';
 import * as showdown from 'showdown';
 import getChannelName from '../../../../utils/channelName';
 import { analytics } from '../../../../utils/Firebase';
+import { getAnonym } from '../../../../utils/anonymous';
 
 let message = 'send your *message* here';
-const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path }) => {
+const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path, isInstructor }) => {
     const chatInput = React.createRef<HTMLInputElement>();
     const chatWrapper = React.createRef<HTMLDivElement>();
+    const [isAnonymous, setIsAnonymous] = React.useState(false);
 
     const onMessageChange = (e) => {
         message = e.target.value;
@@ -28,7 +30,8 @@ const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path }
         const newMessage: IMessage = {
             sender: username,
             content: message,
-            timestamp: getTimeStamp()
+            timestamp: getTimeStamp(),
+            isAnonymous,
         }
         dispatch(addMessage(newMessage, path))
         message = '';
@@ -36,6 +39,19 @@ const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path }
             chatInput.current.value = ''
         }
         analytics.logEvent("send_message", { problemID: problem.id, channel: getChannelName(), user: myemail, message: newMessage, path });
+    }
+    
+    const toggleAnonymous = () => {
+        setIsAnonymous(!isAnonymous);
+    }
+
+    const getSender = (message) => {
+        if(message.isAnonymous) {
+            const anonym = getAnonym(message.sender)
+            if(isInstructor) return  anonym + "("+message.sender+")"
+            else return anonym;
+        }
+        else return message.sender;
     }
 
     React.useEffect(() => {
@@ -53,7 +69,7 @@ const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path }
 
                     <div className="chat-message-item">
                         <div className="chat-header">
-                            <span className="sender">{message.sender}</span>
+                            <span className="sender">{getSender(message)}</span>
                             <span className="timestamp">
                                 ({timeAgo(parseInt(message.timestamp))})
                             </span>
@@ -67,6 +83,10 @@ const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path }
             <div className="chat-input-container row">
                 <div className="chat-input-wrapper col-10">
                     <input id='chatInput' type='text' ref={chatInput} onChange={onMessageChange} onKeyDown={onKeyDown} style={{ 'height': '36px', 'width': '100%' }}></input>
+                    <div className="custom-control custom-switch related-button">
+                            <input type="checkbox" className="custom-control-input" id={"chat-anonymous-button-" + problem.id} onClick={toggleAnonymous} defaultChecked={isAnonymous} />
+                            <label className="custom-control-label" htmlFor={"chat-anonymous-button-" + problem.id}>Anonymous</label>
+                    </div>
                 </div>
                 <div className="chat-button-wrapper col-2">
                     <button type="submit" className="btn btn-primary chat-send" onClick={onSendMessage}>Send</button>
