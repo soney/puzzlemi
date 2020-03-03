@@ -8,6 +8,7 @@ import { IMessage } from '../../../../reducers/aggregateData';
 import * as showdown from 'showdown';
 import getChannelName from '../../../../utils/channelName';
 import { analytics } from '../../../../utils/Firebase';
+import { getAnonym } from '../../../../utils/anonymous';
 
 let message = 'send your *message* here';
 const ChatWidget = ({ activeSession, dispatch, problem, isInstructor, myemail, username }) => {
@@ -46,14 +47,10 @@ const ChatWidget = ({ activeSession, dispatch, problem, isInstructor, myemail, u
     }
 
     const getSender = (message) => {
-        const anonymousList = activeSession.chatMessages.filter(s=>s.isAnonymous);
-        const names = anonymousList.map(s=>s.sender);
-        const anonymousNames = names.filter((v,i) => names.indexOf(v) === i)
-
         if(message.isAnonymous) {
-            const index = anonymousNames.indexOf(message.sender);
-            if(isInstructor) return "Student-"+index+" ("+message.sender+")"
-            else return "Student-"+index;
+            const anonym = getAnonym(message.sender)
+            if(isInstructor) return  anonym + "("+message.sender+")"
+            else return anonym;
         }
         else return message.sender;
     }
