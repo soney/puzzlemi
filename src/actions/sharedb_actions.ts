@@ -5,7 +5,7 @@ import { getTimeStamp } from '../utils/timestamp';
 import EventTypes from './EventTypes';
 import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
 import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType, IProblemType, IMultipleChoiceOptionType } from '../reducers/problems';
-import { IAggregateData, IHelpSession, IMessage, ICodeSolutionAggregate, ICodeTest, CodeTestStatus, CodeTestType } from '../reducers/aggregateData';
+import { IAggregateData, ISharedSession, IMessage, ICodeSolutionAggregate, ICodeTest, CodeTestStatus, CodeTestType, IGroupSolution } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
 import { ISolutions } from '../reducers/solutions';
 
@@ -267,14 +267,15 @@ export function replaceProblems(newProblems: IProblems) {
             if (newProblems.allProblems.hasOwnProperty(problemID)) {
                 const { problemDetails } = newProblems.allProblems[problemID];
                 if (problemDetails.problemType === IProblemType.Code) {
-                    const newUserData:ICodeSolutionAggregate = {
+                    const newUserData: ICodeSolutionAggregate = {
                         completed: [],
                         tests: {},
                         helpSessions: {},
-                        helperLists: {}
+                        helperLists: {},
+                        allGroups: {}
                     }
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], newUserData);
-                } else if(problemDetails.problemType === IProblemType.MultipleChoice) {
+                } else if (problemDetails.problemType === IProblemType.MultipleChoice) {
                     const selected = {};
                     problemDetails.options.forEach((option) => {
                         selected[option.id] = [];
@@ -326,7 +327,9 @@ export function addCodeProblem() {
                     runTests: true,
                     addTests: false,
                     displayInstructor: false,
-                    peerHelp: false
+                    peerHelp: false,
+                    revealSolutions: false,
+                    disableEdit: false,
                 },
                 tests: {
                     [newCodeTest.id]: newCodeTest
@@ -341,7 +344,8 @@ export function addCodeProblem() {
                 // [newCodeTest.id]: newCodeTest
             },
             helpSessions: {},
-            helperLists: {}
+            helperLists: {},
+            allGroups: {}
         };
 
         await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], newCodeSolutionAggregate);
@@ -423,7 +427,7 @@ export function updateSketch(problemID: string, sketch: any[]) {
     };
 }
 
-export function addTest(problemID: string, username: string, isAdmin: boolean, testID?:string) {
+export function addTest(problemID: string, username: string, isAdmin: boolean, testID?: string) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
@@ -431,7 +435,7 @@ export function addTest(problemID: string, username: string, isAdmin: boolean, t
         const tests = problemsDoc.getData().allProblems[problemID].problemDetails.tests;
         const defaultTest = Object.values(tests)[0] as ICodeTest;
         const newCodeTest: ICodeTest = {
-            id: testID?testID:uuid(),
+            id: testID ? testID : uuid(),
             name: isAdmin ? 'instructor test' : 'student test',
             author: username,
             type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
@@ -440,7 +444,7 @@ export function addTest(problemID: string, username: string, isAdmin: boolean, t
             status: isAdmin ? CodeTestStatus.VERIFIED : CodeTestStatus.UNVERIFIED,
             completed: []
         }
-        if(isAdmin) await problemsDoc.submitObjectInsertOp(['allProblems', problemID, 'problemDetails', 'tests', newCodeTest.id], newCodeTest);
+        if (isAdmin) await problemsDoc.submitObjectInsertOp(['allProblems', problemID, 'problemDetails', 'tests', newCodeTest.id], newCodeTest);
         else await aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'tests', newCodeTest.id], newCodeTest);
     };
 }
@@ -450,7 +454,7 @@ export function deleteTest(problemID: string, test: ICodeTest) {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
         const problemsDoc = shareDBDocs.problems;
-        if(test.type===CodeTestType.INSTRUCTOR) problemsDoc.submitObjectDeleteOp(['allProblems', problemID, 'problemDetails', 'tests', test.id]);
+        if (test.type === CodeTestType.INSTRUCTOR) problemsDoc.submitObjectDeleteOp(['allProblems', problemID, 'problemDetails', 'tests', test.id]);
         else aggregateDataDoc.submitObjectDeleteOp(['userData', problemID, 'tests', test.id]);
     }
 }
@@ -460,12 +464,12 @@ export function changeTestStatus(problemID: string, test: ICodeTest, newStatus: 
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
         const problemsDoc = shareDBDocs.problems;
-        if(test.type===CodeTestType.INSTRUCTOR) problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails','tests', test.id,'status'], newStatus);
+        if (test.type === CodeTestType.INSTRUCTOR) problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'tests', test.id, 'status'], newStatus);
         else aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'tests', test.id, 'status'], newStatus);
     }
 }
 
-export function changeHelperLists(problemID: string, sessionID: string, helperID: string){
+export function changeHelperLists(problemID: string, sessionID: string, helperID: string) {
     return (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
@@ -473,7 +477,7 @@ export function changeHelperLists(problemID: string, sessionID: string, helperID
     }
 }
 
-export function changeHelpSessionStatus(problemID: string, sessionID: string, newStatus:boolean){
+export function changeHelpSessionStatus(problemID: string, sessionID: string, newStatus: boolean) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
@@ -481,7 +485,7 @@ export function changeHelpSessionStatus(problemID: string, sessionID: string, ne
     }
 }
 
-export function changeHelpSessionAccessControl(problemID: string, sessionID: string, readOnly: boolean){
+export function changeHelpSessionAccessControl(problemID: string, sessionID: string, readOnly: boolean) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
@@ -505,23 +509,100 @@ export function changeProblemConfig(problemID: string, item: string, value: bool
     }
 }
 
-export function addHelpSession(problemID: string, username: string, code: string, helpID: string, errorTags, testTags, title?: string) {
+export function addHelpSession(problemID: string, userID: string, code: string, helpID: string, errorTags, testTags, title?: string) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
-        const newHelpSession: IHelpSession = {
+        const newHelpSession: ISharedSession = {
             id: helpID,
             timestamp: getTimeStamp(),
             status: true,
-            tutee: username,
+            userID,
             chatMessages: [],
-            title: title?title:'**no title**',
+            title: title ? title : '**no title**',
             readOnly: false,
             errorTags,
             testTags,
             code
         }
         aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'helpSessions', newHelpSession.id], newHelpSession);
+    }
+}
+
+export function initAllGroups(problemID: string, flag: boolean) {
+    return async (dispatch: Dispatch, getState) => {
+        const { shareDBDocs, solutions, users } = getState();
+        const aggregateDataDoc = shareDBDocs.aggregateData;
+        const solutionsDoc = shareDBDocs.solutions;
+        const solutionsData = solutionsDoc.getData();
+        const sdbSolutions = solutionsData.allSolutions[problemID] ? solutionsData.allSolutions[problemID] : {};
+        const localSolutions = solutions.allSolutions[problemID];
+        const completed = shareDBDocs.i.aggregateData.userData[problemID].completed;
+        const allSolutions = Object.keys(sdbSolutions).length > Object.keys(localSolutions).length ? sdbSolutions : localSolutions;
+        const userIDs = Object.keys(allSolutions);
+        const ratio = completed.length / userIDs.length;
+        const userPerGroup = 2;
+        const groupNumber = Math.floor(userIDs.length / userPerGroup);
+        let allGroups = {};
+        const localUsers = users.allUsers;
+        const sdbUsers = shareDBDocs.users.getData().allUsers;
+        const allUsers = Object.keys(sdbUsers).length > Object.keys(localUsers).length ? sdbUsers : localUsers;
+        if (flag) {
+            let completedUsers = completed;
+            let inCompletedUsers = userIDs.filter(u => completedUsers.indexOf(u) < 0);
+            for (let currentGroup = 1; currentGroup <= groupNumber; currentGroup++) {
+                let solutions = {};
+                let expect_completed_user_num = Math.ceil(userPerGroup * ratio);
+                let remain_completed_user_num = completedUsers.length;
+                let completed_user_num = expect_completed_user_num > remain_completed_user_num ? remain_completed_user_num : expect_completed_user_num;
+                let incompleted_user_num = userPerGroup - completed_user_num;
+                // select random # of completed users
+                let completed_num = currentGroup === groupNumber ? completedUsers.length : completed_user_num;
+                let incompleted_num = currentGroup === groupNumber ? inCompletedUsers.length : incompleted_user_num;
+                for (let i = 0; i < completed_num; i++) {
+                    let userID = completedUsers[Math.floor(Math.random() * completedUsers.length)];
+                    completedUsers.splice(completedUsers.indexOf(userID), 1);
+                    const newSharedSession: ISharedSession = {
+                        id: userID,
+                        timestamp: getTimeStamp(),
+                        status: true,
+                        userID,
+                        username: allUsers[userID] ? allUsers[userID].username : "",
+                        chatMessages: [],
+                        readOnly: true,
+                        completed: true,
+                        code: allSolutions[userID].code
+                    }
+                    solutions[newSharedSession.id] = newSharedSession;
+                }
+                // select random # of incompleted users
+                for (let i = 0; i < incompleted_num; i++) {
+                    let userID = inCompletedUsers[Math.floor(Math.random() * inCompletedUsers.length)];
+                    inCompletedUsers.splice(inCompletedUsers.indexOf(userID), 1);
+
+                    const newSharedSession: ISharedSession = {
+                        id: userID,
+                        timestamp: getTimeStamp(),
+                        status: true,
+                        userID,
+                        username: allUsers[userID] ? allUsers[userID].username : "",
+                        chatMessages: [],
+                        readOnly: true,
+                        completed: false,
+                        code: allSolutions[userID].code
+                    }
+                    solutions[newSharedSession.id] = newSharedSession;
+                }
+                let groupSolution: IGroupSolution = {
+                    id: uuid(),
+                    solutions: solutions,
+                    chatMessages: []
+                }
+                allGroups[groupSolution.id] = groupSolution;
+            }
+        }
+
+        aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'allGroups'], allGroups);
     }
 }
 
@@ -533,11 +614,11 @@ export function deleteHelpSession(problemID: string, sessionID: string) {
     }
 }
 
-export function addMessage(problemID: string, newMessage: IMessage, sessionID: string) {
+export function addMessage(newMessage: IMessage, path: string[]) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
-        aggregateDataDoc.submitListPushOp(['userData', problemID, 'helpSessions', sessionID, 'chatMessages'], newMessage)
+        aggregateDataDoc.submitListPushOp([...path, 'chatMessages'], newMessage)
     }
 }
 
@@ -664,7 +745,6 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                 ops!.forEach((op) => {
                     const { p } = op;
 
-                    // console.log(op);
                     if (SDBDoc.matches(p, [])) { // total replacement
                         dispatch({
                             type: EventTypes.SDB_DOC_FETCHED,

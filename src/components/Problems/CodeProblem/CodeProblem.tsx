@@ -13,14 +13,17 @@ import { IPMState } from '../../../reducers';
 import CodeSolutionView from './CodeSolutionView';
 import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 import CodeOutput from './CodeOutput';
+import AllSolutions from './AllSolutions/AllSolutions';
 
-const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passedAll }) => {
+const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal }) => {
     const [count, setCount] = React.useState(0);
     const [peer, setPeer] = React.useState(0);
     const peerHelpTabRef = React.createRef<HTMLAnchorElement>();
     const peerHelpDivRef = React.createRef<HTMLDivElement>();
     const mySolutionTabRef = React.createRef<HTMLAnchorElement>();
     const mySolutionDivRef = React.createRef<HTMLDivElement>();
+    const revealSolutionsTabRef = React.createRef<HTMLAnchorElement>();
+    const revealSolutionsDivRef = React.createRef<HTMLDivElement>();
 
 
     const refreshCM = () => {
@@ -103,7 +106,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                 <div className="col">
                     <nav>
                         <div className="nav nav-tabs student-tab" id={"nav-student-tab-" + problem.id} role="tablist">
-                            {(config.displayInstructor || config.peerHelp) &&
+                            {(config.displayInstructor || config.peerHelp || config.revealSolutions) &&
                                 <a ref={mySolutionTabRef} className="nav-item nav-link active" id={"nav-home-tab-" + problem.id} data-toggle="tab" href={"#nav-home-" + problem.id} role="tab" aria-controls={"nav-home-" + problem.id} aria-selected="true" onClick={refreshCM}>My Solution</a>
                             }
                             {config.displayInstructor &&
@@ -111,6 +114,9 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                             }
                             {config.peerHelp &&
                                 <a ref={peerHelpTabRef} className="nav-item nav-link" id={"nav-contact-tab-" + problem.id} data-toggle="tab" href={"#nav-contact-" + problem.id} role="tab" aria-controls={"nav-contact-" + problem.id} aria-selected="false">Help Sessions</a>
+                            }
+                            {config.revealSolutions &&
+                                <a ref={revealSolutionsTabRef} className="nav-item nav-link" id={"nav-solutions-tab-" + problem.id} data-toggle="tab" href={"#nav-solutions-" + problem.id} role="tab" aria-controls={"nav-solutions-" + problem.id} aria-selected="false">My Group</a>
                             }
                         </div>
                     </nav>
@@ -128,6 +134,11 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                                 <PeerHelp problem={problem} listView={peer} />
                             </div>
                         }
+                        {config.revealSolutions &&
+                            <div ref={revealSolutionsDivRef} className="tab-pane fade" id={"nav-solutions-" + problem.id} role="tabpanel" aria-labelledby={"nav-solutions-tab-" + problem.id}>
+                                <AllSolutions problem={problem} flag={count} />
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -138,7 +149,10 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                             <span>You are one of </span>
                         }
                         {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{passedAll && <span> that</span>} answered correctly.
-                </div>
+                        {isInstructor &&
+                            <p>{numStuCompleted} / {numStuTotal} students answered correctly </p>
+                        }
+                    </div>
                 </div>
             }
         </>
@@ -156,14 +170,20 @@ function mapStateToProps(state: IPMState, ownProps) {
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
     const myuid = users.myuid as string;
+    const { isInstructor } = users.allUsers[myuid];
+
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
+    const localUsers = users.allUsers;
+    const sdbUsers = shareDBDocs.i.users ? shareDBDocs.i.users.allUsers : {};
+    const allUsers = Object.keys(sdbUsers).length > Object.keys(localUsers).length ? sdbUsers : localUsers;
+    const allUsersID = Object.keys(allUsers);
+    const numStuCompleted = completed.filter(i => (allUsers[i] && !allUsers[i].isInstructor)).length;
+    const numStuTotal = allUsersID.filter(i => (allUsers[i] && !allUsers[i].isInstructor)).length;
     const numCompleted = completed.length;
     const passedAll = completed.indexOf(myuid) >= 0;
-
-
     const userSolution = solutions.allSolutions[ownProps.problem.id][myuid];
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
 
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll } });
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal } });
 }
 export default connect(mapStateToProps)(CodeProblem);

@@ -3,20 +3,20 @@ import { connect } from "react-redux";
 import update from 'immutability-helper';
 import SessionList from './SessionList';
 import SessionPanel from './SessionPanel';
-import { IHelpSession } from '../../../../reducers/aggregateData';
+import { ISharedSession } from '../../../../reducers/aggregateData';
 import uuid from '../../../../utils/uuid';
 import { addHelpSession, changeHelperLists } from '../../../../actions/sharedb_actions';
 import { updateCurrentActiveHelpSession } from '../../../../actions/user_actions';
 import { analytics } from '../../../../utils/Firebase';
 import getChannelName from '../../../../utils/channelName';
 
-const PeerHelp = ({ sessions, problem, dispatch, myuid, username, myemail, userSolution, listView }) => {
+const PeerHelp = ({ sessions, problem, dispatch, myuid, myemail, userSolution, listView }) => {
     const [viewNum, setViewNum] = React.useState(0);
     const [isListView, setIsList] = React.useState(true);
 
-    const open_sessions = sessions.filter(s => s.status);
-    const close_sessions = sessions.filter(s => !s.status);
-    const my_sessions = sessions.filter(s => s.tutee === username);
+    const open_sessions = sessions.filter((s:ISharedSession) => s.status);
+    const close_sessions = sessions.filter((s:ISharedSession) => !s.status);
+    const my_sessions = sessions.filter((s:ISharedSession) => s.userID === myuid);
     const sessionCollections = [open_sessions, close_sessions, my_sessions];
     const current_sessions = sessionCollections[viewNum];
 
@@ -39,7 +39,7 @@ const PeerHelp = ({ sessions, problem, dispatch, myuid, username, myemail, userS
         const helpID = uuid();
         analytics.logEvent("add_help_session", { problemID: problem.id, channel: getChannelName(), user: myemail, helpID });
 
-        dispatch(addHelpSession(problem.id, username, userSolution.code, helpID, [], [])).then(() => {
+        dispatch(addHelpSession(problem.id, myuid, userSolution.code, helpID, [], [])).then(() => {
             dispatch(updateCurrentActiveHelpSession(problem.id, helpID));
             dispatch(changeHelperLists(problem.id, helpID, myuid))
         });
@@ -96,7 +96,7 @@ function mapStateToProps(state, ownProps) {
     if (aggregateData) {
         helpSessions = aggregateData.userData[problem.id].helpSessions
     }
-    const helpSessionObjects: IHelpSession[] = Object.values(helpSessions);
+    const helpSessionObjects: ISharedSession[] = Object.values(helpSessions);
 
     return update(ownProps, { $merge: { sessions: helpSessionObjects, myuid, username, userSolution, myemail } });
 }
