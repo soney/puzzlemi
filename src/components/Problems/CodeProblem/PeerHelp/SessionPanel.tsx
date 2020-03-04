@@ -47,6 +47,7 @@ const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sess
         clickCallback(true);
         dispatch(changeHelperLists(problem.id, "", myuid))
     }
+    const chat_path = ['userData', problem.id, 'helpSessions', activeSession.id]
 
     return <>
         <nav className="navbar navbar-light bg-light">
@@ -102,7 +103,7 @@ const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sess
                     }
                 </div>
                 <div className="col">
-                    <ChatWidget problem={problem} sessions={sessions} />
+                    <ChatWidget problem={problem} sessions={sessions} chatMessages={activeSession.chatMessages} path={chat_path}/>
                 </div>
             </div>
         </div>
@@ -125,7 +126,7 @@ function mapStateToProps(state, ownProps) {
     const usersDocData = shareDBDocs.i.users;
     const { isInstructor } = allUsers[myuid];
     const username = users.allUsers[myuid].username;
-    const isTutee = activeSession !== null ? activeSession.tutee === username : false;
+    const isTutee = activeSession !== null ? activeSession.userID === myuid : false;
     return update(ownProps, { $merge: { username, sessionIndex, allUsers, aggregateDataDoc, sessions, activeSession, isTutee, myuid, isInstructor, helperLists, usersDocData } });
 }
 export default connect(mapStateToProps)(SessionPanel);

@@ -62,6 +62,8 @@ export interface ICodeProblemConfig {
     addTests: boolean;
     displayInstructor: boolean;
     peerHelp: boolean;
+    revealSolutions: boolean;
+    disableEdit: boolean;
 }
 
 export interface ICodeFile {

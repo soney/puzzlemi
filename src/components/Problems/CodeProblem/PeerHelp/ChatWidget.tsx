@@ -2,7 +2,6 @@ import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
 import { timeAgo, getTimeStamp } from '../../../../utils/timestamp';
-import { ISolutionState, ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { addMessage } from '../../../../actions/sharedb_actions';
 import { IMessage } from '../../../../reducers/aggregateData';
 import * as showdown from 'showdown';
@@ -11,10 +10,10 @@ import { analytics } from '../../../../utils/Firebase';
 import { getAnonym } from '../../../../utils/anonymous';
 
 let message = 'send your *message* here';
-const ChatWidget = ({ activeSession, dispatch, problem, isInstructor, myemail, username }) => {
+const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path, isInstructor }) => {
     const chatInput = React.createRef<HTMLInputElement>();
     const chatWrapper = React.createRef<HTMLDivElement>();
-    const [isAnonymous, setIsAnonymous] = React.useState(false);
+    const [isAnonymous, setIsAnonymous] = React.useState(true);
 
     const onMessageChange = (e) => {
         message = e.target.value;
@@ -34,22 +33,22 @@ const ChatWidget = ({ activeSession, dispatch, problem, isInstructor, myemail, u
             timestamp: getTimeStamp(),
             isAnonymous,
         }
-        dispatch(addMessage(problem.id, newMessage, activeSession.id))
+        dispatch(addMessage(newMessage, path))
         message = '';
         if (chatInput.current) {
             chatInput.current.value = ''
         }
-        analytics.logEvent("update_help_session", { problemID: problem.id, channel: getChannelName(), user: myemail, helpSession: activeSession });
+        analytics.logEvent("send_message", { problemID: problem.id, channel: getChannelName(), user: myemail, message: newMessage, path });
     }
-    
+
     const toggleAnonymous = () => {
         setIsAnonymous(!isAnonymous);
     }
 
     const getSender = (message) => {
-        if(message.isAnonymous) {
+        if (message.isAnonymous) {
             const anonym = getAnonym(message.sender)
-            if(isInstructor) return  anonym + "("+message.sender+")"
+            if (isInstructor) return anonym + "(" + message.sender + ")"
             else return anonym;
         }
         else return message.sender;
@@ -59,14 +58,14 @@ const ChatWidget = ({ activeSession, dispatch, problem, isInstructor, myemail, u
         if (chatWrapper.current) {
             chatWrapper.current.scrollTop = chatWrapper.current.scrollHeight;
         }
-    }, [activeSession.chatMessages, chatWrapper])
+    }, [chatMessages, chatWrapper])
 
     const converter = new showdown.Converter();
 
     return <div>
         <div className="chat-container">
             <div className="chat-messages-wrapper" ref={chatWrapper} >
-                {activeSession.chatMessages.map((message, i) => <div className={"chat-message-container" + ((message.sender === username) ? ' isSender' : '')} key={i}>
+                {chatMessages.map((message, i) => <div className={"chat-message-container" + ((message.sender === username) ? ' isSender' : '')} key={i}>
 
                     <div className="chat-message-item">
                         <div className="chat-header">
@@ -85,8 +84,8 @@ const ChatWidget = ({ activeSession, dispatch, problem, isInstructor, myemail, u
                 <div className="chat-input-wrapper col-10">
                     <input id='chatInput' type='text' ref={chatInput} onChange={onMessageChange} onKeyDown={onKeyDown} style={{ 'height': '36px', 'width': '100%' }}></input>
                     <div className="custom-control custom-switch related-button">
-                            <input type="checkbox" className="custom-control-input" id={"chat-anonymous-button-" + problem.id} onClick={toggleAnonymous} defaultChecked={isAnonymous} />
-                            <label className="custom-control-label" htmlFor={"chat-anonymous-button-" + problem.id}>Anonymous</label>
+                        <input type="checkbox" className="custom-control-input" id={"chat-anonymous-button-" + problem.id} onClick={toggleAnonymous} defaultChecked={isAnonymous} />
+                        <label className="custom-control-label" htmlFor={"chat-anonymous-button-" + problem.id}>Anonymous</label>
                     </div>
                 </div>
                 <div className="chat-button-wrapper col-2">
@@ -98,15 +97,9 @@ const ChatWidget = ({ activeSession, dispatch, problem, isInstructor, myemail, u
 }
 
 function mapStateToProps(state, ownProps) {
-    const { intermediateUserState, users } = state;
-    const { sessions } = ownProps;
-    const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
-    const { currentActiveHelpSession } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { currentActiveHelpSession: '' };
-    let activeS = sessions.filter(s => s.id === currentActiveHelpSession);
-    const activeSession = activeS.length > 0 ? activeS[0] : null;
+    const { users } = state;
     const myuid = users.myuid as string;
     const { isInstructor, username, email } = users.allUsers[myuid];
-
-    return update(ownProps, { $merge: { activeSession, sessions, username, myemail:email, isInstructor } });
+    return update(ownProps, { $merge: { username, myemail: email, isInstructor } });
 }
 export default connect(mapStateToProps)(ChatWidget);
