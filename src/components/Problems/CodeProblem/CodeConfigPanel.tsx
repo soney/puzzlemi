@@ -8,7 +8,7 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config }) => {
     const onSwitch = (e) => {
         const item = e.target.id.split('-')[0];
         dispatch(changeProblemConfig(problem.id, item, e.target.checked));
-        if(item === "revealSolutions") dispatch(initAllGroups(problem.id, e.target.checked));
+        if (item === "revealSolutions") dispatch(initAllGroups(problem.id, e.target.checked));
     }
     return <>
         <div className="custom-control custom-switch">
@@ -34,6 +34,10 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config }) => {
         <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"revealSolutions-" + problem.id} onClick={onSwitch} defaultChecked={config.revealSolutions} />
             <label className="custom-control-label" htmlFor={"revealSolutions-" + problem.id}>Reveal Solutions</label>
+        </div>
+        <div className="custom-control custom-switch">
+            <input type="checkbox" className="custom-control-input" id={"disableEdit-" + problem.id} onClick={onSwitch} defaultChecked={config.disableEdit} />
+            <label className="custom-control-label" htmlFor={"disableEdit-" + problem.id}>Disable Edit</label>
         </div>
     </>
 }

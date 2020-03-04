@@ -50,6 +50,7 @@ export interface ISharedSession {
     status: boolean;
     readOnly: boolean;
     userID: string;
+    username?:string;
     chatMessages: IMessage[];
     title?: string;
     code: string;

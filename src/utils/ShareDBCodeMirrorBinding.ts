@@ -19,22 +19,22 @@ class ShareDBCodeMirrorBinding {
 
     private onSDBDocEvent = (type, ops, source): void => {
         this.suppressChanges = true;
-        if(type === null) {
+        if (type === null) {
             const data = this.doc.getData() as string;
             this.codeMirror.setValue(data);
             this.gotInitialFetch = true;
             this.initialFetchCallbacks.forEach((callback) => callback());
             this.initialFetchCallbacks.splice(0, this.initialFetchCallbacks.length);
-        } else if(type === 'op') {
-            if(source !== this) {
+        } else if (type === 'op') {
+            if (source !== this) {
                 ops.forEach((op) => this.applyOp(op));
             }
         }
         this.suppressChanges = false;
     };
 
-    public onInitialFetch(callback: ()=>void): void {
-        if(this.gotInitialFetch) {
+    public onInitialFetch(callback: () => void): void {
+        if (this.gotInitialFetch) {
             callback();
         } else {
             this.initialFetchCallbacks.push(callback);
@@ -42,7 +42,7 @@ class ShareDBCodeMirrorBinding {
     }
 
     private onCodeMirrorChange = (codeMirror: CodeMirror.Editor, change: CodeMirror.EditorChange): void => {
-        if(!this.suppressChanges) {
+        if (!this.suppressChanges) {
             const ops = this.createOpFromChange(change);
             // const docOp = [{p: [], t: 'text', o: op}];
             this.doc.submitOp(ops, this);
@@ -52,7 +52,7 @@ class ShareDBCodeMirrorBinding {
     private assertValue(): void {
         const editorValue = this.codeMirror.getValue();
         const expectedValue = this.doc.getData() as string;
-        if(editorValue !== expectedValue) {
+        if (editorValue !== expectedValue) {
             console.error(`Expected value (${expectedValue}) did not match editor value (${editorValue})`);
             this.codeMirror.setValue(expectedValue);
         }
@@ -60,12 +60,12 @@ class ShareDBCodeMirrorBinding {
 
     private applyOp(op): void {
         const editorDoc = this.editorDoc;
-        const {si, sd, p} = op;
-        const [ index ] = p;
+        const { si, sd, p } = op;
+        const [index] = p;
 
-        if(si) {
+        if (si) {
             editorDoc.replaceRange(si, editorDoc.posFromIndex(index));
-        } else if(sd) {
+        } else if (sd) {
             const from = editorDoc.posFromIndex(index);
             const to = editorDoc.posFromIndex(index + sd.length);
             editorDoc.replaceRange('', from, to);
@@ -85,14 +85,14 @@ class ShareDBCodeMirrorBinding {
         textIndex += change.from.ch;
 
         if (change.to.line !== change.from.line || change.to.ch !== change.from.ch) {
-            const removed  = change.removed.join('\n');
-            op.push({p: [textIndex], sd: removed});
+            const removed = change.removed.join('\n');
+            op.push({ p: [textIndex], sd: removed });
         }
 
         if (change.text) {
             const text = change.text.join('\n');
             if (text) {
-                op.push({p: [textIndex], si: text });
+                op.push({ p: [textIndex], si: text });
             }
         }
 

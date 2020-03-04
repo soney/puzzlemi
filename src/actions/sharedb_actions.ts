@@ -328,7 +328,8 @@ export function addCodeProblem() {
                     addTests: false,
                     displayInstructor: false,
                     peerHelp: false,
-                    revealSolutions: false
+                    revealSolutions: false,
+                    disableEdit: false,
                 },
                 tests: {
                     [newCodeTest.id]: newCodeTest
@@ -529,18 +530,25 @@ export function addHelpSession(problemID: string, userID: string, code: string, 
 
 export function initAllGroups(problemID: string, flag: boolean) {
     return async (dispatch: Dispatch, getState) => {
-        const { shareDBDocs, solutions } = getState();
+        const { shareDBDocs, solutions, users } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
+        const solutionsDoc = shareDBDocs.solutions;
+        const solutionsData = solutionsDoc.getData();
+        const sdbSolutions = solutionsData.allSolutions[problemID] ? solutionsData.allSolutions[problemID] : {};
+        const localSolutions = solutions.allSolutions[problemID];
         const completed = shareDBDocs.i.aggregateData.userData[problemID].completed;
-        const allSolutions = solutions.allSolutions[problemID];
-        const users = Object.keys(allSolutions);
-        const ratio = completed.length / users.length;
+        const allSolutions = Object.keys(sdbSolutions).length > Object.keys(localSolutions).length ? sdbSolutions : localSolutions;
+        const userIDs = Object.keys(allSolutions);
+        const ratio = completed.length / userIDs.length;
         const userPerGroup = 2;
-        const groupNumber = Math.floor(users.length / userPerGroup);
+        const groupNumber = Math.floor(userIDs.length / userPerGroup);
         let allGroups = {};
+        const localUsers = users.allUsers;
+        const sdbUsers = shareDBDocs.users.getData().allUsers;
+        const allUsers = Object.keys(sdbUsers).length > Object.keys(localUsers).length ? sdbUsers : localUsers;
         if (flag) {
             let completedUsers = completed;
-            let inCompletedUsers = users.filter(u => completedUsers.indexOf(u) < 0);
+            let inCompletedUsers = userIDs.filter(u => completedUsers.indexOf(u) < 0);
             for (let currentGroup = 1; currentGroup <= groupNumber; currentGroup++) {
                 let solutions = {};
                 let expect_completed_user_num = Math.ceil(userPerGroup * ratio);
@@ -551,33 +559,36 @@ export function initAllGroups(problemID: string, flag: boolean) {
                 let completed_num = currentGroup === groupNumber ? completedUsers.length : completed_user_num;
                 let incompleted_num = currentGroup === groupNumber ? inCompletedUsers.length : incompleted_user_num;
                 for (let i = 0; i < completed_num; i++) {
-                    let user = completedUsers[Math.floor(Math.random() * completedUsers.length)];
-                    completedUsers.splice(completedUsers.indexOf(user), 1);
+                    let userID = completedUsers[Math.floor(Math.random() * completedUsers.length)];
+                    completedUsers.splice(completedUsers.indexOf(userID), 1);
                     const newSharedSession: ISharedSession = {
-                        id: uuid(),
+                        id: userID,
                         timestamp: getTimeStamp(),
                         status: true,
-                        userID: user,
+                        userID,
+                        username: allUsers[userID] ? allUsers[userID].username : "",
                         chatMessages: [],
                         readOnly: true,
                         completed: true,
-                        code: allSolutions[user].code
+                        code: allSolutions[userID].code
                     }
                     solutions[newSharedSession.id] = newSharedSession;
                 }
                 // select random # of incompleted users
                 for (let i = 0; i < incompleted_num; i++) {
-                    let user = inCompletedUsers[Math.floor(Math.random() * inCompletedUsers.length)];
-                    inCompletedUsers.splice(inCompletedUsers.indexOf(user), 1);
+                    let userID = inCompletedUsers[Math.floor(Math.random() * inCompletedUsers.length)];
+                    inCompletedUsers.splice(inCompletedUsers.indexOf(userID), 1);
+
                     const newSharedSession: ISharedSession = {
-                        id: uuid(),
+                        id: userID,
                         timestamp: getTimeStamp(),
                         status: true,
-                        userID: user,
+                        userID,
+                        username: allUsers[userID] ? allUsers[userID].username : "",
                         chatMessages: [],
                         readOnly: true,
                         completed: false,
-                        code: allSolutions[user].code
+                        code: allSolutions[userID].code
                     }
                     solutions[newSharedSession.id] = newSharedSession;
                 }
@@ -733,7 +744,6 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                 ops!.forEach((op) => {
                     const { p } = op;
 
-                    // console.log(op);
                     if (SDBDoc.matches(p, [])) { // total replacement
                         dispatch({
                             type: EventTypes.SDB_DOC_FETCHED,

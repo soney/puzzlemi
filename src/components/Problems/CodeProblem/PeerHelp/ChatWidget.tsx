@@ -13,7 +13,7 @@ let message = 'send your *message* here';
 const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path, isInstructor }) => {
     const chatInput = React.createRef<HTMLInputElement>();
     const chatWrapper = React.createRef<HTMLDivElement>();
-    const [isAnonymous, setIsAnonymous] = React.useState(false);
+    const [isAnonymous, setIsAnonymous] = React.useState(true);
 
     const onMessageChange = (e) => {
         message = e.target.value;
@@ -40,15 +40,15 @@ const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path, 
         }
         analytics.logEvent("send_message", { problemID: problem.id, channel: getChannelName(), user: myemail, message: newMessage, path });
     }
-    
+
     const toggleAnonymous = () => {
         setIsAnonymous(!isAnonymous);
     }
 
     const getSender = (message) => {
-        if(message.isAnonymous) {
+        if (message.isAnonymous) {
             const anonym = getAnonym(message.sender)
-            if(isInstructor) return  anonym + "("+message.sender+")"
+            if (isInstructor) return anonym + "(" + message.sender + ")"
             else return anonym;
         }
         else return message.sender;
@@ -84,8 +84,8 @@ const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path, 
                 <div className="chat-input-wrapper col-10">
                     <input id='chatInput' type='text' ref={chatInput} onChange={onMessageChange} onKeyDown={onKeyDown} style={{ 'height': '36px', 'width': '100%' }}></input>
                     <div className="custom-control custom-switch related-button">
-                            <input type="checkbox" className="custom-control-input" id={"chat-anonymous-button-" + problem.id} onClick={toggleAnonymous} defaultChecked={isAnonymous} />
-                            <label className="custom-control-label" htmlFor={"chat-anonymous-button-" + problem.id}>Anonymous</label>
+                        <input type="checkbox" className="custom-control-input" id={"chat-anonymous-button-" + problem.id} onClick={toggleAnonymous} defaultChecked={isAnonymous} />
+                        <label className="custom-control-label" htmlFor={"chat-anonymous-button-" + problem.id}>Anonymous</label>
                     </div>
                 </div>
                 <div className="chat-button-wrapper col-2">
@@ -99,8 +99,7 @@ const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path, 
 function mapStateToProps(state, ownProps) {
     const { users } = state;
     const myuid = users.myuid as string;
-    const myemail = users.allUsers[myuid].email;
-    const username = users.allUsers[myuid].username;
-    return update(ownProps, { $merge: { username, myemail } });
+    const { isInstructor, username, email } = users.allUsers[myuid];
+    return update(ownProps, { $merge: { username, myemail: email, isInstructor } });
 }
 export default connect(mapStateToProps)(ChatWidget);

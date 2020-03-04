@@ -15,7 +15,7 @@ import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 import CodeOutput from './CodeOutput';
 import AllSolutions from './AllSolutions/AllSolutions';
 
-const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passedAll }) => {
+const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal }) => {
     const [count, setCount] = React.useState(0);
     const [peer, setPeer] = React.useState(0);
     const peerHelpTabRef = React.createRef<HTMLAnchorElement>();
@@ -136,7 +136,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         }
                         {config.revealSolutions &&
                             <div ref={revealSolutionsDivRef} className="tab-pane fade" id={"nav-solutions-" + problem.id} role="tabpanel" aria-labelledby={"nav-solutions-tab-" + problem.id}>
-                                <AllSolutions problem={problem} flag={count}/>
+                                <AllSolutions problem={problem} flag={count} />
                             </div>
                         }
                     </div>
@@ -149,7 +149,10 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                             <span>You are one of </span>
                         }
                         {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{passedAll && <span> that</span>} answered correctly.
-                </div>
+                        {isInstructor &&
+                            <p>{numStuCompleted} / {numStuTotal} students answered correctly </p>
+                        }
+                    </div>
                 </div>
             }
         </>
@@ -167,14 +170,20 @@ function mapStateToProps(state: IPMState, ownProps) {
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
     const myuid = users.myuid as string;
+    const { isInstructor } = users.allUsers[myuid];
+
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
+    const localUsers = users.allUsers;
+    const sdbUsers = shareDBDocs.i.users ? shareDBDocs.i.users.allUsers : {};
+    const allUsers = Object.keys(sdbUsers).length > Object.keys(localUsers).length ? sdbUsers : localUsers;
+    const allUsersID = Object.keys(allUsers);
+    const numStuCompleted = completed.filter(i => (allUsers[i] && !allUsers[i].isInstructor)).length;
+    const numStuTotal = allUsersID.filter(i => (allUsers[i] && !allUsers[i].isInstructor)).length;
     const numCompleted = completed.length;
     const passedAll = completed.indexOf(myuid) >= 0;
-
-
     const userSolution = solutions.allSolutions[ownProps.problem.id][myuid];
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
 
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll } });
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal } });
 }
 export default connect(mapStateToProps)(CodeProblem);
