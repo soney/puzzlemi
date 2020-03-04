@@ -428,14 +428,15 @@ export function addTest(problemID: string, username: string, isAdmin: boolean, t
         const { shareDBDocs } = getState();
         const aggregateDataDoc = shareDBDocs.aggregateData;
         const problemsDoc = shareDBDocs.problems;
-
+        const tests = problemsDoc.getData().allProblems[problemID].problemDetails.tests;
+        const defaultTest = Object.values(tests)[0] as ICodeTest;
         const newCodeTest: ICodeTest = {
             id: testID?testID:uuid(),
             name: isAdmin ? 'instructor test' : 'student test',
             author: username,
             type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
-            before: '# given variables',
-            after: '# assertions',
+            before: defaultTest.before,
+            after: defaultTest.after,
             status: isAdmin ? CodeTestStatus.VERIFIED : CodeTestStatus.UNVERIFIED,
             completed: []
         }
