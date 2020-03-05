@@ -12,17 +12,23 @@
 
 html {
   scroll-behavior: smooth;
+  body {
+    font-size: 13pt;
+    background-color: #FCFCFC;
+  }
 }
 .problems {
   margin: 0px;
   padding: 0px;
 
   .problem {
+    background-color: white;
     margin-top: 35px;
     margin-bottom: 35px;
     border: 1px solid #eee;
     padding-top: 20px;
     padding-bottom: 20px;
+    border-radius: 5px;
     &.passedAll {
       background-color: #f6fdf7;
       border: 1px solid #c3e6cb;
@@ -88,7 +94,7 @@ html {
     }
   }
   .multiple-choice-table {
-    border-top: 1px solid #eee;
+    // border-top: 1px solid #eee;
     tr {
       td {
         padding-top: 0px;

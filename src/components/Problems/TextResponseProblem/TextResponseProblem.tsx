@@ -20,8 +20,10 @@ const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin, claimFo
                 <TextResponseSolutionView problem={problem} />
             }
             {   !isAdmin &&
-                <div className="col">
-                    <CodeEditor value={response} onChange={doSetResponse} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true }} />
+                <div className="row">
+                    <div className="col">
+                        <CodeEditor value={response} onChange={doSetResponse} options={{lineNumbers: false, mode: 'text', lineWrapping: true }} />
+                    </div>
                 </div>
             }
     </>;
