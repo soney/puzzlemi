@@ -47,6 +47,7 @@ const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sess
         clickCallback(true);
         dispatch(changeHelperLists(problem.id, "", myuid))
     }
+    const chat_path = ['userData', problem.id, 'helpSessions', activeSession.id]
 
     return <>
         <nav className="navbar navbar-light bg-light">
@@ -62,20 +63,20 @@ const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sess
                 </div>
                 <div className="col-2">
                     {(isTutee || isInstructor) &&
-                        <button type="button" className="btn btn-outline-secondary" onClick={toggleEdit}>{isEdit ? <i className="fas fa-save"></i>: <i className="fas fa-edit"></i>}</button>
+                        <button type="button" className="btn btn-outline-secondary" onClick={toggleEdit}>{isEdit ? <i className="fas fa-save"></i> : <i className="fas fa-edit"></i>}</button>
                     }
                 </div>
             </div>
             <div className="row">
                 <div className="col-10">
                     <div className={activeSession.status ? "session-open" : "session-close"}>
-                        <small>{activeSession.tutee} opened this help session {timeAgo(parseInt(activeSession.timestamp))}</small>
+                        <small>opened {timeAgo(parseInt(activeSession.timestamp))} </small>
                     </div>
                     {(isTutee || isInstructor) &&
-                                    <div className="custom-control custom-switch related-button">
-                                    <input type="checkbox" className="custom-control-input" id={"help-session-button-" + problem.id} onClick={doChangeSessionStatus} defaultChecked={activeSession.status} />
-                                    <label className="custom-control-label" htmlFor={"help-session-button-" + problem.id}>Open</label>
-                                </div>
+                        <div className="custom-control custom-switch related-button">
+                            <input type="checkbox" className="custom-control-input" id={"help-session-button-" + problem.id} onClick={doChangeSessionStatus} defaultChecked={activeSession.status} />
+                            <label className="custom-control-label" htmlFor={"help-session-button-" + problem.id}>Open</label>
+                        </div>
                     }
                 </div>
                 <div className="col-2">
@@ -93,7 +94,7 @@ const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sess
         <div className="session-body">
             <div className="row">
                 <div className="col">
-                    <CodeEditor shareDBSubDoc={sharedCodeSubDoc} refreshDoc={sessionIndex} options={(activeSession.readOnly && !isTutee) ? { readOnly: true, lineNumbers: true, height: 300, lineWrapping:true } : { lineNumbers: true, height: 300, lineWrapping:true }} />
+                    <CodeEditor shareDBSubDoc={sharedCodeSubDoc} refreshDoc={sessionIndex} options={(activeSession.readOnly && !isTutee) ? { readOnly: true, lineNumbers: true, height: 300, lineWrapping: true } : { lineNumbers: true, height: 300, lineWrapping: true }} />
                     {isTutee &&
                         <div className="custom-control custom-switch">
                             <input type="checkbox" className="custom-control-input" id={"readonly"} onClick={doChangeSessionAccessControl} defaultChecked={activeSession.readOnly} />
@@ -102,7 +103,7 @@ const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sess
                     }
                 </div>
                 <div className="col">
-                    <ChatWidget problem={problem} sessions={sessions} />
+                    <ChatWidget problem={problem} sessions={sessions} chatMessages={activeSession.chatMessages} path={chat_path}/>
                 </div>
             </div>
         </div>
@@ -125,7 +126,7 @@ function mapStateToProps(state, ownProps) {
     const usersDocData = shareDBDocs.i.users;
     const { isInstructor } = allUsers[myuid];
     const username = users.allUsers[myuid].username;
-    const isTutee = activeSession !== null ? activeSession.tutee === username : false;
+    const isTutee = activeSession !== null ? activeSession.userID === myuid : false;
     return update(ownProps, { $merge: { username, sessionIndex, allUsers, aggregateDataDoc, sessions, activeSession, isTutee, myuid, isInstructor, helperLists, usersDocData } });
 }
 export default connect(mapStateToProps)(SessionPanel);

@@ -12,12 +12,22 @@ export interface ICodeSolutionAggregate {
         [testID: string]: ICodeTest
     },
     helpSessions: {
-        [helpSessionID: string]: IHelpSession
+        [helpSessionID: string]: ISharedSession
     },
     helperLists: {
         [userID: string]: string
     }
+    allGroups:{
+        [groupID: string]: IGroupSolution   
+    }
+}
 
+export interface IGroupSolution {
+    id: string;
+    solutions: {
+        [solutionID: string]: ISharedSession
+    };
+    chatMessages: IMessage[];
 }
 
 export enum CodeTestType { INSTRUCTOR='instructor', STUDENT='student' };
@@ -35,23 +45,26 @@ export interface ICodeTest {
 }
 
 
-export interface IHelpSession {
+export interface ISharedSession {
     id: string;
     status: boolean;
     readOnly: boolean;
-    tutee: string;
+    userID: string;
+    username?:string;
     chatMessages: IMessage[];
-    title: string;
+    title?: string;
     code: string;
     timestamp: string;
-    errorTags: string[];
-    testTags: string[];
+    completed?: boolean;
+    errorTags?: string[];
+    testTags?: string[];
 }
 
 export interface IMessage {
     sender: string;
     timestamp: string;
     content: string;
+    isAnonymous: boolean;
 }
 
 export interface IMultipleChoiceSolutionAggregate {
