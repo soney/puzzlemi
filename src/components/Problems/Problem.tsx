@@ -75,10 +75,6 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
                 </div>
                 <button className="btn btn-sm btn-outline-danger float-right" onClick={doDeleteProblem}><i className="fas fa-trash"></i>&nbsp;Delete Problem</button>
             </div>
-            // <div className="row">
-            //     <div className="col clearfix">
-            //     </div>
-            // </div>
         }
         {problemDisplay}
         {

@@ -7,6 +7,8 @@ import ChatWidget from './ChatWidget';
 import * as showdown from 'showdown';
 import { timeAgo } from '../../../../utils/timestamp';
 import { changeHelpSessionStatus, changeHelpSessionAccessControl, deleteHelpSession, changeHelperLists } from '../../../../actions/sharedb_actions';
+import { IPMState } from '../../../../reducers';
+import { ICodeSolutionAggregate } from '../../../../reducers/aggregateData';
 
 const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sessionIndex, myuid, isInstructor, problem, aggregateDataDoc, sessions, isTutee, clickCallback }) => {
     const [isEdit, setIsEdit] = React.useState(false);
@@ -110,12 +112,12 @@ const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sess
     </>
 }
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state: IPMState, ownProps) {
     const { shareDBDocs, intermediateUserState, users } = state;
     const { sessions, problem } = ownProps;
     const aggregateDataDoc = shareDBDocs.aggregateData
     const aggregateData = shareDBDocs.i.aggregateData;
-    const { helperLists } = aggregateData ? aggregateData.userData[problem.id] : { helperLists: {} };
+    const { helperLists } = aggregateData ? (aggregateData.userData[problem.id] as ICodeSolutionAggregate) : { helperLists: {} };
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
     const { currentActiveHelpSession } = intermediateCodeState ? intermediateCodeState as ICodeSolutionState : { currentActiveHelpSession: '' };
     let activeS = sessions.filter(s => s.id === currentActiveHelpSession);
