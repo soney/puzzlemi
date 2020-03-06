@@ -38,7 +38,7 @@ const TestList = ({ isAdmin, problem, config, username, myemail, myTestObjects, 
         analytics.logEvent("run_all", {tests: JSON.stringify(allTestsObjects), user: myemail, channel, problemID: problem.id});
 
         allTestsObjects.forEach(test => {
-            if (test.author !== null) dispatch(runVerifyTest(problem, test))
+            if (test.author !== 'default') dispatch(runVerifyTest(problem, test))
         })  
     }
 
