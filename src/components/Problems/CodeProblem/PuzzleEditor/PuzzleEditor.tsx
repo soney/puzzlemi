@@ -7,7 +7,7 @@ import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { codeChanged } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
 import { deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
-import { runCode } from '../../../../actions/runCode_actions';
+import { runCode, runVerifyTest } from '../../../../actions/runCode_actions';
 import { analytics } from '../../../../utils/Firebase';
 import TestList from './TestList';
 import getChannelName from '../../../../utils/channelName';
@@ -44,17 +44,12 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
         dispatch(changeTestStatus(problem.id, currentTest, newStatus));
     }
 
-
-    const doChangeTestStatus = () => {
-        if (currentTest.author === 'default') return;
-        const newStatus = currentTest.status === CodeTestStatus.VERIFIED ? CodeTestStatus.VERIFICATION_FAILED : CodeTestStatus.VERIFIED;
-        dispatch(changeTestStatus(problem.id, currentTest, newStatus))
-        analytics.logEvent("verify_test", { problemID: problem.id, channel, user: myemail, test: JSON.stringify(currentTest), status: newStatus });
-
-    }
-
     const doDeleteTest = () => {
         dispatch(deleteTest(problem.id, currentTest));
+    }
+
+    const doVerifyTest = () => {
+        dispatch(runVerifyTest(problem, currentTest))
     }
 
     const switchInstructorCode = (e) => {
@@ -145,7 +140,6 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
         </>
     }
 
-
     return <>
         <div className="row">
             <div className="col-9 puzzle-editor">
@@ -153,21 +147,19 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
                     <div className="puzzle-header">
                         <div className="row">
                             <div className="col">
-                                {isEdit
-                                    ? <CodeEditor shareDBSubDoc={testNameSubDoc} captureTabs={false} selectOnFocus={true} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 30 }} refreshDoc={currentTest.id} />
-                                    : <div>{currentTest.name}</div>
-                                }
+                                <CodeEditor shareDBSubDoc={testNameSubDoc} captureTabs={false} selectOnFocus={true} options={{ lineNumbers: false, mode: 'text', lineWrapping: true, height: 30 }} refreshDoc={currentTest.id} />
                             </div>
                             <div className="col">
                                 <div className="btn-group btn-block">
-                                    {
-                                        isAdmin && currentTest.author !== null && (currentTest.status === CodeTestStatus.VERIFIED
-                                            ? <button className="btn btn-outline-warning btn-sm" onClick={doChangeTestStatus}><i className="fas fa-times-circle"></i> Unverify</button>
-                                            : <button className="btn btn-outline-info btn-sm" onClick={doChangeTestStatus}><i className="fas fa-check-circle"></i> {currentTest.status === CodeTestStatus.VERIFICATION_FAILED ? 'Verify' : 'Verify'}</button>)
+                                    {!isAdmin &&
+                                        <div>
+                                            {currentTest.status === CodeTestStatus.VERIFIED
+                                                ? <button className="btn btn-outline-info btn-sm" disabled><i className="fas fa-check-circle"></i>Verified</button>
+                                                : <button className="btn btn-outline-warning btn-sm" onClick={doVerifyTest}><i className="fas fa-times-circle"></i> Verify</button>
+                                            }
+                                        </div>
                                     }
-                                    {currentTest.author !== null &&
-                                        <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}><i className="fas fa-trash"></i> Delete</button>
-                                    }
+                                    <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}><i className="fas fa-trash"></i> Delete</button>
                                 </div>
                             </div>
                         </div>
