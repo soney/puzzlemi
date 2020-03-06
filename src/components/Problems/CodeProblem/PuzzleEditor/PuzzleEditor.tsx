@@ -8,14 +8,12 @@ import { codeChanged } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
 import { deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
 import { runCode } from '../../../../actions/runCode_actions';
-import { analytics } from '../../../../utils/Firebase';
+import { logEvent } from '../../../../utils/Firebase';
 import TestList from './TestList';
-import getChannelName from '../../../../utils/channelName';
 
 const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, currentTest, flag, aggregateDataDoc }) => {
     const [count, setCount] = React.useState(0);
     const [codeTab, setCodeTab] = React.useState('g');
-    const channel = getChannelName();
 
 
     if (!currentTest) { return null; }
@@ -48,9 +46,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
     const doChangeTestStatus = () => {
         if (currentTest.author === 'default') return;
         const newStatus = currentTest.status === CodeTestStatus.VERIFIED ? CodeTestStatus.VERIFICATION_FAILED : CodeTestStatus.VERIFIED;
-        dispatch(changeTestStatus(problem.id, currentTest, newStatus))
-        analytics.logEvent("verify_test", { problemID: problem.id, channel, user: myemail, test: JSON.stringify(currentTest), status: newStatus });
-
+        dispatch(changeTestStatus(problem.id, currentTest, newStatus));
     }
 
     const doDeleteTest = () => {
@@ -93,8 +89,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
             graphicsEl_tmp.innerHTML = '';
         }
         const allTestsObjects: ICodeTest[] = Object.values(allTests);
-        analytics.logEvent("run_all", { code: codeSolution.code, tests: JSON.stringify(allTestsObjects), user: myemail, channel, problemID: problem.id });
-
+        logEvent("run_all", {code: codeSolution.code, tests: JSON.stringify(allTestsObjects)}, problem.id, myuid);
 
         allTestsObjects.forEach(test => {
             if (test.status === CodeTestStatus.VERIFIED) {
