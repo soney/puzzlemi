@@ -84,9 +84,11 @@ const HelpMatch = ({ dispatch, redirectCallback, problem, myemail, helpSessionOb
 
     // if the user finished the problem, then directed him to the latest help request
     if ((currentResult && currentResult.passed === "passed") || matchedSessions.length === 0) {
-        let activeSession = helpSessionObjects.filter(s => s.status)
-        matchedSessions = []
-        if (activeSession.length > 0) matchedSessions.push(activeSession[activeSession.length - 1])
+        const activeSession = helpSessionObjects.filter(s => s.status);
+        matchedSessions = [];
+        if (activeSession.length > 0) {
+            matchedSessions.push(activeSession[activeSession.length - 1]);
+        }
     }
 
     return <div className="match-container">
