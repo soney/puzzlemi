@@ -55,7 +55,7 @@ const AllSolutions = ({ problem, allGroups, isInstructor, myuid }) => {
         // const solution = allGroups[groupIDs[currentGroupIndex]].solutions[id];
         const number = index + 1;
         // const solution_title = (solution && solution.username!=="")?getAnonym(solution.username):"Solution " + number.toString();
-        const solution_title = "Solution " + number.toString();
+        const solution_title = id===mysid? "My Solution" : "Solution " + number.toString();
         return solution_title;
     }
 
@@ -71,7 +71,7 @@ const AllSolutions = ({ problem, allGroups, isInstructor, myuid }) => {
         </div>
         <div className="solutionID-wrapper">
             {solutionIDs.map((id, index) => <div key={index} className="solution-list-button">
-                <button data-index={index} type="button" className={getSolutionClass(id, index)} onClick={onSelectSolution}>{getSolutionTitle(id, index)} {id === mysid ? "*" : ""}</button>
+                <button data-index={index} type="button" className={getSolutionClass(id, index)} onClick={onSelectSolution}>{getSolutionTitle(id, index)}</button>
             </div>)}
         </div>
         <div className="row">
