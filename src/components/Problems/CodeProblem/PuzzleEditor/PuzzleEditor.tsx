@@ -159,7 +159,9 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
                                             }
                                         </div>
                                     }
+                                    {currentTest.author!== "default" &&
                                     <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}><i className="fas fa-trash"></i> Delete</button>
+                                    }
                                 </div>
                             </div>
                         </div>
