@@ -105,7 +105,7 @@ const SessionPanel = ({ dispatch, activeSession, helperLists, usersDocData, sess
                     }
                 </div>
                 <div className="col">
-                    <ChatWidget problem={problem} sessions={sessions} chatMessages={activeSession.chatMessages} path={chat_path}/>
+                    <ChatWidget problem={problem} sessions={sessions} path={chat_path}/>
                 </div>
             </div>
         </div>

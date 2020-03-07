@@ -5,9 +5,6 @@ import { timeAgo, getTimeStamp } from '../../../../utils/timestamp';
 import { addMessage } from '../../../../actions/sharedb_actions';
 import { IMessage } from '../../../../reducers/aggregateData';
 import * as showdown from 'showdown';
-import getChannelName from '../../../../utils/channelName';
-import { analytics } from '../../../../utils/Firebase';
-import { IPMState } from '../../../../reducers';
 import { IUserInfo } from '../../../../reducers/users';
 
 let message = 'send your *message* here';
@@ -41,7 +38,7 @@ const ChatWidget = ({ dispatch, problem, chatMessages, user, path }) => {
         if (chatInput.current) {
             chatInput.current.value = ''
         }
-        analytics.logEvent("send_message", { problemID: problem.id, channel: getChannelName(), user: user.email, message: newMessage, path });
+        // analytics.logEvent("send_message", { problemID: problem.id, channel: getChannelName(), user: user.email, message: newMessage, path });
     }
 
     const toggleAnonymous = () => {
@@ -100,10 +97,14 @@ const ChatWidget = ({ dispatch, problem, chatMessages, user, path }) => {
     </div>
 }
 
-function mapStateToProps(state: IPMState, ownProps) {
-    const { users } = state;
+function mapStateToProps(state, ownProps) {
+    const { shareDBDocs, users } = state;
+    const { path } = ownProps;
+    const aggregateDataDoc = shareDBDocs.aggregateData;
     const myuid = users.myuid as string;
-    const me: IUserInfo = users.allUsers[myuid];
-    return update(ownProps, { $merge: { user: me } });
+    const user: IUserInfo = users.allUsers[myuid];
+    const aggregateData = shareDBDocs.i.aggregateData;
+    const chatMessages = aggregateDataDoc?.traverse(path).chatMessages;
+    return update(ownProps, { $merge: { user, aggregateData, chatMessages } });
 }
 export default connect(mapStateToProps)(ChatWidget);

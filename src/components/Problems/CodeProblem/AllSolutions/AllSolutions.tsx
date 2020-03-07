@@ -4,24 +4,12 @@ import update from 'immutability-helper';
 import SolutionPanel from './SolutionPanel';
 import ChatWidget from '../PeerHelp/ChatWidget';
 
-const AllSolutions = ({ problem, allGroups, isInstructor, myuid }) => {
-    const [currentSolutionIndex, setCurrentSolutionIndex] = React.useState(0);
-    const [currentGroupIndex, setCurrentGroupIndex] = React.useState(0);
+const AllSolutions = ({ problem, allGroups, isInstructor, myuid, sIndex, gIndex, allUsers, flag }) => {
+    const [currentSolutionIndex, setCurrentSolutionIndex] = React.useState(sIndex?sIndex:0);
+    const [currentGroupIndex, setCurrentGroupIndex] = React.useState(gIndex?gIndex:0);
     const groupIDs = Object.keys(allGroups);
     if (groupIDs.length === 0) return <>No group so far.</>;
-    let mygid;
-    let mysid;
-    groupIDs.forEach(gid => {
-        const solutions = allGroups[gid].solutions;
-        const solutionIDs = Object.keys(solutions);
-        solutionIDs.forEach(sid => {
-            if (solutions[sid].userID === myuid) {
-                mysid = sid;
-                mygid = gid;
-            }
-        })
-    })
-    if (!mygid) return <>You don't have any assigned group yet</>;
+    if (gIndex === undefined) return <>You don't have any assigned group yet</>;
     const solutions = allGroups[groupIDs[currentGroupIndex]].solutions;
     const solutionIDs = Object.keys(solutions);
 
@@ -32,6 +20,7 @@ const AllSolutions = ({ problem, allGroups, isInstructor, myuid }) => {
     const onSelectGroup = (e) => {
         const newIndex = e.target.getAttribute("data-index");
         setCurrentGroupIndex(parseInt(newIndex));
+        setCurrentSolutionIndex(0);
     }
 
     const getSolutionClass = (id, index) => {
@@ -52,20 +41,19 @@ const AllSolutions = ({ problem, allGroups, isInstructor, myuid }) => {
     }
 
     const getSolutionTitle = (id, index) => {
-        // const solution = allGroups[groupIDs[currentGroupIndex]].solutions[id];
         const number = index + 1;
-        // const solution_title = (solution && solution.username!=="")?getAnonym(solution.username):"Solution " + number.toString();
-        const solution_title = id===mysid? "My Solution" : "Solution " + number.toString();
+        const pseudo = allUsers[id]? allUsers[id].anonymousName:"Solution " + number.toString(); 
+        const solution_title = (currentGroupIndex === gIndex && index===sIndex)? pseudo + " (me)" : pseudo;
         return solution_title;
     }
 
     const currentSolutionID = solutionIDs[currentSolutionIndex];
-    const chat_path = ['userData', problem.id, 'allGroups', groupIDs[currentGroupIndex]]
+    const chat_path = ['userData', problem.id, 'allGroups', groupIDs[currentGroupIndex]];
     return <div>
         <div className="groupID-wrapper">
             {groupIDs.map((id, index) => <div key={index} className="solution-list-button">
-                {(isInstructor || id === mygid) &&
-                    <button data-index={index} type="button" className={getGroupClass(id, index)} onClick={onSelectGroup}>Group {index + 1} {id === mygid ? "*" : ""}</button>
+                {(isInstructor || index === gIndex) &&
+                    <button data-index={index} type="button" className={getGroupClass(id, index)} onClick={onSelectGroup}>Group {index + 1} {index === gIndex ? "*" : ""}</button>
                 }
             </div>)}
         </div>
@@ -76,11 +64,11 @@ const AllSolutions = ({ problem, allGroups, isInstructor, myuid }) => {
         </div>
         <div className="row">
             <div className="col">
-                {currentSolutionID && <SolutionPanel problem={problem} session={allGroups[groupIDs[currentGroupIndex]].solutions[currentSolutionID]} groupID={groupIDs[currentGroupIndex]} solutionIndex={currentSolutionIndex} groupIndex={currentGroupIndex} />
+                {currentSolutionID && <SolutionPanel problem={problem} session={allGroups[groupIDs[currentGroupIndex]].solutions[currentSolutionID]} groupID={groupIDs[currentGroupIndex]} solutionIndex={currentSolutionIndex} groupIndex={currentGroupIndex} flag={flag}/>
                 }
             </div>
             <div className="col">
-                <ChatWidget problem={problem} chatMessages={allGroups[groupIDs[currentGroupIndex]].chatMessages} path={chat_path} />
+                <ChatWidget problem={problem} path={chat_path} />
             </div>
         </div>
     </div>
@@ -91,11 +79,26 @@ function mapStateToProps(state, ownProps) {
     const { problem } = ownProps;
     const myuid = users.myuid as string;
     const { isInstructor } = users.allUsers[myuid];
-
-    const aggregateData = shareDBDocs.i.aggregateData;
+    const localUsers = users.allUsers;
+    const sdbUsers = shareDBDocs.users.getData().allUsers;
+    const allUsers = Object.keys(sdbUsers).length > Object.keys(localUsers).length ? sdbUsers : localUsers;
+    const aggregateData = shareDBDocs.aggregateData?.getData();
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const allGroups = problemAggregateData && problemAggregateData.allGroups;
+    const groupIDs = Object.keys(allGroups);
+    let mygindex;
+    let mysindex;
+    groupIDs.forEach((gid, gindex) => {
+        const solutions = allGroups[gid].solutions;
+        const solutionIDs = Object.keys(solutions);
+        solutionIDs.forEach((sid, sindex) => {
+            if (solutions[sid].userID === myuid) {
+                mysindex = sindex;
+                mygindex = gindex;
+            }
+        })
+    })
 
-    return update(ownProps, { $merge: { allGroups: allGroups ? allGroups : {}, isInstructor, myuid } });
+    return update(ownProps, { $merge: { allGroups: allGroups ? allGroups : {}, isInstructor, myuid, allUsers, gIndex: mygindex, sIndex: mysindex } });
 }
 export default connect(mapStateToProps)(AllSolutions);
