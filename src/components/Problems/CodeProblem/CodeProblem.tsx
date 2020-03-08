@@ -83,7 +83,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                 </div>
             </div>
             <CodeSolutionView problem={problem} />
-            {!config.disableTest &&
                 <div className="row completion-info">
                     <div className="col">
                         {passedAll &&
@@ -92,7 +91,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{passedAll && <span> that</span>} answered correctly.
                 </div>
                 </div>
-            }
         </>
     }
     else {
@@ -142,7 +140,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                     </div>
                 </div>
             </div>
-            {!config.disableTest &&
                 <div className="row completion-info">
                     <div className="col">
                         {passedAll &&
@@ -154,7 +151,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         }
                     </div>
                 </div>
-            }
         </>
     }
 }
@@ -167,7 +163,6 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { problemDetails } = problem;
     const { config } = problemDetails;
     const aggregateData = shareDBDocs.aggregateData?.getData();
-    // console.log(shareDBDocs.aggregateData?.getData())
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
     const myuid = users.myuid as string;

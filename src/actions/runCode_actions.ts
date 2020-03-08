@@ -93,8 +93,8 @@ const testFunctions = `\nimport puzzlemi\ndef getEditorText(): return puzzlemi.d
 const testFunctionsMatches = testFunctions.match(/\n/g);
 const testFunctionsLines = testFunctionsMatches ? testFunctionsMatches.length : 1;
 function executeCode(beforeCode: string, code: string, afterCode: string, files: { problemFiles: ICodeFile[], userFiles: ICodeFile[], tempFiles: ICodeFile[] }, outputChangeHandler, writeFileHandler, graphics) {
-    beforeCode = beforeCode + '\n';
-    afterCode = '\n' + afterCode;
+    beforeCode = beforeCode?beforeCode + '\n':'';
+    afterCode = afterCode?'\n' + afterCode:'';
     const fullCode = `${beforeCode}${code}${testFunctions}${afterCode}`;
     let oldGetEditorText: any;
     let oldGetOutput: any;
@@ -207,12 +207,13 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
         const problemDetails = problem.problemDetails as ICodeProblem;
         const files = { problemFiles: problemDetails.files, userFiles, tempFiles: [] };
         const writtenFiles: string[] = [];
+        const testID = test? test.id:"default";
         // const fullCode = test.before.concat(' \n' + code, ' \n' + test.after);
         const outputChangeHandler = (output) => {
             dispatch({
                 problemID,
                 output,
-                testID: test.id,
+                testID,
                 type: EventTypes.OUTPUT_CHANGED
             } as IOutputChangedAction);
         }
@@ -245,25 +246,25 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
 
         dispatch({
             problem,
-            testID: test.id,
+            testID,
             type: EventTypes.BEGIN_RUN_CODE
         } as IBeginRunningCodeAction);
 
-        executeCode(test.before, code, test.after, files, outputChangeHandler, writeFileHandler, graphics).then(result => {
+        executeCode(test && test.before, code, test && test.after, files, outputChangeHandler, writeFileHandler, graphics).then(result => {
             const { errString, output } = result;
             const passed = errString ? CodePassedState.FAILED : CodePassedState.PASSED;
             if (errString) {
                 dispatch({
                     errors: [errString],
                     problemID,
-                    testID: test.id,
+                    testID,
                     type: EventTypes.ERROR_CHANGED
                 } as IErrorChangedAction);
             }
             dispatch({
                 problemID,
                 passed,
-                testID: test.id,
+                testID,
                 type: EventTypes.DONE_RUNNING_CODE
             } as IDoneRunningCodeAction);
 

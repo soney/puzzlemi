@@ -139,14 +139,10 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, allSolut
         return allGroups;
     }
     return <>
-        <div className="custom-control custom-switch">
-            <input type="checkbox" className="custom-control-input" id={"disableTest-" + problem.id} onClick={onSwitch} defaultChecked={config.disableTest} />
-            <label className="custom-control-label" htmlFor={"disableTest-" + problem.id}>Disable Test</label>
-        </div>
-        <div className="custom-control custom-switch">
+        {/* <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"runTests-" + problem.id} onClick={onSwitch} defaultChecked={config.runTests} />
             <label className="custom-control-label" htmlFor={"runTests-" + problem.id}>Run All Tests</label>
-        </div>
+        </div> */}
         <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"addTests-" + problem.id} onClick={onSwitch} defaultChecked={config.addTests} />
             <label className="custom-control-label" htmlFor={"addTests-" + problem.id}>Add New Test</label>
