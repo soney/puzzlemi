@@ -162,14 +162,17 @@ export async function multipleChoiceRevealSolutionChanged(problemID: string, rev
     await updateUserMultipleChoiceCorrectness(problemID, dispatch, getState);
 }
 
+function getMultipleChoiceOption(description: string, optionType: IMultipleChoiceOptionType): IMultipleChoiceOption {
+    return { id: uuid(), description, optionType, isCorrect: false };
+}
+
 export function addMultipleChoiceOption(problemID: string, optionType: IMultipleChoiceOptionType = IMultipleChoiceOptionType.Fixed) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
         const aggregateDataDoc = shareDBDocs.aggregateData;
-        const newOption: IMultipleChoiceOption = {
-            id: uuid(), description: '(no description)', optionType, isCorrect: false
-        };
+        const numOptions = problemsDoc.getData().allProblems[problemID].problemDetails.options.length;
+        const newOption: IMultipleChoiceOption = getMultipleChoiceOption(`(option ${numOptions+1})`, optionType);
         await problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'options'], newOption);
         await aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'selected', newOption.id], []);
     };
@@ -351,7 +354,8 @@ export function addMultipleChoiceProblem() {
             problemDetails: {
                 problemType: IProblemType.MultipleChoice,
                 description: '*no description*',
-                options: [],
+                options: [getMultipleChoiceOption('(option 1)', IMultipleChoiceOptionType.Fixed),
+                            getMultipleChoiceOption('(option 2)', IMultipleChoiceOptionType.Fixed)],
                 selectionType: IMultipleChoiceSelectionType.Single,
                 revealSolution: false
             }

@@ -50,6 +50,17 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
         setPeer(peer + 1);
     }
 
+    const completionInfo = <div className="row completion-info">
+                    <div className="col">
+                        {isInstructor &&
+                            <p>{numStuCompleted} of {numStuTotal} student{numStuTotal===1 ? '' : 's'} answered correctly </p>
+                        }
+                        {!isInstructor &&
+                            <p>{passedAll && <span>You are one of </span> } {numStuCompleted} {numStuCompleted === 1 ? 'person' : 'people'} {passedAll && <span> that</span>} answered correctly </p>
+                        }
+                    </div>
+                </div>;
+
     if (isAdmin) {
         return <>
             <div className="row">
@@ -93,14 +104,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                 </div>
             </div>
             <CodeSolutionView problem={problem} />
-                <div className="row completion-info">
-                    <div className="col">
-                        {passedAll &&
-                            <span>You are one of </span>
-                        }
-                        {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{passedAll && <span> that</span>} answered correctly.
-                </div>
-                </div>
+            {!config.disableTest && completionInfo }
         </>
     }
     else {
@@ -150,17 +154,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                     </div>
                 </div>
             </div>
-                <div className="row completion-info">
-                    <div className="col">
-                        {passedAll &&
-                            <span>You are one of </span>
-                        }
-                        {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{passedAll && <span> that</span>} answered correctly.
-                        {isInstructor &&
-                            <p>{numStuCompleted} / {numStuTotal} students answered correctly </p>
-                        }
-                    </div>
-                </div>
+            {!config.disableTest && completionInfo }
         </>
     }
 }
