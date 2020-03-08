@@ -116,7 +116,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                                 <a ref={peerHelpTabRef} className="nav-item nav-link" id={"nav-contact-tab-" + problem.id} data-toggle="tab" href={"#nav-contact-" + problem.id} role="tab" aria-controls={"nav-contact-" + problem.id} aria-selected="false">Help Sessions</a>
                             }
                             {config.revealSolutions &&
-                                <a ref={revealSolutionsTabRef} className="nav-item nav-link" id={"nav-solutions-tab-" + problem.id} data-toggle="tab" href={"#nav-solutions-" + problem.id} role="tab" aria-controls={"nav-solutions-" + problem.id} aria-selected="false">My Group</a>
+                                <a ref={revealSolutionsTabRef} className="nav-item nav-link" id={"nav-solutions-tab-" + problem.id} data-toggle="tab" href={"#nav-solutions-" + problem.id} role="tab" aria-controls={"nav-solutions-" + problem.id} aria-selected="false" onClick={refreshCM}>My Group</a>
                             }
                         </div>
                     </nav>
@@ -166,7 +166,8 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { problem } = ownProps;
     const { problemDetails } = problem;
     const { config } = problemDetails;
-    const aggregateData = shareDBDocs.i.aggregateData;
+    const aggregateData = shareDBDocs.aggregateData?.getData();
+    // console.log(shareDBDocs.aggregateData?.getData())
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
     const myuid = users.myuid as string;

@@ -154,12 +154,14 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
                                     {!isAdmin &&
                                         <div>
                                             {currentTest.status === CodeTestStatus.VERIFIED
-                                                ? <button className="btn btn-outline-info btn-sm" disabled><i className="fas fa-check-circle"></i>Verified</button>
+                                                ? <button className="btn btn-outline-info btn-sm" disabled><i className="fas fa-check-circle"></i> Verified</button>
                                                 : <button className="btn btn-outline-warning btn-sm" onClick={doVerifyTest}><i className="fas fa-times-circle"></i> Verify</button>
                                             }
                                         </div>
                                     }
+                                    {currentTest.author!== "default" &&
                                     <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}><i className="fas fa-trash"></i> Delete</button>
+                                    }
                                 </div>
                             </div>
                         </div>
