@@ -6,18 +6,15 @@ import { ICodeSolution } from '../../../../reducers/solutions';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { codeChanged } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
+import { logEvent } from '../../../../utils/Firebase';
 import { deleteTest, changeTestStatus, changeProblemConfig } from '../../../../actions/sharedb_actions';
 import { runCode, runVerifyTest } from '../../../../actions/runCode_actions';
-import { analytics } from '../../../../utils/Firebase';
 import TestList from './TestList';
-import getChannelName from '../../../../utils/channelName';
 
 const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, currentTest, flag, aggregateDataDoc }) => {
     const [count, setCount] = React.useState(0);
     const [codeTab, setCodeTab] = React.useState('g');
-    const channel = getChannelName();
     const codeSolution = userSolution as ICodeSolution;
-
     const p_prb = ['allProblems', problem.id];
     const givenCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'givenCode']);
     const liveCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'liveCode']);
@@ -27,7 +24,6 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
     const beforeCodeSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'before']) : aggregateDataDoc.subDoc([...p_test, 'before']));
     const afterCodeSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'after']) : aggregateDataDoc.subDoc([...p_test, 'after']));
     const testNameSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'name']) : aggregateDataDoc.subDoc([...p_test, 'name']));
-
     const isEdit = isAdmin ? true : currentTest !== undefined && currentTest.author === username;
 
     const doRunCode = () => {
@@ -72,6 +68,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
 
     const doDeleteTest = () => {
         dispatch(deleteTest(problem.id, currentTest));
+        logEvent("add_test", {test: JSON.stringify(currentTest)}, problem.id, myuid);
     }
 
     const doVerifyTest = () => {
@@ -83,9 +80,10 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
         refreshCM();
     }
 
-    const onSwitch = (e) => {
+    const onSwitchLiveCode = (e) => {
         const item = e.target.id.split('-')[0];
         dispatch(changeProblemConfig(problem.id, item, e.target.checked));
+        logEvent("instructor_toggle_live_code", {status: e.target.checked}, problem.id, myuid);
     }
 
     const doRunAll = () => {
@@ -93,10 +91,10 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
         if (graphicsEl_tmp) {
             graphicsEl_tmp.innerHTML = '';
         }
+        const allTestIDs = Object.keys(allTests);
+        logEvent("run_all", {code: codeSolution.code, tests: allTestIDs}, problem.id, myuid);
+        
         const allTestsObjects: ICodeTest[] = Object.values(allTests);
-        analytics.logEvent("run_all", { code: codeSolution.code, tests: JSON.stringify(allTestsObjects), user: myemail, channel, problemID: problem.id });
-
-
         allTestsObjects.forEach(test => {
             if (test.status === CodeTestStatus.VERIFIED) {
                 dispatch(runCode(codeSolution.code, codeSolution.files, problem, graphicsEl_tmp, test))
@@ -145,7 +143,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
                                 <>
                                     <div className="instructions-text">Edits here will be live streamed to students if made visible.</div>
                                     <div className="custom-control custom-switch edit-switch">
-                                        <input type="checkbox" className="custom-control-input" id={"displayInstructor-" + problem.id} onClick={onSwitch} defaultChecked={config.displayInstructor} />
+                                        <input type="checkbox" className="custom-control-input" id={"displayInstructor-" + problem.id} onClick={onSwitchLiveCode} defaultChecked={config.displayInstructor} />
                                         <label className="custom-control-label" htmlFor={"displayInstructor-" + problem.id}>Visible to Students</label>
                                     </div>
                                 </>
@@ -231,7 +229,6 @@ function mapStateToProps(state, ownProps) {
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
-    console.log(currentTest)
     return update(ownProps, { $merge: { isAdmin, username, allTests, userSolution, tests, aggregateDataDoc, currentTest, problemsDoc, config, myuid, myemail } })
 }
 

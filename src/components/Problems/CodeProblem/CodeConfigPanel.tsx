@@ -6,8 +6,9 @@ import { IPMState } from '../../../reducers';
 import { ISharedSession, IGroupSolution } from '../../../reducers/aggregateData';
 import { getTimeStamp } from '../../../utils/timestamp';
 import uuid from '../../../utils/uuid';
+import { logEvent } from '../../../utils/Firebase';
 
-const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, allSolutions, allUsers }) => {
+const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, allSolutions, allUsers, myuid }) => {
     const userIDs = Object.keys(allSolutions);
     const completedU = userIDs.filter(u=> completed.indexOf(u) >= 0);
     const inCompletedU = userIDs.filter(u => completed.indexOf(u) < 0);
@@ -18,6 +19,10 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, allSolut
         if (item === "revealSolutions") {
             let allGroups = e.target.checked ? getGroupMatching(allSolutions, allUsers) : {};
             dispatch(initAllGroups(problem.id, allGroups));
+            logEvent("instructor_toggle_group_discussion", {status: e.target.checked, groups: JSON.stringify(allGroups)}, problem.id, myuid);
+        }
+        else {
+            logEvent("instructor_toggle_disable_student_edits", {status: e.target.checked}, problem.id, myuid);
         }
     }
     const getSharedSession = (userID, allSolutions, allUsers): ISharedSession => {
@@ -158,15 +163,14 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, allSolut
 }
 
 function mapStateToProps(state: IPMState, ownProps) {
-    const { intermediateUserState, shareDBDocs, solutions, users } = state;
+    const { shareDBDocs, users } = state;
     const { problem } = ownProps;
     const { problemDetails } = problem;
     const { config } = problemDetails;
-    const { isAdmin } = intermediateUserState;
     const aggregateData = shareDBDocs.aggregateData?.getData();
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
-    const problemsDoc = shareDBDocs.problems;
+    const myuid = users.myuid as string;
 
     const solutionsData = shareDBDocs.i.solutions;
     let problemSolutions = {};
@@ -178,6 +182,6 @@ function mapStateToProps(state: IPMState, ownProps) {
     const userData = usersDoc?.getData();
     const sdbUsers = (userData && userData.allUsers) || {};
     const allUsers = Object.keys(sdbUsers).length > Object.keys(localUsers).length ? sdbUsers : localUsers;
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, config, solutions, users, completed, allSolutions: problemSolutions, allUsers } });
+    return update(ownProps, { $merge: {config, completed, allSolutions: problemSolutions, allUsers, myuid } });
 }
 export default connect(mapStateToProps)(CodeProblemConfigPanel);

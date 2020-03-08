@@ -8,22 +8,18 @@ import { runVerifyTest } from '../../../../actions/runCode_actions';
 import TestItem from './TestItem';
 import uuid from '../../../../utils/uuid';
 import { setActiveTest } from '../../../../actions/user_actions';
-import getChannelName from '../../../../utils/channelName';
-import { analytics } from '../../../../utils/Firebase';
+import { logEvent } from '../../../../utils/Firebase';
 
-const TestList = ({ isAdmin, problem, config, username, myemail, myTestObjects, otherTestObjects, dispatch, currentTest, instructorTestObjects, allTestsObjects }) => {
-    // if (!currentTest) { return null; }
-
+const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, otherTestObjects, dispatch, currentTest, instructorTestObjects, allTestsObjects }) => {
     const myWIP = myTestObjects.filter(o => o.status !== CodeTestStatus.VERIFIED).length;
-    const channel = getChannelName();
 
     const doAddInstructorTest = () => {
         const testID = uuid();
         dispatch(addTest(problem.id, username, true, testID)).then(() => {
             dispatch(setActiveTest(testID, problem.id))
         });
-        analytics.logEvent("add_test", { problemID: problem.id, channel, user: myemail, testID });
-
+        logEvent("add_test", {testID}, problem.id, myuid);
+        logEvent("focus_test", {testID}, problem.id, myuid);
     }
     const doAddUserTest = () => {
         const testID = uuid();
@@ -31,20 +27,21 @@ const TestList = ({ isAdmin, problem, config, username, myemail, myTestObjects, 
         dispatch(addTest(problem.id, username, false, testID)).then(() => {
             dispatch(setActiveTest(testID, problem.id))
         });
+        logEvent("add_test", {testID}, problem.id, myuid);
+        logEvent("focus_test", {testID}, problem.id, myuid);
     }
 
     const doVerifyAll = () => {
-        const channel = getChannelName();
-        analytics.logEvent("run_all", { tests: JSON.stringify(allTestsObjects), user: myemail, channel, problemID: problem.id });
-
+        logEvent("verify_test_all", {}, problem.id, myuid);
         allTestsObjects.forEach(test => {
             if (test.author !== 'default') dispatch(runVerifyTest(problem, test))
         })
     }
 
-    const onSwitch = (e) => {
+    const onSwitchAllowAdding = (e) => {
         const item = e.target.id.split('-')[0];
         dispatch(changeProblemConfig(problem.id, item, e.target.checked));
+        logEvent("instructor_toggle_adding_tests", {status: e.target.checked}, problem.id, myuid);
     }
 
     return <>
@@ -88,7 +85,7 @@ const TestList = ({ isAdmin, problem, config, username, myemail, myTestObjects, 
         {isAdmin &&
             <>
                 <div className="custom-control custom-switch edit-switch students-add-switch">
-                    <input type="checkbox" className="custom-control-input" id={"addTests-" + problem.id} onClick={onSwitch} defaultChecked={config.addTests} />
+                    <input type="checkbox" className="custom-control-input" id={"addTests-" + problem.id} onClick={onSwitchAllowAdding} defaultChecked={config.addTests} />
                     <label className="custom-control-label" htmlFor={"addTests-" + problem.id}>Allow Adding</label>
                 </div>
             </>
@@ -124,7 +121,7 @@ function mapStateToProps(state, ownProps) {
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
 
-    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, myTestObjects, otherTestObjects, myemail, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects } })
+    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, myTestObjects, otherTestObjects, myemail, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects, myuid } })
 }
 
 export default connect(mapStateToProps)(TestList);
