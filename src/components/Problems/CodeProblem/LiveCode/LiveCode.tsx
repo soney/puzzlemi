@@ -11,7 +11,7 @@ const LiveCode = ({ index, problem, flag, problemsDoc }) => {
     return <div>
         <div className="row">
             <div className="col">
-                <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true }} />
+                <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true, height: 300 }} />
             </div>
             <div className="col">
                 <ProblemNotes problem={problem} />

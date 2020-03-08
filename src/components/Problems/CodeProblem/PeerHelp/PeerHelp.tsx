@@ -7,8 +7,6 @@ import { ISharedSession } from '../../../../reducers/aggregateData';
 import uuid from '../../../../utils/uuid';
 import { addHelpSession, changeHelperLists } from '../../../../actions/sharedb_actions';
 import { updateCurrentActiveHelpSession } from '../../../../actions/user_actions';
-import { analytics } from '../../../../utils/Firebase';
-import getChannelName from '../../../../utils/channelName';
 
 const PeerHelp = ({ sessions, problem, dispatch, myuid, myemail, userSolution, listView }) => {
     const [viewNum, setViewNum] = React.useState(0);
@@ -37,7 +35,6 @@ const PeerHelp = ({ sessions, problem, dispatch, myuid, myemail, userSolution, l
 
     const doRequestHelp = () => {
         const helpID = uuid();
-        analytics.logEvent("add_help_session", { problemID: problem.id, channel: getChannelName(), user: myemail, helpID });
 
         dispatch(addHelpSession(problem.id, myuid, userSolution.code, helpID, [], [])).then(() => {
             dispatch(updateCurrentActiveHelpSession(problem.id, helpID));

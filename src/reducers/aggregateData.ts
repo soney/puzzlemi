@@ -1,3 +1,5 @@
+import { IUserInfo } from "./users";
+
 export interface IAggregateData {
     userData: {
         [problemID: string]: ISolutionAggregate
@@ -61,7 +63,7 @@ export interface ISharedSession {
 }
 
 export interface IMessage {
-    sender: string;
+    sender: IUserInfo;
     timestamp: string;
     content: string;
     isAnonymous: boolean;

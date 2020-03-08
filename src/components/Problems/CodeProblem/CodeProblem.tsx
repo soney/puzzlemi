@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import ProblemDescription from '../ProblemDescription';
-import ProblemNotes from './LiveCode/ProblemNotes';
+// import ProblemNotes from './LiveCode/ProblemNotes';
 import update from 'immutability-helper';
 import CodeProblemConfigPanel from './CodeConfigPanel';
 import Files from './Files';
@@ -14,8 +14,9 @@ import CodeSolutionView from './CodeSolutionView';
 import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 import CodeOutput from './CodeOutput';
 import AllSolutions from './AllSolutions/AllSolutions';
+import { logEvent } from '../../../utils/Firebase';
 
-const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal }) => {
+const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid }) => {
     const [count, setCount] = React.useState(0);
     const [peer, setPeer] = React.useState(0);
     const peerHelpTabRef = React.createRef<HTMLAnchorElement>();
@@ -25,7 +26,13 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
     const revealSolutionsTabRef = React.createRef<HTMLAnchorElement>();
     const revealSolutionsDivRef = React.createRef<HTMLDivElement>();
 
-
+    const switchPanel = (e) => {
+        const panel = e.target.id.slice(4, 5)
+        if(panel === "h") logEvent("focus_my_solution", {}, problem.id, myuid);
+        if(panel === "p") logEvent("focus_instructor_board", {}, problem.id, myuid);
+        if(panel === "s") logEvent("focus_group_discussion", {}, problem.id, myuid);
+        refreshCM();
+    }
     const refreshCM = () => {
         setCount(count + 1);
     }
@@ -53,12 +60,15 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                     <CodeProblemConfigPanel problem={problem} />
                 </div>
             </div>
-            <div className="row">
-                <div className="col">
+            <div className="row instructor-puzzle-container">
+                <div className="col-7">
                     <PuzzleEditor problem={problem} flag={count} />
                 </div>
-                <div className="col">
-                    <nav>
+                <div className="col-5">
+                    <CodeOutput problem={problem} />
+                    <Files problem={problem} />
+
+                    {/* <nav>
                         <div className="nav nav-tabs instructor-tab" id={"nav-instructor-note-tab-" + problem.id} role="tablist">
                             <a className="nav-item nav-link active" id={"nav-output-tab-" + problem.id} data-toggle="tab" href={"#nav-output-" + problem.id} role="tab" aria-controls={"nav-output-" + problem.id} aria-selected="true" onClick={refreshCM}>Output</a>
                             <a className="nav-item nav-link" id={"nav-notes-tab-" + problem.id} data-toggle="tab" href={"#nav-notes-" + problem.id} role="tab" aria-controls={"nav-notes-" + problem.id} aria-selected="false" onClick={refreshCM}>Notes</a>
@@ -79,11 +89,10 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         <div className="tab-pane fade" id={"nav-files-" + problem.id} role="tabpanel" aria-labelledby={"nav-files-tab-" + problem.id}>
                             <Files problem={problem} />
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
             <CodeSolutionView problem={problem} />
-            {!config.disableTest &&
                 <div className="row completion-info">
                     <div className="col">
                         {passedAll &&
@@ -92,7 +101,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{passedAll && <span> that</span>} answered correctly.
                 </div>
                 </div>
-            }
         </>
     }
     else {
@@ -107,16 +115,16 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                     <nav>
                         <div className="nav nav-tabs student-tab" id={"nav-student-tab-" + problem.id} role="tablist">
                             {(config.displayInstructor || config.peerHelp || config.revealSolutions) &&
-                                <a ref={mySolutionTabRef} className="nav-item nav-link active" id={"nav-home-tab-" + problem.id} data-toggle="tab" href={"#nav-home-" + problem.id} role="tab" aria-controls={"nav-home-" + problem.id} aria-selected="true" onClick={refreshCM}>My Solution</a>
+                                <a ref={mySolutionTabRef} className="nav-item nav-link active" id={"nav-home-tab-" + problem.id} data-toggle="tab" href={"#nav-home-" + problem.id} role="tab" aria-controls={"nav-home-" + problem.id} aria-selected="true" onClick={switchPanel}>My Solution</a>
                             }
                             {config.displayInstructor &&
-                                <a className="nav-item nav-link" id={"nav-profile-tab-" + problem.id} data-toggle="tab" href={"#nav-profile-" + problem.id} role="tab" aria-controls={"nav-profile-" + problem.id} aria-selected="false" onClick={refreshCM}>Instructor</a>
+                                <a className="nav-item nav-link" id={"nav-profile-tab-" + problem.id} data-toggle="tab" href={"#nav-profile-" + problem.id} role="tab" aria-controls={"nav-profile-" + problem.id} aria-selected="false" onClick={switchPanel}>Instructor</a>
                             }
                             {config.peerHelp &&
                                 <a ref={peerHelpTabRef} className="nav-item nav-link" id={"nav-contact-tab-" + problem.id} data-toggle="tab" href={"#nav-contact-" + problem.id} role="tab" aria-controls={"nav-contact-" + problem.id} aria-selected="false">Help Sessions</a>
                             }
                             {config.revealSolutions &&
-                                <a ref={revealSolutionsTabRef} className="nav-item nav-link" id={"nav-solutions-tab-" + problem.id} data-toggle="tab" href={"#nav-solutions-" + problem.id} role="tab" aria-controls={"nav-solutions-" + problem.id} aria-selected="false">My Group</a>
+                                <a ref={revealSolutionsTabRef} className="nav-item nav-link" id={"nav-solutions-tab-" + problem.id} data-toggle="tab" href={"#nav-solutions-" + problem.id} role="tab" aria-controls={"nav-solutions-" + problem.id} aria-selected="false" onClick={switchPanel}>My Group</a>
                             }
                         </div>
                     </nav>
@@ -142,7 +150,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                     </div>
                 </div>
             </div>
-            {!config.disableTest &&
                 <div className="row completion-info">
                     <div className="col">
                         {passedAll &&
@@ -154,7 +161,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         }
                     </div>
                 </div>
-            }
         </>
     }
 }
@@ -166,7 +172,7 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { problem } = ownProps;
     const { problemDetails } = problem;
     const { config } = problemDetails;
-    const aggregateData = shareDBDocs.i.aggregateData;
+    const aggregateData = shareDBDocs.aggregateData?.getData();
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
     const myuid = users.myuid as string;
@@ -184,6 +190,6 @@ function mapStateToProps(state: IPMState, ownProps) {
     const userSolution = solutions.allSolutions[ownProps.problem.id][myuid];
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
 
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal } });
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid } });
 }
 export default connect(mapStateToProps)(CodeProblem);

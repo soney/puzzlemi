@@ -6,10 +6,12 @@ import { connect } from "react-redux";
 import { ICodeSolutionState, CodePassedState } from '../../../../reducers/intermediateUserState';
 import { setActiveTest } from '../../../../actions/user_actions';
 import { CodeTestType, CodeTestStatus, ICodeTest } from '../../../../reducers/aggregateData';
+import { logEvent } from '../../../../utils/Firebase';
 
-const PuzzleEditor = ({ isAdmin, problem, test, username, dispatch, selected, testResults }) => {
+const PuzzleEditor = ({ isAdmin, problem, test, username, dispatch, selected, testResults, myuid }) => {
     const doSetCurrentTest = (e) => {
         dispatch(setActiveTest(test.id, problem.id))
+        logEvent("focus_test", {testID: test.id}, problem.id, myuid);
     }
 
     const baseClasses = "list-group-item list-group-item-action test-list-item " + (test.type === CodeTestType.INSTRUCTOR ? 'instructor' : 'student');
@@ -82,9 +84,9 @@ function mapStateToProps(state, ownProps) {
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
 
-    const selected = currentTest.id === ownProps.test.id;
+    const selected = currentTest && (currentTest.id === ownProps.test.id);
 
-    return update(ownProps, { $merge: { isAdmin, username, userSolution, testResults, config, selected } })
+    return update(ownProps, { $merge: { isAdmin, username, userSolution, testResults, config, selected, myuid } })
 }
 
 export default connect(mapStateToProps)(PuzzleEditor);

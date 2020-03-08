@@ -5,12 +5,11 @@ import { timeAgo, getTimeStamp } from '../../../../utils/timestamp';
 import { addMessage } from '../../../../actions/sharedb_actions';
 import { IMessage } from '../../../../reducers/aggregateData';
 import * as showdown from 'showdown';
-import getChannelName from '../../../../utils/channelName';
-import { analytics } from '../../../../utils/Firebase';
-import { getAnonym } from '../../../../utils/anonymous';
+import { IUserInfo } from '../../../../reducers/users';
+import { logEvent } from '../../../../utils/Firebase';
 
 let message = 'send your *message* here';
-const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path, isInstructor }) => {
+const ChatWidget = ({ dispatch, problem, chatMessages, user, path, myuid }) => {
     const chatInput = React.createRef<HTMLInputElement>();
     const chatWrapper = React.createRef<HTMLDivElement>();
     const [isAnonymous, setIsAnonymous] = React.useState(true);
@@ -26,19 +25,22 @@ const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path, 
     }
 
     const onSendMessage = () => {
-        if (message.length === 0) return;
+        if (message.trim().length === 0) {
+            return;
+        }
         const newMessage: IMessage = {
-            sender: username,
+            sender: user,
             content: message,
             timestamp: getTimeStamp(),
             isAnonymous,
         }
         dispatch(addMessage(newMessage, path))
+        logEvent("send_message", {message: JSON.stringify(newMessage), path: JSON.stringify(path)}, problem.id, myuid);
+
         message = '';
         if (chatInput.current) {
             chatInput.current.value = ''
         }
-        analytics.logEvent("send_message", { problemID: problem.id, channel: getChannelName(), user: myemail, message: newMessage, path });
     }
 
     const toggleAnonymous = () => {
@@ -46,12 +48,13 @@ const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path, 
     }
 
     const getSender = (message) => {
+        const { username } = message.sender;
         if (message.isAnonymous) {
-            const anonym = getAnonym(message.sender)
-            if (isInstructor) return anonym + "(" + message.sender + ")"
-            else return anonym;
+            const { anonymousName } = message.sender;
+            return user.isInstructor ? `${anonymousName} (${username})` : anonymousName;
+        } else {
+            return username;
         }
-        else return message.sender;
     }
 
     React.useEffect(() => {
@@ -65,11 +68,11 @@ const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path, 
     return <div>
         <div className="chat-container">
             <div className="chat-messages-wrapper" ref={chatWrapper} >
-                {chatMessages.map((message, i) => <div className={"chat-message-container" + ((message.sender === username) ? ' isSender' : '')} key={i}>
+                {chatMessages.map((message, i) => <div className={"chat-message-container" + ((message.sender.uid === user.uid) ? ' isSender' : '')} key={i}>
 
                     <div className="chat-message-item">
                         <div className="chat-header">
-                            <span className="sender">{getSender(message)}</span>
+                            <span className="sender" style={{'color': message.sender.userColor}}>{getSender(message)}</span>
                             <span className="timestamp">
                                 ({timeAgo(parseInt(message.timestamp))})
                             </span>
@@ -97,9 +100,13 @@ const ChatWidget = ({ dispatch, problem, chatMessages, myemail, username, path, 
 }
 
 function mapStateToProps(state, ownProps) {
-    const { users } = state;
+    const { shareDBDocs, users } = state;
+    const { path } = ownProps;
+    const aggregateDataDoc = shareDBDocs.aggregateData;
     const myuid = users.myuid as string;
-    const { isInstructor, username, email } = users.allUsers[myuid];
-    return update(ownProps, { $merge: { username, myemail: email, isInstructor } });
+    const user: IUserInfo = users.allUsers[myuid];
+    const aggregateData = shareDBDocs.i.aggregateData;
+    const chatMessages = aggregateDataDoc?.traverse(path).chatMessages;
+    return update(ownProps, { $merge: { user, aggregateData, chatMessages, myuid } });
 }
 export default connect(mapStateToProps)(ChatWidget);

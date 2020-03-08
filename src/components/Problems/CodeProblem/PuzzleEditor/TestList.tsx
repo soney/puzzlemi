@@ -3,27 +3,23 @@ import update from 'immutability-helper';
 import { connect } from "react-redux";
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { ICodeTest, CodeTestStatus } from '../../../../reducers/aggregateData';
-import { addTest } from '../../../../actions/sharedb_actions';
+import { addTest, changeProblemConfig } from '../../../../actions/sharedb_actions';
 import { runVerifyTest } from '../../../../actions/runCode_actions';
 import TestItem from './TestItem';
 import uuid from '../../../../utils/uuid';
 import { setActiveTest } from '../../../../actions/user_actions';
-import getChannelName from '../../../../utils/channelName';
-import { analytics } from '../../../../utils/Firebase';
+import { logEvent } from '../../../../utils/Firebase';
 
-const TestList = ({ isAdmin, problem, config, username, myemail, myTestObjects, otherTestObjects, dispatch, currentTest, instructorTestObjects, allTestsObjects }) => {
-    if (!currentTest) { return null; }
-
+const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, otherTestObjects, dispatch, currentTest, instructorTestObjects, allTestsObjects }) => {
     const myWIP = myTestObjects.filter(o => o.status !== CodeTestStatus.VERIFIED).length;
-    const channel = getChannelName();
 
     const doAddInstructorTest = () => {
         const testID = uuid();
         dispatch(addTest(problem.id, username, true, testID)).then(() => {
             dispatch(setActiveTest(testID, problem.id))
         });
-        analytics.logEvent("add_test", {problemID: problem.id, channel, user: myemail, testID});
-
+        logEvent("add_test", {testID}, problem.id, myuid);
+        logEvent("focus_test", {testID}, problem.id, myuid);
     }
     const doAddUserTest = () => {
         const testID = uuid();
@@ -31,38 +27,48 @@ const TestList = ({ isAdmin, problem, config, username, myemail, myTestObjects, 
         dispatch(addTest(problem.id, username, false, testID)).then(() => {
             dispatch(setActiveTest(testID, problem.id))
         });
+        logEvent("add_test", {testID}, problem.id, myuid);
+        logEvent("focus_test", {testID}, problem.id, myuid);
     }
 
     const doVerifyAll = () => {
-        const channel = getChannelName();
-        analytics.logEvent("run_all", {tests: JSON.stringify(allTestsObjects), user: myemail, channel, problemID: problem.id});
-
+        logEvent("verify_test_all", {}, problem.id, myuid);
         allTestsObjects.forEach(test => {
-            if (test.author !== null) dispatch(runVerifyTest(problem, test))
-        })  
+            if (test.author !== 'default') dispatch(runVerifyTest(problem, test))
+        })
+    }
+
+    const onSwitchAllowAdding = (e) => {
+        const item = e.target.id.split('-')[0];
+        dispatch(changeProblemConfig(problem.id, item, e.target.checked));
+        logEvent("instructor_toggle_adding_tests", {status: e.target.checked}, problem.id, myuid);
     }
 
     return <>
-        {(myTestObjects.length > 0 || (config.addTests && !isAdmin)) && <small className="text-muted">My Tests</small>}
-        {myTestObjects.length > 0 &&
-            <ul className="list-group test-lists">
-                {myTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
-            </ul>}
-        {(config.addTests && !isAdmin) &&
-            <div className="add-button">
-                {myWIP > 2
-                    ? <button className="btn btn-outline-success btn-sm btn-block" disabled >+ Test</button>
-                    : <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddUserTest} >+ Test</button>
+        {currentTest &&
+            <div>
+                {(myTestObjects.length > 0 || (config.addTests && !isAdmin)) && <small className="text-muted">My Tests</small>}
+                {myTestObjects.length > 0 &&
+                    <ul className="list-group test-lists">
+                        {myTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
+                    </ul>}
+                {(config.addTests && !isAdmin) &&
+                    <div className="add-button">
+                        {myWIP > 2
+                            ? <button className="btn btn-outline-success btn-sm btn-block" disabled >+ Test</button>
+                            : <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddUserTest} >+ Test</button>
+                        }
+                    </div>
+
                 }
+
+                {instructorTestObjects.length > 0 && <small className="text-muted">Instructor</small>}
+                {instructorTestObjects.length > 0 &&
+                    <ul className="list-group test-lists">
+                        {instructorTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
+                    </ul>}
             </div>
-
         }
-
-        {instructorTestObjects.length > 0 && <small className="text-muted">Instructor</small>}
-        {instructorTestObjects.length > 0 &&
-            <ul className="list-group test-lists">
-                {instructorTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
-            </ul>}
         {isAdmin && <div className="add-button"> <button className="btn btn-outline-success btn-sm btn-block" onClick={doAddInstructorTest}>+ Test</button> </div>}
 
         {otherTestObjects.length > 0 && <small className="text-muted">Students</small>}
@@ -71,11 +77,18 @@ const TestList = ({ isAdmin, problem, config, username, myemail, myTestObjects, 
                 {otherTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
             </ul>
         }
-
         {isAdmin &&
             <div className="add-button">
                 <button className="btn btn-outline-info btn-sm btn-block" onClick={doVerifyAll}><i className="fas fa-check-circle"></i> Verify All</button>
             </div>
+        }
+        {isAdmin &&
+            <>
+                <div className="custom-control custom-switch edit-switch students-add-switch">
+                    <input type="checkbox" className="custom-control-input" id={"addTests-" + problem.id} onClick={onSwitchAllowAdding} defaultChecked={config.addTests} />
+                    <label className="custom-control-label" htmlFor={"addTests-" + problem.id}>Allow Adding</label>
+                </div>
+            </>
         }
     </>
 
@@ -101,14 +114,14 @@ function mapStateToProps(state, ownProps) {
     const tests: { [id: string]: ICodeTest } = aggregateData ? aggregateData.userData[problem.id].tests : {};
 
     const myTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author === username);
-    const otherTestObjects: ICodeTest[] = Object.values(tests).filter((t) => ((t.author !== username) && ((t.status === CodeTestStatus.VERIFIED) || isAdmin) ) );
+    const otherTestObjects: ICodeTest[] = Object.values(tests).filter((t) => ((t.author !== username) && ((t.status === CodeTestStatus.VERIFIED) || isAdmin)));
     const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
     const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
 
-    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, myTestObjects, otherTestObjects, myemail, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects } })
+    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, myTestObjects, otherTestObjects, myemail, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects, myuid } })
 }
 
 export default connect(mapStateToProps)(TestList);

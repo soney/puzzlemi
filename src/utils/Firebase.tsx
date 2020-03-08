@@ -1,6 +1,5 @@
 import * as firebase from 'firebase';
 import { getTimeStamp } from './timestamp';
-import getChannelName from './channelName';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCzx8LQwyDouWcJi1UdaK2CVbSJiFeOhW8",
@@ -16,6 +15,14 @@ firebase.initializeApp(firebaseConfig);
 
 // Get a reference to the database service
 const database = firebase.database();
+
+function getChannelName(): string {
+  const url = window.location.href;
+  const reg = /\/c\/(.*)\//g
+  const match = reg.exec(url);
+  if(match) return match[1];
+  else return "NaN"
+}
 
 export function logEvent(eventname, parameters, problemid, userid) {
   database.ref('events/').push({

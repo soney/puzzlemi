@@ -75,10 +75,6 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
                 </div>
                 <button className="btn btn-sm btn-outline-danger float-right" onClick={doDeleteProblem}><i className="fas fa-trash"></i>&nbsp;Delete Problem</button>
             </div>
-            // <div className="row">
-            //     <div className="col clearfix">
-            //     </div>
-            // </div>
         }
         {problemDisplay}
         {
@@ -104,7 +100,7 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { problemType, revealSolution } = problemDetails;
     const problemID = problem.id;
     const { visible } = ownProps.problem;
-    const aggregateData = shareDBDocs.i.aggregateData;
+    const aggregateData = shareDBDocs.aggregateData?.getData();
     const problemAggregateData = aggregateData && aggregateData.userData[problemID];
 
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
