@@ -145,11 +145,11 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, allSolut
         </div> */}
         <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"disableEdit-" + problem.id} onClick={onSwitch} defaultChecked={config.disableEdit} />
-            <label className="custom-control-label" htmlFor={"disableEdit-" + problem.id}>Lock Students' Solutions</label>
+            <label className="custom-control-label" htmlFor={"disableEdit-" + problem.id}>Disable student code edits</label>
         </div>
         <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"revealSolutions-" + problem.id} onClick={onSwitch} defaultChecked={config.revealSolutions} />
-            <label className="custom-control-label" htmlFor={"revealSolutions-" + problem.id}>Enable Group Discussion ({Object.keys(allSolutions).length}/{Object.keys(allUsers).length} solutions loaded)</label>
+            <label className="custom-control-label" htmlFor={"revealSolutions-" + problem.id}>Enable Group Discussion ({Object.keys(allSolutions).length}/{Object.keys(allUsers).length} loaded)</label>
         </div>
     </>
 }
