@@ -3,7 +3,7 @@ import update from 'immutability-helper';
 import { connect } from "react-redux";
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { ICodeTest, CodeTestStatus } from '../../../../reducers/aggregateData';
-import { addTest } from '../../../../actions/sharedb_actions';
+import { addTest, changeProblemConfig } from '../../../../actions/sharedb_actions';
 import { runVerifyTest } from '../../../../actions/runCode_actions';
 import TestItem from './TestItem';
 import uuid from '../../../../utils/uuid';
@@ -42,6 +42,11 @@ const TestList = ({ isAdmin, problem, config, username, myemail, myTestObjects, 
         })
     }
 
+    const onSwitch = (e) => {
+        const item = e.target.id.split('-')[0];
+        dispatch(changeProblemConfig(problem.id, item, e.target.checked));
+    }
+
     return <>
         {currentTest &&
             <div>
@@ -75,11 +80,18 @@ const TestList = ({ isAdmin, problem, config, username, myemail, myTestObjects, 
                 {otherTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
             </ul>
         }
-
         {isAdmin &&
             <div className="add-button">
                 <button className="btn btn-outline-info btn-sm btn-block" onClick={doVerifyAll}><i className="fas fa-check-circle"></i> Verify All</button>
             </div>
+        }
+        {isAdmin &&
+            <>
+                <div className="custom-control custom-switch edit-switch students-add-switch">
+                    <input type="checkbox" className="custom-control-input" id={"addTests-" + problem.id} onClick={onSwitch} defaultChecked={config.addTests} />
+                    <label className="custom-control-label" htmlFor={"addTests-" + problem.id}>Allow Adding</label>
+                </div>
+            </>
         }
     </>
 

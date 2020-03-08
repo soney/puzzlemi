@@ -99,69 +99,57 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, allSolut
         return allGroups;
     }
 
-    const getGroupMatchingV2 = (allSolutions, allUsers): any => {
-        const userIDs = Object.keys(allSolutions);
-        const ratio = completed.length / userIDs.length;
-        const userPerGroup = 2;
-        const groupNumber = Math.floor(userIDs.length / userPerGroup);
-        let allGroups = {};
-        let completedUsers = JSON.parse(JSON.stringify(completed));
-        let inCompletedUsers = userIDs.filter(u => completedUsers.indexOf(u) < 0);
-        for (let currentGroup = 1; currentGroup <= groupNumber; currentGroup++) {
-            let solutions = {};
-            let expect_completed_user_num = Math.ceil(userPerGroup * ratio);
-            let remain_completed_user_num = completedUsers.length;
-            let completed_user_num = expect_completed_user_num > remain_completed_user_num ? remain_completed_user_num : expect_completed_user_num;
-            let incompleted_user_num = userPerGroup - completed_user_num;
-            // select random # of completed users
-            let completed_num = currentGroup === groupNumber ? completedUsers.length : completed_user_num;
-            let incompleted_num = currentGroup === groupNumber ? inCompletedUsers.length : incompleted_user_num;
-            for (let i = 0; i < completed_num; i++) {
-                let userID = completedUsers[Math.floor(Math.random() * completedUsers.length)];
-                completedUsers.splice(completedUsers.indexOf(userID), 1);
-                const newSharedSession = getSharedSession(userID, allSolutions, allUsers);
-                solutions[newSharedSession.id] = newSharedSession;
-            }
-            // select random # of incompleted users
-            for (let i = 0; i < incompleted_num; i++) {
-                let userID = inCompletedUsers[Math.floor(Math.random() * inCompletedUsers.length)];
-                inCompletedUsers.splice(inCompletedUsers.indexOf(userID), 1);
-                const newSharedSession = getSharedSession(userID, allSolutions, allUsers);
-                solutions[newSharedSession.id] = newSharedSession;
-            }
-            let groupSolution: IGroupSolution = {
-                id: uuid(),
-                solutions,
-                chatMessages: []
-            }
-            allGroups[groupSolution.id] = groupSolution;
-        }
-        return allGroups;
-    }
+    // const getGroupMatchingV2 = (allSolutions, allUsers): any => {
+    //     const userIDs = Object.keys(allSolutions);
+    //     const ratio = completed.length / userIDs.length;
+    //     const userPerGroup = 2;
+    //     const groupNumber = Math.floor(userIDs.length / userPerGroup);
+    //     let allGroups = {};
+    //     let completedUsers = JSON.parse(JSON.stringify(completed));
+    //     let inCompletedUsers = userIDs.filter(u => completedUsers.indexOf(u) < 0);
+    //     for (let currentGroup = 1; currentGroup <= groupNumber; currentGroup++) {
+    //         let solutions = {};
+    //         let expect_completed_user_num = Math.ceil(userPerGroup * ratio);
+    //         let remain_completed_user_num = completedUsers.length;
+    //         let completed_user_num = expect_completed_user_num > remain_completed_user_num ? remain_completed_user_num : expect_completed_user_num;
+    //         let incompleted_user_num = userPerGroup - completed_user_num;
+    //         // select random # of completed users
+    //         let completed_num = currentGroup === groupNumber ? completedUsers.length : completed_user_num;
+    //         let incompleted_num = currentGroup === groupNumber ? inCompletedUsers.length : incompleted_user_num;
+    //         for (let i = 0; i < completed_num; i++) {
+    //             let userID = completedUsers[Math.floor(Math.random() * completedUsers.length)];
+    //             completedUsers.splice(completedUsers.indexOf(userID), 1);
+    //             const newSharedSession = getSharedSession(userID, allSolutions, allUsers);
+    //             solutions[newSharedSession.id] = newSharedSession;
+    //         }
+    //         // select random # of incompleted users
+    //         for (let i = 0; i < incompleted_num; i++) {
+    //             let userID = inCompletedUsers[Math.floor(Math.random() * inCompletedUsers.length)];
+    //             inCompletedUsers.splice(inCompletedUsers.indexOf(userID), 1);
+    //             const newSharedSession = getSharedSession(userID, allSolutions, allUsers);
+    //             solutions[newSharedSession.id] = newSharedSession;
+    //         }
+    //         let groupSolution: IGroupSolution = {
+    //             id: uuid(),
+    //             solutions,
+    //             chatMessages: []
+    //         }
+    //         allGroups[groupSolution.id] = groupSolution;
+    //     }
+    //     return allGroups;
+    // }
     return <>
         {/* <div className="custom-control custom-switch">
-            <input type="checkbox" className="custom-control-input" id={"runTests-" + problem.id} onClick={onSwitch} defaultChecked={config.runTests} />
-            <label className="custom-control-label" htmlFor={"runTests-" + problem.id}>Run All Tests</label>
-        </div> */}
-        <div className="custom-control custom-switch">
-            <input type="checkbox" className="custom-control-input" id={"addTests-" + problem.id} onClick={onSwitch} defaultChecked={config.addTests} />
-            <label className="custom-control-label" htmlFor={"addTests-" + problem.id}>Add New Test</label>
-        </div>
-        <div className="custom-control custom-switch">
-            <input type="checkbox" className="custom-control-input" id={"displayInstructor-" + problem.id} onClick={onSwitch} defaultChecked={config.displayInstructor} />
-            <label className="custom-control-label" htmlFor={"displayInstructor-" + problem.id}>Instructor Board</label>
-        </div>
-        <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"peerHelp-" + problem.id} onClick={onSwitch} defaultChecked={config.peerHelp} />
             <label className="custom-control-label" htmlFor={"peerHelp-" + problem.id}>Peer Help</label>
+        </div> */}
+        <div className="custom-control custom-switch">
+            <input type="checkbox" className="custom-control-input" id={"disableEdit-" + problem.id} onClick={onSwitch} defaultChecked={config.disableEdit} />
+            <label className="custom-control-label" htmlFor={"disableEdit-" + problem.id}>Lock Students' Solutions</label>
         </div>
         <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"revealSolutions-" + problem.id} onClick={onSwitch} defaultChecked={config.revealSolutions} />
-            <label className="custom-control-label" htmlFor={"revealSolutions-" + problem.id}>Group Discussion ({Object.keys(allSolutions).length}/{Object.keys(allUsers).length} solutions loaded)</label>
-        </div>
-        <div className="custom-control custom-switch">
-            <input type="checkbox" className="custom-control-input" id={"disableEdit-" + problem.id} onClick={onSwitch} defaultChecked={config.disableEdit} />
-            <label className="custom-control-label" htmlFor={"disableEdit-" + problem.id}>Disable Edit</label>
+            <label className="custom-control-label" htmlFor={"revealSolutions-" + problem.id}>Enable Group Discussion ({Object.keys(allSolutions).length}/{Object.keys(allUsers).length} solutions loaded)</label>
         </div>
     </>
 }

@@ -490,6 +490,30 @@ nav {
   margin-bottom: 25px;
   margin-right: 20px;
 }
+.edit-switch {
+  color: #6c757d;
+  font-size: 15px;
+  text-align: center;
+}
+.students-add-switch {
+  margin-top:20px;
+}
+.instructions-admin {
+  border-left: 1px solid #eee;
+  border-right: 1px solid #eee;
+}
+.instructions-text{
+  color: #6c757d;
+  font-size: 15px;
+  padding: 10px;
+}
+.nav-given-first{
+  margin-left: 50px;
+}
+.instructor-puzzle-container{
+  margin-top:20px;
+  margin-bottom: 20px;
+}
 // .test-list-item.invalid {
 //     display: none;
 // }
@@ -558,7 +582,10 @@ nav {
 }
 
 .instructor-tab {
-  margin-top: 20px;
+  margin-top: 0px;
+  padding-top:20px;
+  border-left: 1px solid #eee;
+  border-right: 1px solid #eee;
 }
 .result-success {
   color: green;

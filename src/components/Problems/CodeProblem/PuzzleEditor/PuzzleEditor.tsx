@@ -6,7 +6,7 @@ import { ICodeSolution } from '../../../../reducers/solutions';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { codeChanged } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
-import { deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
+import { deleteTest, changeTestStatus, changeProblemConfig } from '../../../../actions/sharedb_actions';
 import { runCode, runVerifyTest } from '../../../../actions/runCode_actions';
 import { analytics } from '../../../../utils/Firebase';
 import TestList from './TestList';
@@ -83,6 +83,11 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
         refreshCM();
     }
 
+    const onSwitch = (e) => {
+        const item = e.target.id.split('-')[0];
+        dispatch(changeProblemConfig(problem.id, item, e.target.checked));
+    }
+
     const doRunAll = () => {
         const graphicsEl_tmp = graphicsRef ? graphicsRef.current : null;
         if (graphicsEl_tmp) {
@@ -98,10 +103,10 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
             }
         });
     }
-    
+
     return <>
         <div className="row">
-            <div className={(currentTest||isAdmin) ? "col-9 puzzle-editor" : "col"}>
+            <div className={(currentTest || isAdmin) ? "col-9 puzzle-editor" : "col"}>
                 {(isEdit && currentTest) &&
                     <div className="puzzle-header">
                         <div className="row">
@@ -126,18 +131,43 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
                         </div>
                     </div>
                 }
+                {isAdmin &&
+                    <>
+                        <nav>
+                            <div className="nav nav-tabs instructor-tab" id={"nav-instructor-code-tab-" + problem.id} role="tablist">
+                                <a className="nav-item nav-link active nav-given-first" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true" onClick={switchInstructorCode}>Given Code</a>
+                                <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={switchInstructorCode}>Solution Code</a>
+                                <a className="nav-item nav-link" id={"nav-live-tab-" + problem.id} data-toggle="tab" href={"#nav-live-" + problem.id} role="tab" aria-controls={"nav-live-" + problem.id} aria-selected="false" onClick={switchInstructorCode}>Live Code</a>
+                            </div>
+                        </nav>
+                        <div className="instructions-admin">
+                            {codeTab === 'l' &&
+                                <>
+                                    <div className="instructions-text">Edits here will be live streamed to students if made visible.</div>
+                                    <div className="custom-control custom-switch edit-switch">
+                                        <input type="checkbox" className="custom-control-input" id={"displayInstructor-" + problem.id} onClick={onSwitch} defaultChecked={config.displayInstructor} />
+                                        <label className="custom-control-label" htmlFor={"displayInstructor-" + problem.id}>Visible to Students</label>
+                                    </div>
+                                </>
+                            }
+                            {codeTab === 's' &&
+                                <>
+                                    <div className="instructions-text">Standard solution will be used to verify the test cases created by students.</div>
+                                </>
+                            }
+                            {codeTab === 'g' &&
+                                <>
+                                    <div className="instructions-text">Students' editors will be initialized with given code the first time they load the problem.</div>
+                                </>
+                            }
+                        </div>
+                    </>
+                }
                 {currentTest &&
                     <CodeEditor run={doRunCode} shareDBSubDoc={beforeCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80, lineWrapping: true }} refreshDoc={currentTest.id} onChange={doInitTestStatus} />
                 }
                 {isAdmin
                     ? <>
-                        <nav>
-                            <div className="nav nav-tabs instructor-tab" id={"nav-instructor-code-tab-" + problem.id} role="tablist">
-                                <a className="nav-item nav-link active" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true" onClick={switchInstructorCode}>Given Code</a>
-                                <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={switchInstructorCode}>Solution Code</a>
-                                <a className="nav-item nav-link" id={"nav-live-tab-" + problem.id} data-toggle="tab" href={"#nav-live-" + problem.id} role="tab" aria-controls={"nav-live-" + problem.id} aria-selected="false" onClick={switchInstructorCode}>Live Code</a>
-                            </div>
-                        </nav>
                         <div className="tab-content" id={"nav-instructor-code-tabContent-" + problem.id}>
                             <div className="tab-pane fade show active" id={"nav-given-" + problem.id} role="tabpanel" aria-labelledby={"nav-given-tab-" + problem.id}>
                                 <CodeEditor shareDBSubDoc={givenCodeSubDoc} options={{ lineNumbers: true, height: 200, lineWrapping: true }} />
@@ -156,7 +186,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
                     <CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80, lineWrapping: true }} refreshDoc={currentTest.id} onChange={doInitTestStatus} />
                 }
             </div>
-            {(currentTest||isAdmin) &&
+            {(currentTest || isAdmin) &&
                 <div className="col-3 tests">
                     <TestList problem={problem} />
                 </div>
