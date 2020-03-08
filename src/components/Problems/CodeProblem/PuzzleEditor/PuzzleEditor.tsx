@@ -193,7 +193,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
             }
         </div>
         <div className="row">
-            <div className={currentTest ? "col-9 puzzle-editor" : "col"}>
+            <div className={(currentTest||isAdmin) ? "col-9 puzzle-editor" : "col"}>
                 <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
             </div>
             {currentTest &&

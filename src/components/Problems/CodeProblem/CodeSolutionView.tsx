@@ -18,7 +18,7 @@ const CodeSolutionView = ({ dispatch, problem, currentUser, solutionText, hasSol
     return <div className="solution">
         <div>
             <div className="random-solution-selection">
-                <div>{Object.keys(problemSolutions).length} solutions loaded</div>
+                {/* <div className="instructions-text">{Object.keys(problemSolutions).length} solutions loaded</div> */}
                 <div className="btn-group" role="group" aria-label="random solutions">
                     <button className="btn btn-outline-secondary btn-sm" onClick={selectRandomUser}>Random solution</button>
                     <button className="btn btn-outline-secondary btn-sm" onClick={selectRandomCorrectUser}>Random correct solution</button>

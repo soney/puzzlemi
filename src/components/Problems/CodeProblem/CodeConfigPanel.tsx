@@ -8,6 +8,10 @@ import { getTimeStamp } from '../../../utils/timestamp';
 import uuid from '../../../utils/uuid';
 
 const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, allSolutions, allUsers }) => {
+    const userIDs = Object.keys(allSolutions);
+    const completedU = userIDs.filter(u=> completed.indexOf(u) >= 0);
+    const inCompletedU = userIDs.filter(u => completed.indexOf(u) < 0);
+
     const onSwitch = (e) => {
         const item = e.target.id.split('-')[0];
         dispatch(changeProblemConfig(problem.id, item, e.target.checked));
@@ -32,9 +36,8 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, allSolut
     }
 
     const getGroupMatching = (allSolutions, allUsers): any => {
-        const userIDs = Object.keys(allSolutions);
-        let completedUsers = JSON.parse(JSON.stringify(completed));
-        let inCompletedUsers = userIDs.filter(u => completedUsers.indexOf(u) < 0);
+        let completedUsers = JSON.parse(JSON.stringify(completedU));
+        let inCompletedUsers = JSON.parse(JSON.stringify(inCompletedU))
         let allGroups = {};
 
         if (completedUsers.length === 0 || inCompletedUsers.length === 0) {
@@ -149,7 +152,7 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, allSolut
         </div>
         <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"revealSolutions-" + problem.id} onClick={onSwitch} defaultChecked={config.revealSolutions} />
-            <label className="custom-control-label" htmlFor={"revealSolutions-" + problem.id}>Enable Group Discussion ({Object.keys(allSolutions).length}/{Object.keys(allUsers).length} loaded)</label>
+            <label className="custom-control-label" htmlFor={"revealSolutions-" + problem.id}>Enable Group Discussion ({Object.keys(allSolutions).length}/{Object.keys(allUsers).length} loaded, {completedU.length}/{userIDs.length} completed)</label>
         </div>
     </>
 }
