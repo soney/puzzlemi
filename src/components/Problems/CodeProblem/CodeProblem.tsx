@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import ProblemDescription from '../ProblemDescription';
-import ProblemNotes from './LiveCode/ProblemNotes';
+// import ProblemNotes from './LiveCode/ProblemNotes';
 import update from 'immutability-helper';
 import CodeProblemConfigPanel from './CodeConfigPanel';
 import Files from './Files';
@@ -53,12 +53,15 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                     <CodeProblemConfigPanel problem={problem} />
                 </div>
             </div>
-            <div className="row">
-                <div className="col">
+            <div className="row instructor-puzzle-container">
+                <div className="col-7">
                     <PuzzleEditor problem={problem} flag={count} />
                 </div>
-                <div className="col">
-                    <nav>
+                <div className="col-5">
+                    <CodeOutput problem={problem} />
+                    <Files problem={problem} />
+
+                    {/* <nav>
                         <div className="nav nav-tabs instructor-tab" id={"nav-instructor-note-tab-" + problem.id} role="tablist">
                             <a className="nav-item nav-link active" id={"nav-output-tab-" + problem.id} data-toggle="tab" href={"#nav-output-" + problem.id} role="tab" aria-controls={"nav-output-" + problem.id} aria-selected="true" onClick={refreshCM}>Output</a>
                             <a className="nav-item nav-link" id={"nav-notes-tab-" + problem.id} data-toggle="tab" href={"#nav-notes-" + problem.id} role="tab" aria-controls={"nav-notes-" + problem.id} aria-selected="false" onClick={refreshCM}>Notes</a>
@@ -79,11 +82,10 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         <div className="tab-pane fade" id={"nav-files-" + problem.id} role="tabpanel" aria-labelledby={"nav-files-tab-" + problem.id}>
                             <Files problem={problem} />
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
             <CodeSolutionView problem={problem} />
-            {!config.disableTest &&
                 <div className="row completion-info">
                     <div className="col">
                         {passedAll &&
@@ -92,7 +94,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{passedAll && <span> that</span>} answered correctly.
                 </div>
                 </div>
-            }
         </>
     }
     else {
@@ -142,7 +143,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                     </div>
                 </div>
             </div>
-            {!config.disableTest &&
                 <div className="row completion-info">
                     <div className="col">
                         {passedAll &&
@@ -154,7 +154,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         }
                     </div>
                 </div>
-            }
         </>
     }
 }
@@ -167,7 +166,6 @@ function mapStateToProps(state: IPMState, ownProps) {
     const { problemDetails } = problem;
     const { config } = problemDetails;
     const aggregateData = shareDBDocs.aggregateData?.getData();
-    // console.log(shareDBDocs.aggregateData?.getData())
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
     const myuid = users.myuid as string;

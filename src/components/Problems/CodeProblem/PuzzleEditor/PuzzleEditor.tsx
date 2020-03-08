@@ -6,7 +6,7 @@ import { ICodeSolution } from '../../../../reducers/solutions';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { codeChanged } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
-import { deleteTest, changeTestStatus } from '../../../../actions/sharedb_actions';
+import { deleteTest, changeTestStatus, changeProblemConfig } from '../../../../actions/sharedb_actions';
 import { runCode, runVerifyTest } from '../../../../actions/runCode_actions';
 import { analytics } from '../../../../utils/Firebase';
 import TestList from './TestList';
@@ -16,46 +16,19 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
     const [count, setCount] = React.useState(0);
     const [codeTab, setCodeTab] = React.useState('g');
     const channel = getChannelName();
-
-
-    if (!currentTest) { return null; }
     const codeSolution = userSolution as ICodeSolution;
-    const p_test = currentTest.type === CodeTestType.INSTRUCTOR ? ['allProblems', problem.id, 'problemDetails', 'tests', currentTest.id] : ['userData', problem.id, 'tests', currentTest.id];
-    const beforeCodeSubDoc = currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'before']) : aggregateDataDoc.subDoc([...p_test, 'before']);
-    const afterCodeSubDoc = currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'after']) : aggregateDataDoc.subDoc([...p_test, 'after']);
-    const testNameSubDoc = currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'name']) : aggregateDataDoc.subDoc([...p_test, 'name']);
 
     const p_prb = ['allProblems', problem.id];
     const givenCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'givenCode']);
     const liveCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'liveCode']);
     const standardCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'standardCode']);
+
+    const p_test = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? ['allProblems', problem.id, 'problemDetails', 'tests', currentTest.id] : ['userData', problem.id, 'tests', currentTest.id]);
+    const beforeCodeSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'before']) : aggregateDataDoc.subDoc([...p_test, 'before']));
+    const afterCodeSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'after']) : aggregateDataDoc.subDoc([...p_test, 'after']));
+    const testNameSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'name']) : aggregateDataDoc.subDoc([...p_test, 'name']));
+
     const isEdit = isAdmin ? true : currentTest !== undefined && currentTest.author === username;
-
-    const doSetCode = (ev) => {
-        const { value } = ev;
-        return dispatch(codeChanged(problem, value));
-    };
-
-    const doInitTestStatus = () => {
-        if (currentTest.status === CodeTestStatus.UNVERIFIED) return;
-        if (currentTest.author === 'default') return;
-        if (isAdmin) return;
-        const newStatus = CodeTestStatus.UNVERIFIED;
-        dispatch(changeTestStatus(problem.id, currentTest, newStatus));
-    }
-
-    const doDeleteTest = () => {
-        dispatch(deleteTest(problem.id, currentTest));
-    }
-
-    const doVerifyTest = () => {
-        dispatch(runVerifyTest(problem, currentTest))
-    }
-
-    const switchInstructorCode = (e) => {
-        setCodeTab(e.target.id.slice(4, 5))
-        refreshCM();
-    }
 
     const doRunCode = () => {
         const graphicsEl = graphicsRef ? graphicsRef.current : null;
@@ -82,6 +55,39 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
         }
     };
 
+    const refreshCM = () => {
+        setCount(count + 1);
+    }
+    const doSetCode = (ev) => {
+        const { value } = ev;
+        return dispatch(codeChanged(problem, value));
+    };
+    const doInitTestStatus = () => {
+        if (currentTest.status === CodeTestStatus.UNVERIFIED) return;
+        if (currentTest.author === 'default') return;
+        if (isAdmin) return;
+        const newStatus = CodeTestStatus.UNVERIFIED;
+        dispatch(changeTestStatus(problem.id, currentTest, newStatus));
+    }
+
+    const doDeleteTest = () => {
+        dispatch(deleteTest(problem.id, currentTest));
+    }
+
+    const doVerifyTest = () => {
+        dispatch(runVerifyTest(problem, currentTest))
+    }
+
+    const switchInstructorCode = (e) => {
+        setCodeTab(e.target.id.slice(4, 5))
+        refreshCM();
+    }
+
+    const onSwitch = (e) => {
+        const item = e.target.id.split('-')[0];
+        dispatch(changeProblemConfig(problem.id, item, e.target.checked));
+    }
+
     const doRunAll = () => {
         const graphicsEl_tmp = graphicsRef ? graphicsRef.current : null;
         if (graphicsEl_tmp) {
@@ -98,52 +104,10 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
         });
     }
 
-
-    const refreshCM = () => {
-        setCount(count + 1);
-    }
-
-    if (config.disableTest) {
-        return <>
-            <div className="row">
-                <div className="col">
-                    {isAdmin
-                        ? <>
-                            <nav>
-                                <div className="nav nav-tabs instructor-tab" id={"nav-instructor-code-tab-" + problem.id} role="tablist">
-                                    <a className="nav-item nav-link active" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true">Given Code</a>
-                                    <a className="nav-item nav-link" id={"nav-live-tab-" + problem.id} data-toggle="tab" href={"#nav-live-" + problem.id} role="tab" aria-controls={"nav-live-" + problem.id} aria-selected="false" onClick={refreshCM}>Live Code</a>
-                                    <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={refreshCM}>Standard Code</a>
-                                </div>
-                            </nav>
-                            <div className="tab-content" id={"nav-instructor-code-tabContent-" + problem.id}>
-                                <div className="tab-pane fade show active" id={"nav-given-" + problem.id} role="tabpanel" aria-labelledby={"nav-given-tab-" + problem.id}>
-                                    <CodeEditor run={doRunCode} shareDBSubDoc={givenCodeSubDoc} />
-                                </div>
-                                <div className="tab-pane fade" id={"nav-live-" + problem.id} role="tabpanel" aria-labelledby={"nav-live-tab-" + problem.id}>
-                                    <CodeEditor run={doRunCode} shareDBSubDoc={liveCodeSubDoc} flag={count} />
-                                </div>
-                                <div className="tab-pane fade" id={"nav-standard-" + problem.id} role="tabpanel" aria-labelledby={"nav-standard-tab-" + problem.id}>
-                                    <CodeEditor run={doRunCode} shareDBSubDoc={standardCodeSubDoc} flag={count} />
-                                </div>
-                            </div>
-                        </>
-                        : <CodeEditor run={doRunCode} value={codeSolution.code} options={{ height: 300, lineNumbers: true }} onChange={doSetCode} flag={flag} />
-                    }
-                </div>
-            </div>
-            <div className="row">
-                <div className={config.disableTest ? "col" : "col-9 puzzle-editor"}>
-                    <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
-                </div>
-            </div>
-        </>
-    }
-
     return <>
         <div className="row">
-            <div className="col-9 puzzle-editor">
-                {isEdit &&
+            <div className={(currentTest || isAdmin) ? "col-9 puzzle-editor" : "col"}>
+                {(isEdit && currentTest) &&
                     <div className="puzzle-header">
                         <div className="row">
                             <div className="col">
@@ -159,48 +123,80 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
                                             }
                                         </div>
                                     }
-                                    {currentTest.author!== "default" &&
-                                    <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}><i className="fas fa-trash"></i> Delete</button>
+                                    {currentTest.author !== "default" &&
+                                        <button className="btn btn-outline-danger btn-sm" onClick={doDeleteTest}><i className="fas fa-trash"></i> Delete</button>
                                     }
                                 </div>
                             </div>
                         </div>
                     </div>
                 }
-                <CodeEditor run={doRunCode} shareDBSubDoc={beforeCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80, lineWrapping: true }} refreshDoc={currentTest.id} onChange={doInitTestStatus} />
-                {isAdmin
-                    ? <>
+                {isAdmin &&
+                    <>
                         <nav>
                             <div className="nav nav-tabs instructor-tab" id={"nav-instructor-code-tab-" + problem.id} role="tablist">
-                                <a className="nav-item nav-link active" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true" onClick={switchInstructorCode}>Given Code</a>
+                                <a className="nav-item nav-link active nav-given-first" id={"nav-given-tab-" + problem.id} data-toggle="tab" href={"#nav-given-" + problem.id} role="tab" aria-controls={"nav-given-" + problem.id} aria-selected="true" onClick={switchInstructorCode}>Given Code</a>
                                 <a className="nav-item nav-link" id={"nav-standard-tab-" + problem.id} data-toggle="tab" href={"#nav-standard-" + problem.id} role="tab" aria-controls={"nav-standard-" + problem.id} aria-selected="false" onClick={switchInstructorCode}>Solution Code</a>
                                 <a className="nav-item nav-link" id={"nav-live-tab-" + problem.id} data-toggle="tab" href={"#nav-live-" + problem.id} role="tab" aria-controls={"nav-live-" + problem.id} aria-selected="false" onClick={switchInstructorCode}>Live Code</a>
                             </div>
                         </nav>
+                        <div className="instructions-admin">
+                            {codeTab === 'l' &&
+                                <>
+                                    <div className="instructions-text">Edits here will be live streamed to students if made visible.</div>
+                                    <div className="custom-control custom-switch edit-switch">
+                                        <input type="checkbox" className="custom-control-input" id={"displayInstructor-" + problem.id} onClick={onSwitch} defaultChecked={config.displayInstructor} />
+                                        <label className="custom-control-label" htmlFor={"displayInstructor-" + problem.id}>Visible to Students</label>
+                                    </div>
+                                </>
+                            }
+                            {codeTab === 's' &&
+                                <>
+                                    <div className="instructions-text">Standard solution will be used to verify the test cases created by students.</div>
+                                </>
+                            }
+                            {codeTab === 'g' &&
+                                <>
+                                    <div className="instructions-text">Students' editors will be initialized with given code the first time they load the problem.</div>
+                                </>
+                            }
+                        </div>
+                    </>
+                }
+                {currentTest &&
+                    <CodeEditor run={doRunCode} shareDBSubDoc={beforeCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80, lineWrapping: true }} refreshDoc={currentTest.id} onChange={doInitTestStatus} />
+                }
+                {isAdmin
+                    ? <>
                         <div className="tab-content" id={"nav-instructor-code-tabContent-" + problem.id}>
                             <div className="tab-pane fade show active" id={"nav-given-" + problem.id} role="tabpanel" aria-labelledby={"nav-given-tab-" + problem.id}>
-                                <CodeEditor shareDBSubDoc={givenCodeSubDoc} options={{ lineNumbers: true, height: 150, lineWrapping: true }} />
+                                <CodeEditor shareDBSubDoc={givenCodeSubDoc} options={{ lineNumbers: true, height: 200, lineWrapping: true }} />
                             </div>
                             <div className="tab-pane fade" id={"nav-standard-" + problem.id} role="tabpanel" aria-labelledby={"nav-standard-tab-" + problem.id}>
-                                <CodeEditor run={doRunCode} shareDBSubDoc={standardCodeSubDoc} options={{ lineNumbers: true, height: 150, lineWrapping: true }} flag={count} />
+                                <CodeEditor run={doRunCode} shareDBSubDoc={standardCodeSubDoc} options={{ lineNumbers: true, height: 200, lineWrapping: true }} flag={count} />
                             </div>
                             <div className="tab-pane fade" id={"nav-live-" + problem.id} role="tabpanel" aria-labelledby={"nav-live-tab-" + problem.id}>
-                                <CodeEditor run={doRunCode} shareDBSubDoc={liveCodeSubDoc} options={{ lineNumbers: true, height: 150, lineWrapping: true }} flag={count} />
+                                <CodeEditor run={doRunCode} shareDBSubDoc={liveCodeSubDoc} options={{ lineNumbers: true, height: 200, lineWrapping: true }} flag={count} />
                             </div>
                         </div>
                     </>
-                    : <CodeEditor run={doRunCode} value={codeSolution.code} options={{ lineNumbers: true, height: 300, lineWrapping: true, readOnly: config.disableEdit }} onChange={doSetCode} flag={flag} />}
-                <CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80, lineWrapping: true }} refreshDoc={currentTest.id} onChange={doInitTestStatus} />
+                    : <CodeEditor run={doRunCode} value={codeSolution.code} options={{ lineNumbers: true, height: 300, lineWrapping: true, readOnly: config.disableEdit }} onChange={doSetCode} flag={flag} />
+                }
+                {currentTest &&
+                    <CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80, lineWrapping: true }} refreshDoc={currentTest.id} onChange={doInitTestStatus} />
+                }
             </div>
-            <div className="col-3 tests">
-                <TestList problem={problem} />
-            </div>
+            {(currentTest || isAdmin) &&
+                <div className="col-3 tests">
+                    <TestList problem={problem} />
+                </div>
+            }
         </div>
         <div className="row">
-            <div className={config.disableTest ? "col" : "col-9 puzzle-editor"}>
+            <div className={currentTest ? "col-9 puzzle-editor" : "col"}>
                 <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
             </div>
-            {!config.disableTest &&
+            {currentTest &&
                 <div className="col-3">
                     {config.runTests &&
                         <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunAll}>Run All Tests</button>
@@ -235,7 +231,7 @@ function mapStateToProps(state, ownProps) {
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
-
+    console.log(currentTest)
     return update(ownProps, { $merge: { isAdmin, username, allTests, userSolution, tests, aggregateDataDoc, currentTest, problemsDoc, config, myuid, myemail } })
 }
 

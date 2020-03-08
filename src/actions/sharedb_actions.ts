@@ -299,17 +299,6 @@ export function addCodeProblem() {
         const problemsDoc = shareDBDocs.problems;
         const aggregateDataDoc = shareDBDocs.aggregateData;
 
-        const newCodeTest: ICodeTest = {
-            id: uuid(),
-            name: 'Instructor test',
-            author: 'default',
-            type: CodeTestType.INSTRUCTOR,
-            before: '# given variables',
-            after: '# assertions',
-            status: CodeTestStatus.VERIFIED,
-            completed: []
-        }
-
         const newProblem: IProblem = {
             id: uuid(),
             visible: true,
@@ -323,7 +312,6 @@ export function addCodeProblem() {
                 files: [],
                 sketch: [],
                 config: {
-                    disableTest: false,
                     runTests: true,
                     addTests: false,
                     displayInstructor: false,
@@ -332,16 +320,13 @@ export function addCodeProblem() {
                     disableEdit: false,
                 },
                 tests: {
-                    [newCodeTest.id]: newCodeTest
                 }
             }
         };
 
-
         const newCodeSolutionAggregate: ICodeSolutionAggregate = {
             completed: [],
             tests: {
-                // [newCodeTest.id]: newCodeTest
             },
             helpSessions: {},
             helperLists: {},
@@ -439,8 +424,8 @@ export function addTest(problemID: string, username: string, isAdmin: boolean, t
             name: isAdmin ? 'instructor test' : 'student test',
             author: username,
             type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
-            before: defaultTest.before,
-            after: defaultTest.after,
+            before: defaultTest?defaultTest.before:"# given variables",
+            after: defaultTest?defaultTest.after:"# assertions",
             status: isAdmin ? CodeTestStatus.VERIFIED : CodeTestStatus.UNVERIFIED,
             completed: []
         }

@@ -39,7 +39,7 @@ function mapStateToProps(state, ownProps) {
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)),instructorTests);
 
     const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
-    const currentResult = currentTest && testResults[currentTest.id];
+    const currentResult = currentTest? testResults[currentTest.id]:testResults['default'];
     return update(ownProps, { $merge: { currentResult} });
 }
 export default connect(mapStateToProps)(CodeOutput);
