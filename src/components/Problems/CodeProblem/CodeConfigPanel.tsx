@@ -164,22 +164,17 @@ function mapStateToProps(state: IPMState, ownProps) {
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
     const problemsDoc = shareDBDocs.problems;
-    const solutionDoc = shareDBDocs.solutions;
+
+    const solutionsData = shareDBDocs.i.solutions;
+    let problemSolutions = {};
+
+    if (solutionsData && solutionsData.allSolutions && solutionsData.allSolutions.hasOwnProperty(problem.id)) problemSolutions = solutionsData!.allSolutions[problem.id];
+
     const usersDoc = shareDBDocs.users;
-    const solutionsData = solutionDoc?.getData();
-    const sdbSolutions = (solutionsData && solutionsData.allSolutions && solutionsData.allSolutions[problem.id]) || {};
-    const localSolutions = solutions.allSolutions[problem.id];
-    const allSolutions = Object.keys(sdbSolutions).length > Object.keys(localSolutions).length ? sdbSolutions : localSolutions;
     const localUsers = users.allUsers;
     const userData = usersDoc?.getData();
     const sdbUsers = (userData && userData.allUsers) || {};
     const allUsers = Object.keys(sdbUsers).length > Object.keys(localUsers).length ? sdbUsers : localUsers;
-    // let allStudentSolutions= {}
-    // const allSolutionsIDs = Object.keys(allSolutions);
-    // const allStudentSolutionsIDs = allSolutionsIDs.filter(i=>(allUsers[i]&&!allUsers[i].isInstructor))
-    // allStudentSolutionsIDs.forEach(ID=>{
-    //     allStudentSolutions[ID] = allSolutions[ID]
-    // })
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, config, solutions, users, completed, allSolutions, allUsers } });
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, config, solutions, users, completed, allSolutions: problemSolutions, allUsers } });
 }
 export default connect(mapStateToProps)(CodeProblemConfigPanel);
