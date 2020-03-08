@@ -154,7 +154,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
                                     {!isAdmin &&
                                         <div>
                                             {currentTest.status === CodeTestStatus.VERIFIED
-                                                ? <button className="btn btn-outline-info btn-sm" disabled><i className="fas fa-check-circle"></i>Verified</button>
+                                                ? <button className="btn btn-outline-info btn-sm" disabled><i className="fas fa-check-circle"></i> Verified</button>
                                                 : <button className="btn btn-outline-warning btn-sm" onClick={doVerifyTest}><i className="fas fa-times-circle"></i> Verify</button>
                                             }
                                         </div>

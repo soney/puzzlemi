@@ -5,13 +5,20 @@ import SolutionPanel from './SolutionPanel';
 import ChatWidget from '../PeerHelp/ChatWidget';
 
 const AllSolutions = ({ problem, allGroups, isInstructor, myuid, sIndex, gIndex, allUsers, flag }) => {
-    const [currentSolutionIndex, setCurrentSolutionIndex] = React.useState(sIndex?sIndex:0);
-    const [currentGroupIndex, setCurrentGroupIndex] = React.useState(gIndex?gIndex:0);
+    const [currentSolutionIndex, setCurrentSolutionIndex] = React.useState(sIndex ? sIndex : 0);
+    const [currentGroupIndex, setCurrentGroupIndex] = React.useState(gIndex ? gIndex : 0);
+    React.useEffect(() => {
+        setCurrentSolutionIndex(sIndex ? sIndex : 0)
+        setCurrentGroupIndex(gIndex ? gIndex : 0)
+    }, [sIndex, gIndex])
     const groupIDs = Object.keys(allGroups);
     if (groupIDs.length === 0) return <>No group so far.</>;
     if (gIndex === undefined) return <>You don't have any assigned group yet</>;
-    const solutions = allGroups[groupIDs[currentGroupIndex]].solutions;
+    const currentGroupID = groupIDs[currentGroupIndex];
+    const solutions = (allGroups[currentGroupID] && allGroups[currentGroupID].solutions) || {};
     const solutionIDs = Object.keys(solutions);
+    const currentSolutionID = solutionIDs[currentSolutionIndex];
+    const chat_path = ['userData', problem.id, 'allGroups', groupIDs[currentGroupIndex]];
 
     const onSelectSolution = (e) => {
         const newIndex = e.target.getAttribute("data-index");
@@ -22,7 +29,6 @@ const AllSolutions = ({ problem, allGroups, isInstructor, myuid, sIndex, gIndex,
         setCurrentGroupIndex(parseInt(newIndex));
         setCurrentSolutionIndex(0);
     }
-
     const getSolutionClass = (id, index) => {
         let className = "btn btn-";
         const isComplete = solutions[id].completed;
@@ -42,13 +48,13 @@ const AllSolutions = ({ problem, allGroups, isInstructor, myuid, sIndex, gIndex,
 
     const getSolutionTitle = (id, index) => {
         const number = index + 1;
-        const pseudo = allUsers[id]? allUsers[id].anonymousName:"Solution " + number.toString(); 
-        const solution_title = (currentGroupIndex === gIndex && index===sIndex)? pseudo + " (me)" : pseudo;
+        const pseudo = allUsers[id] ? allUsers[id].anonymousName : "Solution " + number.toString();
+        let solution_title = pseudo;
+        if (isInstructor) solution_title = solution_title + " (" + allUsers[id].username + ")";
+        else if (currentGroupIndex === gIndex && index === sIndex) solution_title = solution_title + " (me)";
         return solution_title;
     }
 
-    const currentSolutionID = solutionIDs[currentSolutionIndex];
-    const chat_path = ['userData', problem.id, 'allGroups', groupIDs[currentGroupIndex]];
     return <div>
         <div className="groupID-wrapper">
             {groupIDs.map((id, index) => <div key={index} className="solution-list-button">
@@ -64,7 +70,7 @@ const AllSolutions = ({ problem, allGroups, isInstructor, myuid, sIndex, gIndex,
         </div>
         <div className="row">
             <div className="col">
-                {currentSolutionID && <SolutionPanel problem={problem} session={allGroups[groupIDs[currentGroupIndex]].solutions[currentSolutionID]} groupID={groupIDs[currentGroupIndex]} solutionIndex={currentSolutionIndex} groupIndex={currentGroupIndex} flag={flag}/>
+                {currentSolutionID && <SolutionPanel problem={problem} session={allGroups[groupIDs[currentGroupIndex]].solutions[currentSolutionID]} groupID={groupIDs[currentGroupIndex]} solutionIndex={currentSolutionIndex} groupIndex={currentGroupIndex} flag={flag} />
                 }
             </div>
             <div className="col">
@@ -86,6 +92,7 @@ function mapStateToProps(state, ownProps) {
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const allGroups = problemAggregateData && problemAggregateData.allGroups;
     const groupIDs = Object.keys(allGroups);
+
     let mygindex;
     let mysindex;
     groupIDs.forEach((gid, gindex) => {
@@ -98,7 +105,6 @@ function mapStateToProps(state, ownProps) {
             }
         })
     })
-
     return update(ownProps, { $merge: { allGroups: allGroups ? allGroups : {}, isInstructor, myuid, allUsers, gIndex: mygindex, sIndex: mysindex } });
 }
 export default connect(mapStateToProps)(AllSolutions);
