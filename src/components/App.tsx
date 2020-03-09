@@ -17,9 +17,14 @@ import { IUsers, IUserInfo } from '../reducers/users';
 import uuid from '../utils/uuid';
 import { analytics } from '../utils/Firebase';
 
+export const HELP_DOCS = {
+    WRITING_TEST_CASES: "https://paper.dropbox.com/doc/PuzzleMI--AvzSwi9AEmHCTjERSzh_PFqCAQ-ryAyWG7v8EbdPDDn3MyAk",
+    VERIFYING_TEST_CASES: "https://paper.dropbox.com/doc/PuzzleMI-Writing-Test-Cases--AvzSwi9AEmHCTjERSzh_PFqCAg-ryAyWG7v8EbdPDDn3MyAk#:uid=783988024685919718020679&h2=Verifying-Test-Cases"
+}
+
 
 interface IPMAppOwnProps {
- } 
+} 
 interface IPMAppProps extends IPMAppOwnProps { }
 
 // eslint-disable-next-line

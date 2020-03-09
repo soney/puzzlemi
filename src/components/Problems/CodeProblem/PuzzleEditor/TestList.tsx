@@ -44,6 +44,12 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
         logEvent("instructor_toggle_adding_tests", {status: e.target.checked}, problem.id, myuid);
     }
 
+    const onSwitchRequireTests = (e) => {
+        const item = e.target.id.split('-')[0];
+        dispatch(changeProblemConfig(problem.id, item, e.target.checked));
+        logEvent("instructor_toggle_require_tests", {status: e.target.checked}, problem.id, myuid);
+    }
+
     return <>
         {currentTest &&
             <div>
@@ -86,7 +92,11 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
             <>
                 <div className="custom-control custom-switch edit-switch students-add-switch">
                     <input type="checkbox" className="custom-control-input" id={"addTests-" + problem.id} onClick={onSwitchAllowAdding} defaultChecked={config.addTests} />
-                    <label className="custom-control-label" htmlFor={"addTests-" + problem.id}>Allow Adding</label>
+                    <label className="custom-control-label" htmlFor={"addTests-" + problem.id}>Student Tests</label>
+                </div>
+                <div className="custom-control custom-switch edit-switch students-add-switch">
+                    <input type="checkbox" className="custom-control-input" id={"requireTests-" + problem.id} onClick={onSwitchRequireTests} defaultChecked={config.requireTests} />
+                    <label className="custom-control-label" htmlFor={"requireTests-" + problem.id}>Require student tests</label>
                 </div>
             </>
         }

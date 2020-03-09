@@ -7,9 +7,9 @@ import MultipleChoiceProblem from './MultipleChoiceProblem/MultipleChoiceProblem
 import * as classNames from 'classnames';
 import TextResponseProblem from './TextResponseProblem/TextResponseProblem';
 import { IPMState } from '../../reducers';
-import { IProblemType } from '../../reducers/problems';
+import { IProblemType, CodeProblemCompletionStatus, getCodeProblemCompletionStatus } from '../../reducers/problems';
 
-const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSolution, isAdmin }) => {
+const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSolution, isAdmin, pointUserToOtherProblem }) => {
     const { id: problemID, problemDetails } = problem;
     const { problemType } = problemDetails;
 
@@ -49,7 +49,15 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
         problemDisplay = <TextResponseProblem problem={problem} />;
     }
 
-    return <div className={classNames({'problem': true, 'container': true, 'passedAll': passedAll&&!isAdmin})} ref={elementRef}>
+    let pointUserToOtherProblemDisplay: JSX.Element|null = null;
+
+    if(pointUserToOtherProblem) {
+        pointUserToOtherProblemDisplay = <div className="alert alert-warning" role="alert">
+            Try completing all of the problems before this one <a href={`#${pointUserToOtherProblem}`}>(go back)</a>
+        </div>;
+    }
+
+    return <div id={problem.id} className={classNames({'problem': true, 'container': true, 'passedAll': passedAll&&!isAdmin})} ref={elementRef}>
         { isAdmin &&
             <div className="btn-toolbar justify-content-between">
                 <div className="btn-group btn-group-toggle" data-toggle="buttons">
@@ -76,6 +84,7 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
                 <button className="btn btn-sm btn-outline-danger float-right" onClick={doDeleteProblem}><i className="fas fa-trash"></i>&nbsp;Delete Problem</button>
             </div>
         }
+        { !isAdmin && pointUserToOtherProblemDisplay }
         {problemDisplay}
         {
             ((problemType === IProblemType.MultipleChoice && revealSolution)) &&
@@ -105,7 +114,14 @@ function mapStateToProps(state: IPMState, ownProps) {
 
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
     const numCompleted = completed.length;
-    const passedAll = completed.indexOf(myuid) >= 0 && !(problemType===IProblemType.MultipleChoice&&!revealSolution);
+
+    let passedAll: boolean = false;
+    if(problemType === IProblemType.Code) {
+        passedAll = getCodeProblemCompletionStatus(problem, state) === CodeProblemCompletionStatus.ALL_COMPLETED;
+    } else if(problemType === IProblemType.MultipleChoice) {
+        passedAll = completed.indexOf(myuid) >= 0 && !revealSolution;
+    }
+    // const passedAll = completed.indexOf(myuid) >= 0 && !(problemType===IProblemType.MultipleChoice&&!revealSolution);
 
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
 

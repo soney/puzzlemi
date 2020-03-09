@@ -15,8 +15,27 @@ import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 import CodeOutput from './CodeOutput';
 import AllSolutions from './AllSolutions/AllSolutions';
 import { logEvent } from '../../../utils/Firebase';
+import { IProblem, ICodeProblemConfig, ICodeProblem, getCodeProblemCompletionStatus, CodeProblemCompletionStatus } from '../../../reducers/problems';
+import { HELP_DOCS } from '../../App';
 
-const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid }) => {
+
+interface ICodeProblemOwnProps {
+    problem: IProblem;
+}
+interface ICodeProblemProps extends ICodeProblemOwnProps {
+    isAdmin: boolean;
+    config: ICodeProblemConfig;
+    claimFocus: boolean;
+    requireAddingTest: boolean;
+    passedAll: boolean;
+    isInstructor: boolean;
+    numStuCompleted: number;
+    numStuTotal: number;
+    myuid: string;
+    codeTestFeedback: CodeProblemCompletionStatus;
+}
+
+const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid }: ICodeProblemProps) => {
     const [count, setCount] = React.useState(0);
     const [peer, setPeer] = React.useState(0);
     const peerHelpTabRef = React.createRef<HTMLAnchorElement>();
@@ -60,6 +79,17 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                         }
                     </div>
                 </div>;
+    
+    let testFeedback: JSX.Element|null = null;
+    if(codeTestFeedback === CodeProblemCompletionStatus.NO_TESTS) {
+        testFeedback = <div className="alert alert-danger" role="alert">
+            Write at least one test case. <a href={HELP_DOCS.WRITING_TEST_CASES} target="_blank" rel="noopener noreferrer">(see how)</a>.
+        </div>;
+    } else if (codeTestFeedback === CodeProblemCompletionStatus.TEST_NOT_VERIFIED) {
+        testFeedback = <div className="alert alert-danger" role="alert">
+            Write at least one <strong>verified</strong> test case <a href={HELP_DOCS.VERIFYING_TEST_CASES} target="_blank" rel="noopener noreferrer">(more detail)</a>.
+        </div>;
+    }
 
     if (isAdmin) {
         return <>
@@ -104,7 +134,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                 </div>
             </div>
             <CodeSolutionView problem={problem} />
-            {!config.disableTest && completionInfo }
+            { completionInfo }
         </>
     }
     else {
@@ -154,18 +184,19 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, numCompleted, passe
                     </div>
                 </div>
             </div>
-            {!config.disableTest && completionInfo }
+            { completionInfo }
+            { testFeedback }
         </>
     }
 }
 
-function mapStateToProps(state: IPMState, ownProps) {
+function mapStateToProps(state: IPMState, ownProps: ICodeProblemOwnProps): ICodeProblemProps {
     const { intermediateUserState, shareDBDocs, solutions, users } = state;
     const { isAdmin, awaitingFocus } = intermediateUserState;
     const problemsDoc = shareDBDocs.problems;
     const { problem } = ownProps;
     const { problemDetails } = problem;
-    const { config } = problemDetails;
+    const { config } = problemDetails as ICodeProblem;
     const aggregateData = shareDBDocs.aggregateData?.getData();
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
@@ -184,6 +215,8 @@ function mapStateToProps(state: IPMState, ownProps) {
     const userSolution = solutions.allSolutions[ownProps.problem.id][myuid];
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
 
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid } });
+    const codeTestFeedback = getCodeProblemCompletionStatus(problem, state);
+
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid, codeTestFeedback } as any}) as ICodeProblemProps;
 }
 export default connect(mapStateToProps)(CodeProblem);

@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import Problem from './Problem';
 import update from 'immutability-helper';
 import { addCodeProblem, addMultipleChoiceProblem, addTextResponseProblem } from '../../actions/sharedb_actions';
-import { IProblem } from '../../reducers/problems';
+import { IProblem, getFirstIncompleteCodeProblem } from '../../reducers/problems';
 import { IPMState } from '../../reducers';
 // import Hotkeys from 'react-hot-keys';
 
@@ -13,8 +13,9 @@ interface IProblemsProps extends IProblemsOwnProps {
     isAdmin: boolean;
     dispatch: React.Dispatch<any>;
     problems: IProblem[];
+    firstIncompleteCodeProblem: string|null;
 }
-const Problems = ({ isAdmin, dispatch, problems }: IProblemsProps): React.ReactElement => {
+const Problems = ({ isAdmin, dispatch, problems, firstIncompleteCodeProblem }: IProblemsProps): React.ReactElement => {
     const doAddCodeProblem = (): void => {
         dispatch(addCodeProblem());
     };
@@ -25,13 +26,18 @@ const Problems = ({ isAdmin, dispatch, problems }: IProblemsProps): React.ReactE
         dispatch(addTextResponseProblem());
     };
 
+    let suggestCodeProblem: string|null = null;
+    const problemDisplays = problems.map((problem, i) => {
+        if(problem.id === firstIncompleteCodeProblem) {
+            suggestCodeProblem = firstIncompleteCodeProblem;
+        }
+        return <Problem key={`${problem.id}-${i}`} problem={problem} pointUserToOtherProblem={suggestCodeProblem === problem.id ? null : suggestCodeProblem} tabIndex={0} />
+    });
+
     return <>
         <div className='problems'>
             {problems && problems.length
-            ? problems.map((problem, i) =>
-                    <Problem key={`${problem.id}-${i}`} problem={problem} tabIndex={0} />
-            )
-            : <div className='container no-problems'>(no problems yet)</div>}
+            ? problemDisplays : <div className='container no-problems'>(no problems yet)</div>}
         </div>
         {
             isAdmin &&
@@ -73,8 +79,9 @@ function mapStateToProps(state:IPMState, givenProps: IProblemsOwnProps): IProble
             return allProblems[problemID];
         });
     }
+    const firstIncompleteCodeProblem = getFirstIncompleteCodeProblem(state);
 
-    return update(givenProps, { $merge: { problems: filteredProblems, isAdmin } }) as IProblemsProps;
+    return update(givenProps, { $merge: { problems: filteredProblems, isAdmin, firstIncompleteCodeProblem } }) as IProblemsProps;
 
 }
 export default connect(mapStateToProps)(Problems);
