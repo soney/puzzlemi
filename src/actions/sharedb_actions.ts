@@ -429,8 +429,8 @@ export function addTest(problemID: string, username: string, isAdmin: boolean, t
             name: isAdmin ? 'instructor test' : 'student test',
             author: username,
             type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
-            before: defaultTest?defaultTest.before:"# test case setup (define given variables here)",
-            after: defaultTest?defaultTest.after:"# test case assertions (assert ...)",
+            before: defaultTest?defaultTest.before:"# test setup (define given variables here)",
+            after: defaultTest?defaultTest.after:"# test assertions (assert ...)",
             status: isAdmin ? CodeTestStatus.VERIFIED : CodeTestStatus.UNVERIFIED,
             completed: []
         }
