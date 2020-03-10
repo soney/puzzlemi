@@ -93,7 +93,7 @@ export function getCodeProblemCompletionStatus(problem: IProblem, state: IPMStat
     const myuid = users.myuid as string;
     const { problemDetails } = problem;
     const problemID = problem.id;
-    const aggregateData = shareDBDocs.aggregateData?.getData();
+    const aggregateData = shareDBDocs.i.aggregateData;
     const problemAggregateData = aggregateData && aggregateData.userData[problemID];
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
     const passedAll = completed.indexOf(myuid) >= 0;
@@ -121,8 +121,7 @@ export function getCodeProblemCompletionStatus(problem: IProblem, state: IPMStat
 
 export function getFirstIncompleteCodeProblem(state: IPMState): string|null {
     const { shareDBDocs } = state;
-    const problemsDoc = shareDBDocs.problems;
-    const problems = problemsDoc!.getData();
+    const problems = shareDBDocs.i.problems;
     if(problems) {
         for(let i: number = 0; i<problems.order.length; i++) {
             const problemID = problems.order[i];
