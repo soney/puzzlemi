@@ -14,7 +14,8 @@ const AllSolutions = ({ problem, allGroups, isInstructor, myuid, sIndex, gIndex,
     }, [sIndex, gIndex])
     const groupIDs = Object.keys(allGroups);
     if (groupIDs.length === 0) return <>No group so far.</>;
-    if (gIndex === undefined) return <>You don't have any assigned group yet</>;
+    if (!isInstructor && gIndex === undefined) return <>You don't have any assigned group yet</>;
+    
     const currentGroupID = groupIDs[currentGroupIndex];
     const solutions = (allGroups[currentGroupID] && allGroups[currentGroupID].solutions) || {};
     const solutionIDs = Object.keys(solutions);
@@ -31,7 +32,7 @@ const AllSolutions = ({ problem, allGroups, isInstructor, myuid, sIndex, gIndex,
         setCurrentGroupIndex(parseInt(newIndex));
         setCurrentSolutionIndex(0);
         logEvent("focus_group_discussion_group", {groupID: groupIDs[newIndex]}, problem.id, myuid);
-        logEvent("focus_group_discussion_solution", {solutionID: solutionIDs[0]}, problem.id, myuid);
+        logEvent("focus_group_discussion_solution", {solutionID: solutionIDs.length>=0?solutionIDs[0]:'0'}, problem.id, myuid);
     }
     const getSolutionClass = (id, index) => {
         let className = "btn btn-";
