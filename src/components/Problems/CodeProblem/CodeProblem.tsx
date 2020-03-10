@@ -35,7 +35,7 @@ interface ICodeProblemProps extends ICodeProblemOwnProps {
     codeTestFeedback: CodeProblemCompletionStatus;
 }
 
-const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid }: ICodeProblemProps) => {
+const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid }: ICodeProblemProps): JSX.Element => {
     const [count, setCount] = React.useState(0);
     const [peer, setPeer] = React.useState(0);
     const peerHelpTabRef = React.createRef<HTMLAnchorElement>();

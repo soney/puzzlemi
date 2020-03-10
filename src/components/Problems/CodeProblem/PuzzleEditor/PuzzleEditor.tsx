@@ -95,6 +95,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
         logEvent("run_all", {code: codeSolution.code, tests: allTestIDs}, problem.id, myuid);
         
         const allTestsObjects: ICodeTest[] = Object.values(allTests);
+
         allTestsObjects.forEach(test => {
             if (test.status === CodeTestStatus.VERIFIED) {
                 dispatch(runCode(codeSolution.code, codeSolution.files, problem, graphicsEl_tmp, test))
