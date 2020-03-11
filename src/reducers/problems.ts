@@ -85,13 +85,14 @@ export enum CodeProblemCompletionStatus {
     PROBLEM_NOT_COMPLETED,
     ALL_COMPLETED,
     TEST_NOT_VERIFIED,
+    TEST_DUPLICATES_INSTRUCTORS,
     NO_TESTS
 }
 
 export function getCodeProblemCompletionStatus(problem: IProblem, state: IPMState): CodeProblemCompletionStatus {
     const { shareDBDocs, users } = state;
     const myuid = users.myuid as string;
-    const { problemDetails } = problem;
+    const problemDetails = problem.problemDetails as ICodeProblem;
     const problemID = problem.id;
     const aggregateData = shareDBDocs.i.aggregateData;
     const problemAggregateData = aggregateData && aggregateData.userData[problemID];
@@ -105,7 +106,20 @@ export function getCodeProblemCompletionStatus(problem: IProblem, state: IPMStat
             const myTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author === username);
             const validatedTests = myTestObjects.filter((t) => t.status === CodeTestStatus.VERIFIED);
             if(validatedTests.length > 0) {
-                return CodeProblemCompletionStatus.ALL_COMPLETED;
+                const instructorTests = Object.values(problemDetails.tests);
+                const nonRepeatedTests = validatedTests.filter((t) => {
+                    for(let i: number = 0; i<instructorTests.length; i++) {
+                        if(instructorTests[i].before === t.before && instructorTests[i].after === t.after) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                if(nonRepeatedTests.length > 0) {
+                    return CodeProblemCompletionStatus.ALL_COMPLETED;
+                } else {
+                    return CodeProblemCompletionStatus.TEST_DUPLICATES_INSTRUCTORS;
+                }
             } else if(myTestObjects.length > 0) {
                 return CodeProblemCompletionStatus.TEST_NOT_VERIFIED;
             } else {

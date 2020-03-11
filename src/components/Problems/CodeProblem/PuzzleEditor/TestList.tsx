@@ -92,7 +92,7 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
             <>
                 <div className="custom-control custom-switch edit-switch students-add-switch">
                     <input type="checkbox" className="custom-control-input" id={"addTests-" + problem.id} onClick={onSwitchAllowAdding} defaultChecked={config.addTests} />
-                    <label className="custom-control-label" htmlFor={"addTests-" + problem.id}>Student Tests</label>
+                    <label className="custom-control-label" htmlFor={"addTests-" + problem.id}>Allow student Tests</label>
                 </div>
                 <div className="custom-control custom-switch edit-switch students-add-switch">
                     <input type="checkbox" className="custom-control-input" id={"requireTests-" + problem.id} onClick={onSwitchRequireTests} defaultChecked={config.requireTests} />

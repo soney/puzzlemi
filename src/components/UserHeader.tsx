@@ -29,8 +29,9 @@ interface IUserHeaderProps extends IUserHeaderOwnProps {
     aggregateDataDoc: SDBDoc<IAggregateData>,
     solutionsDoc: SDBDoc<ISolutions>,
     usersDoc: SDBDoc<IUsers>,
+    completedByUser: CompletedByUser
 }
-const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, problemsDoc, isAdmin, allUsers, aggregateDataDoc, solutionsDoc, usersDoc }: IUserHeaderProps) => {
+const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, problemsDoc, isAdmin, allUsers, aggregateDataDoc, solutionsDoc, usersDoc, completedByUser }: IUserHeaderProps) => {
     const { myuid } = users;
     if (!myuid) { return <nav>fetching user information...</nav> }
 
@@ -169,6 +170,60 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
             </div>
         </div>
     </div> : null;
+    let leaderboardRow: JSX.Element|null = null;
+    if(isAdmin) {
+        if(usersDoc) {
+            const usersData = usersDoc.getData();
+            const sortableScores: [string, number][] = [];
+            for(let uid in completedByUser) {
+                if(completedByUser.hasOwnProperty(uid)) {
+                    if(usersData.allUsers[uid] && !usersData.allUsers[uid].isInstructor) {
+                        sortableScores.push([uid, completedByUser[uid]]);
+                    }
+                }
+            }
+            sortableScores.sort((a, b) => b[1]-a[1]);
+            let highScore: number = 0;
+            let lowScore: number = 0;
+            if(sortableScores.length > 0) {
+                highScore = sortableScores[0][1];
+                lowScore = sortableScores[sortableScores.length-1][1];
+            }
+            const leaderboardUserDisplays:(JSX.Element|string)[] = sortableScores.map(([uid, score]) => {
+                const u = usersData.allUsers[uid];
+                const isSelectedUser = (u.email === selectedUserForSolutionsView);
+                function selectUser() {
+                    if (isSelectedUser) {
+                        dispatch(selectUserForSolutionView(false));
+                    } else {
+                        dispatch(selectUserForSolutionView(u.email!));
+                    }
+                }
+                const userInfo = `${u.fullName} (${score})`;
+                const pct = (score - lowScore) / (highScore - lowScore);
+                const userStyle = isSelectedUser ? {} : {color: rgbToHex(interpolatergb(failColor, successColor, pct))};
+                return <a href="#0" style={userStyle} className={classNames({ user: true, selected: isSelectedUser })} key={u.uid} onClick={selectUser}>{userInfo}</a>
+            });
+            for (let i: number = leaderboardUserDisplays.length - 1; i > 0; i--) {
+                leaderboardUserDisplays.splice(i, 0, ", ");
+            }
+            if (leaderboardUserDisplays.length === 0) {
+                leaderboardUserDisplays.splice(0, 0, "(nobody here)");
+            }
+            leaderboardRow = <div className="leaderboard container">
+                <div className="row">
+                    <div className='col'>
+                        Student Leader Board (number of correct solutions):
+                    </div>
+                </div>
+                <div className="row">
+                    <div className='col users'>
+                        {leaderboardUserDisplays}
+                    </div>
+                </div>
+            </div>;
+        }
+    }
     const userInfo = loggedIn ? <span>Logged in as {username} ({email})</span> : <span>Not logged in.</span>
     return <>
         <nav className="navbar navbar-light navbar-expand-lg bg-light">
@@ -201,8 +256,11 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
             </form>
         </nav>
         {usersRow}
+        {leaderboardRow}
     </>;
 }
+
+type CompletedByUser = {[uid: string]: number};
 
 function mapStateToProps(state: IPMState, ownProps: IUserHeaderOwnProps): IUserHeaderProps {
     const { app, users, shareDBDocs, intermediateUserState } = state;
@@ -210,18 +268,56 @@ function mapStateToProps(state: IPMState, ownProps: IUserHeaderOwnProps): IUserH
     const { channel, selectedUserForSolutionsView } = app;
 
     let allUsers: string[] = [];
+    const completedByUser: CompletedByUser = {};
     if (isAdmin) {
         try {
             const usersDocData = shareDBDocs.i.users;
+            const aggregateData = shareDBDocs.i.aggregateData;
+
             if (usersDocData) {
                 const dataUsers = usersDocData.allUsers;
                 allUsers = Object.keys(dataUsers!);
+            }
+
+            if (aggregateData) {
+                const data = Object.values(aggregateData.userData);
+                data.forEach((d) => {
+                    if(d.completed) {
+                        d.completed.forEach((uid) => {
+                            if(completedByUser.hasOwnProperty(uid)) {
+                                completedByUser[uid]++;
+                            } else {
+                                completedByUser[uid] = 1;
+                            }
+                        });
+                    }
+                });
+                allUsers.forEach((uid) => {
+                    if(!completedByUser.hasOwnProperty(uid)) {
+                        completedByUser[uid] = 0;
+                    }
+                });
             }
         } catch (e) {
             console.error(e);
         }
     }
 
-    return update(ownProps, { $merge: { problemsDoc: shareDBDocs.problems, aggregateDataDoc: shareDBDocs.aggregateData, solutionsDoc: shareDBDocs.solutions, usersDoc: shareDBDocs.users, selectedUserForSolutionsView, isAdmin, users, allUsers, channel } }) as IUserHeaderProps;
+    return update(ownProps, { $merge: { problemsDoc: shareDBDocs.problems, aggregateDataDoc: shareDBDocs.aggregateData, solutionsDoc: shareDBDocs.solutions, usersDoc: shareDBDocs.users, selectedUserForSolutionsView, isAdmin, users, allUsers, channel, completedByUser } }) as IUserHeaderProps;
 }
 export default connect(mapStateToProps)(PMUserHeader);
+
+type RGB = [number, number, number];
+const interpolate = (low: number, high: number, pct: number): number => (low + pct*(high-low));
+const interpolatergb = (low: RGB, high: RGB, pct: number): RGB => [interpolate(low[0], high[0], pct), interpolate(low[1], high[1], pct), interpolate(low[2], high[2], pct)]
+const numToHex = (num: number): string => {
+  let hex = Number(num).toString(16);
+  if (hex.length < 2) {
+       hex = "0" + hex;
+  }
+  return hex;
+}
+const rgbToHex = (rgb: RGB): string => `#${numToHex(rgb[0])}${numToHex(rgb[1])}${numToHex(rgb[2])}`;
+
+const successColor: RGB = [0, 123, 255];
+const failColor: RGB = [220, 53, 69];

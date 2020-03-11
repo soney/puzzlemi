@@ -338,7 +338,9 @@ nav {
     margin-right: 5px;
   }
 }
-.allUsers {
+.allUsers,.leaderboard {
+  margin-top: 10px;
+  margin-bottom: 10px;
   font-size: 0.75em;
   .users {
     // line-break: strict;

@@ -89,6 +89,10 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
         testFeedback = <div className="alert alert-danger" role="alert">
             Write at least one <strong>verified</strong> test case <a href={HELP_DOCS.VERIFYING_TEST_CASES} target="_blank" rel="noopener noreferrer">(more detail)</a>.
         </div>;
+    } else if (codeTestFeedback === CodeProblemCompletionStatus.TEST_DUPLICATES_INSTRUCTORS) {
+        testFeedback = <div className="alert alert-danger" role="alert">
+            Write at least one test case that is different from the instructors' test cases. <a href={HELP_DOCS.WRITING_TEST_CASES} target="_blank" rel="noopener noreferrer">(see how)</a>.
+        </div>;
     }
 
     if (isAdmin) {
