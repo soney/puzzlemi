@@ -58,14 +58,17 @@ export interface ICodeProblem {
     problemType: IProblemType.Code;
 }
 
+export enum StudentTestConfig {
+    DISABLED='disabled', ENABLED='enabled', REQUIRED='required'
+};
+
 export interface ICodeProblemConfig {
     runTests: boolean;
-    addTests: boolean;
     displayInstructor: boolean;
     peerHelp: boolean;
     revealSolutions: boolean;
     disableEdit: boolean;
-    requireTests: boolean;
+    studentTests: StudentTestConfig;
 }
 
 export interface ICodeFile {
@@ -100,7 +103,7 @@ export function getCodeProblemCompletionStatus(problem: IProblem, state: IPMStat
     const passedAll = completed.indexOf(myuid) >= 0;
     if(passedAll) {
         const { config } = problemDetails as ICodeProblem;
-        if(config.requireTests) {
+        if(config.studentTests === StudentTestConfig.REQUIRED) {
             const username = users.allUsers[myuid].username;
             const tests = aggregateData ? (aggregateData.userData[problem.id] as ICodeSolutionAggregate).tests : {};
             const myTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author === username);

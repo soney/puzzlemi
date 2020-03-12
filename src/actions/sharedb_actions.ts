@@ -4,7 +4,7 @@ import uuid from '../utils/uuid';
 import { getTimeStamp } from '../utils/timestamp';
 import EventTypes from './EventTypes';
 import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
-import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType, IProblemType, IMultipleChoiceOptionType } from '../reducers/problems';
+import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType, IProblemType, IMultipleChoiceOptionType, StudentTestConfig } from '../reducers/problems';
 import { IAggregateData, ISharedSession, IMessage, ICodeSolutionAggregate, ICodeTest, CodeTestStatus, CodeTestType } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
 import { ISolutions } from '../reducers/solutions';
@@ -316,12 +316,11 @@ export function addCodeProblem() {
                 sketch: [],
                 config: {
                     runTests: true,
-                    addTests: false,
                     displayInstructor: false,
                     peerHelp: false,
                     revealSolutions: false,
                     disableEdit: false,
-                    requireTests: false
+                    studentTests: StudentTestConfig.DISABLED
                 },
                 tests: {
                 }

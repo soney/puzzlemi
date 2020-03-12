@@ -9,6 +9,7 @@ import TestItem from './TestItem';
 import uuid from '../../../../utils/uuid';
 import { setActiveTest } from '../../../../actions/user_actions';
 import { logEvent } from '../../../../utils/Firebase';
+import { StudentTestConfig } from '../../../../reducers/problems';
 
 const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, otherTestObjects, dispatch, currentTest, instructorTestObjects, allTestsObjects }) => {
     const myWIP = myTestObjects.filter(o => o.status !== CodeTestStatus.VERIFIED).length;
@@ -38,16 +39,22 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
         })
     }
 
-    const onSwitchAllowAdding = (e) => {
-        const item = e.target.id.split('-')[0];
-        dispatch(changeProblemConfig(problem.id, item, e.target.checked));
-        logEvent("instructor_toggle_adding_tests", {status: e.target.checked}, problem.id, myuid);
-    }
+    // const onSwitchAllowAdding = (e) => {
+    //     const item = e.target.id.split('-')[0];
+    //     dispatch(changeProblemConfig(problem.id, item, e.target.checked));
+    //     logEvent("instructor_toggle_adding_tests", {status: e.target.checked}, problem.id, myuid);
+    // }
 
-    const onSwitchRequireTests = (e) => {
-        const item = e.target.id.split('-')[0];
-        dispatch(changeProblemConfig(problem.id, item, e.target.checked));
-        logEvent("instructor_toggle_require_tests", {status: e.target.checked}, problem.id, myuid);
+    // const onSwitchRequireTests = (e) => {
+    //     const item = e.target.id.split('-')[0];
+    //     dispatch(changeProblemConfig(problem.id, item, e.target.checked));
+    //     logEvent("instructor_toggle_require_tests", {status: e.target.checked}, problem.id, myuid);
+    // }
+
+    const onSwitchChangeStudentTests = (e) => {
+        const { value } = e.target;
+        dispatch(changeProblemConfig(problem.id, 'studentTests', value));
+        logEvent("instructor_change_student_tests", {status: value}, problem.id, myuid);
     }
 
     return <>
@@ -58,7 +65,7 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
                     <ul className="list-group test-lists">
                         {myTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
                     </ul>}
-                {(config.addTests && !isAdmin) &&
+                {((config.studentTests===StudentTestConfig.ENABLED||config.studentTests===StudentTestConfig.REQUIRED) && !isAdmin) &&
                     <div className="add-button">
                         {myWIP > 2
                             ? <button className="btn btn-outline-success btn-sm btn-block" disabled >+ Test</button>
@@ -90,14 +97,12 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
         }
         {isAdmin &&
             <>
-                <div className="custom-control custom-switch edit-switch students-add-switch">
-                    <input type="checkbox" className="custom-control-input" id={"addTests-" + problem.id} onClick={onSwitchAllowAdding} defaultChecked={config.addTests} />
-                    <label className="custom-control-label" htmlFor={"addTests-" + problem.id}>Allow student Tests</label>
-                </div>
-                <div className="custom-control custom-switch edit-switch students-add-switch">
-                    <input type="checkbox" className="custom-control-input" id={"requireTests-" + problem.id} onClick={onSwitchRequireTests} defaultChecked={config.requireTests} />
-                    <label className="custom-control-label" htmlFor={"requireTests-" + problem.id}>Require student tests</label>
-                </div>
+                <label htmlFor={"studentTests-"+problem.id}>Student tests:</label>
+                <select id={"studentTests-"+problem.id} onChange={onSwitchChangeStudentTests} defaultValue={config.studentTests}>
+                    <option value={`${StudentTestConfig.DISABLED}`}>Disabled</option>
+                    <option value={`${StudentTestConfig.ENABLED}` }>Enabled</option>
+                    <option value={`${StudentTestConfig.REQUIRED}`}>Mandatory</option>
+                </select>
             </>
         }
     </>
