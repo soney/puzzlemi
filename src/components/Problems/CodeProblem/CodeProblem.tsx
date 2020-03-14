@@ -17,6 +17,7 @@ import AllSolutions from './AllSolutions/AllSolutions';
 import { logEvent } from '../../../utils/Firebase';
 import { IProblem, ICodeProblemConfig, ICodeProblem, getCodeProblemCompletionStatus, CodeProblemCompletionStatus } from '../../../reducers/problems';
 import { HELP_DOCS } from '../../App';
+import { ICodeTest, ICodeSolutionAggregate } from '../../../reducers/aggregateData';
 
 
 interface ICodeProblemOwnProps {
@@ -33,11 +34,15 @@ interface ICodeProblemProps extends ICodeProblemOwnProps {
     numStuTotal: number;
     myuid: string;
     codeTestFeedback: CodeProblemCompletionStatus;
+    allTests: any;
 }
 
-const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid }: ICodeProblemProps): JSX.Element => {
+const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid, allTests }: ICodeProblemProps): JSX.Element => {
     const [count, setCount] = React.useState(0);
     const [peer, setPeer] = React.useState(0);
+    const [currentTestID, setCurrentTestID] = React.useState(Object.keys(allTests)[0]);
+    const currentTest = allTests.hasOwnProperty(currentTestID) ? allTests[currentTestID] : Object.values(allTests)[0];
+
     const peerHelpTabRef = React.createRef<HTMLAnchorElement>();
     const peerHelpDivRef = React.createRef<HTMLDivElement>();
     const mySolutionTabRef = React.createRef<HTMLAnchorElement>();
@@ -45,11 +50,15 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
     const revealSolutionsTabRef = React.createRef<HTMLAnchorElement>();
     const revealSolutionsDivRef = React.createRef<HTMLDivElement>();
 
+    const doSelectCallback = (ID) => {
+        setCurrentTestID(ID);
+    }
+
     const switchPanel = (e) => {
         const panel = e.target.id.slice(4, 5)
-        if(panel === "h") logEvent("focus_my_solution", {}, problem.id, myuid);
-        if(panel === "p") logEvent("focus_instructor_board", {}, problem.id, myuid);
-        if(panel === "s") logEvent("focus_group_discussion", {}, problem.id, myuid);
+        if (panel === "h") logEvent("focus_my_solution", {}, problem.id, myuid);
+        if (panel === "p") logEvent("focus_instructor_board", {}, problem.id, myuid);
+        if (panel === "s") logEvent("focus_group_discussion", {}, problem.id, myuid);
         refreshCM();
     }
     const refreshCM = () => {
@@ -70,18 +79,18 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
     }
 
     const completionInfo = <div className="row completion-info">
-                    <div className="col">
-                        {isInstructor &&
-                            <p>{numStuCompleted} of {numStuTotal} student{numStuTotal===1 ? '' : 's'} answered correctly </p>
-                        }
-                        {!isInstructor &&
-                            <p>{passedAll && <span>You are one of </span> } {numStuCompleted} {numStuCompleted === 1 ? 'person' : 'people'} {passedAll && <span> that</span>} answered correctly </p>
-                        }
-                    </div>
-                </div>;
-    
-    let testFeedback: JSX.Element|null = null;
-    if(codeTestFeedback === CodeProblemCompletionStatus.NO_TESTS) {
+        <div className="col">
+            {isInstructor &&
+                <p>{numStuCompleted} of {numStuTotal} student{numStuTotal === 1 ? '' : 's'} answered correctly </p>
+            }
+            {!isInstructor &&
+                <p>{passedAll && <span>You are one of </span>} {numStuCompleted} {numStuCompleted === 1 ? 'person' : 'people'} {passedAll && <span> that</span>} answered correctly </p>
+            }
+        </div>
+    </div>;
+
+    let testFeedback: JSX.Element | null = null;
+    if (codeTestFeedback === CodeProblemCompletionStatus.NO_TESTS) {
         testFeedback = <div className="alert alert-danger" role="alert">
             You passed our tests but you must write at least one test case. <a href={HELP_DOCS.WRITING_TEST_CASES} target="_blank" rel="noopener noreferrer">(see how)</a>.
         </div>;
@@ -107,38 +116,15 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
             </div>
             <div className="row instructor-puzzle-container">
                 <div className="col-7">
-                    <PuzzleEditor problem={problem} flag={count} />
+                    <PuzzleEditor problem={problem} flag={count} doSelectCallback={doSelectCallback} currentTest={currentTest} />
                 </div>
                 <div className="col-5">
-                    <CodeOutput problem={problem} />
+                    <CodeOutput problem={problem} currentTest={currentTest} />
                     <Files problem={problem} />
-
-                    {/* <nav>
-                        <div className="nav nav-tabs instructor-tab" id={"nav-instructor-note-tab-" + problem.id} role="tablist">
-                            <a className="nav-item nav-link active" id={"nav-output-tab-" + problem.id} data-toggle="tab" href={"#nav-output-" + problem.id} role="tab" aria-controls={"nav-output-" + problem.id} aria-selected="true" onClick={refreshCM}>Output</a>
-                            <a className="nav-item nav-link" id={"nav-notes-tab-" + problem.id} data-toggle="tab" href={"#nav-notes-" + problem.id} role="tab" aria-controls={"nav-notes-" + problem.id} aria-selected="false" onClick={refreshCM}>Notes</a>
-                            <a className="nav-item nav-link" id={"nav-draw-tab-" + problem.id} data-toggle="tab" href={"#nav-draw-" + problem.id} role="tab" aria-controls={"nav-draw-" + problem.id} aria-selected="false" onClick={refreshCM}>Draw</a>
-                            <a className="nav-item nav-link" id={"nav-files-tab-" + problem.id} data-toggle="tab" href={"#nav-files-" + problem.id} role="tab" aria-controls={"nav-files-" + problem.id} aria-selected="false" onClick={refreshCM}>Files</a>
-                        </div>
-                    </nav>
-                    <div className="tab-content" id="nav-instructor-note-tabContent">
-                        <div className="tab-pane fade show active" id={"nav-output-" + problem.id} role="tabpanel" aria-labelledby={"nav-output-tab-" + problem.id}>
-                            <CodeOutput problem={problem} />
-                        </div>
-                        <div className="tab-pane fade" id={"nav-notes-" + problem.id} role="tabpanel" aria-labelledby={"nav-notes-tab-" + problem.id}>
-                            <ProblemNotes problem={problem} isRender={false} flag={count} />
-                        </div>
-                        <div className="tab-pane fade" id={"nav-draw-" + problem.id} role="tabpanel" aria-labelledby={"nav-draw-tab-" + problem.id}>
-                            <ProblemNotes problem={problem} isRender={true} />
-                        </div>
-                        <div className="tab-pane fade" id={"nav-files-" + problem.id} role="tabpanel" aria-labelledby={"nav-files-tab-" + problem.id}>
-                            <Files problem={problem} />
-                        </div>
-                    </div> */}
                 </div>
             </div>
             <CodeSolutionView problem={problem} />
-            { completionInfo }
+            {completionInfo}
         </>
     }
     else {
@@ -168,7 +154,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
                     </nav>
                     <div className="tab-content" id="nav-student-tabContent">
                         <div ref={mySolutionDivRef} className="tab-pane fade show active" id={"nav-home-" + problem.id} role="tabpanel" aria-labelledby={"nav-home-tab-" + problem.id}>
-                            <MySolution problem={problem} flag={count} redirectCallback={peerHelpRedirect} />
+                            <MySolution problem={problem} flag={count} redirectCallback={peerHelpRedirect} currentTest={currentTest} doSelectCallback={doSelectCallback} />
                         </div>
                         {config.displayInstructor &&
                             <div className="tab-pane fade" id={"nav-profile-" + problem.id} role="tabpanel" aria-labelledby={"nav-profile-tab-" + problem.id}>
@@ -177,7 +163,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
                         }
                         {config.peerHelp &&
                             <div ref={peerHelpDivRef} className="tab-pane fade" id={"nav-contact-" + problem.id} role="tabpanel" aria-labelledby={"nav-contact-tab-" + problem.id}>
-                                <PeerHelp problem={problem} listView={peer} />
+                                <PeerHelp problem={problem} listView={peer} currentTest={currentTest} />
                             </div>
                         }
                         {config.revealSolutions &&
@@ -188,8 +174,8 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
                     </div>
                 </div>
             </div>
-            { completionInfo }
-            { testFeedback }
+            {completionInfo}
+            {testFeedback}
         </>
     }
 }
@@ -201,7 +187,7 @@ function mapStateToProps(state: IPMState, ownProps: ICodeProblemOwnProps): ICode
     const { problem } = ownProps;
     const { problemDetails } = problem;
     const { config } = problemDetails as ICodeProblem;
-    const aggregateData = shareDBDocs.aggregateData?.getData();
+    const aggregateData = shareDBDocs.i.aggregateData;
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
     const myuid = users.myuid as string;
@@ -220,7 +206,12 @@ function mapStateToProps(state: IPMState, ownProps: ICodeProblemOwnProps): ICode
     const intermediateCodeState: ISolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
 
     const codeTestFeedback = getCodeProblemCompletionStatus(problem, state);
+    const instructorTests = (problemDetails as ICodeProblem).tests;
 
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid, codeTestFeedback } as any}) as ICodeProblemProps;
+    const tests: { [id: string]: ICodeTest } = problemAggregateData ? (problemAggregateData as ICodeSolutionAggregate).tests : {};
+
+    const allTests = Object.assign(JSON.parse(JSON.stringify(instructorTests)), JSON.parse(JSON.stringify(tests)));
+
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid, codeTestFeedback, allTests } as any }) as ICodeProblemProps;
 }
 export default connect(mapStateToProps)(CodeProblem);

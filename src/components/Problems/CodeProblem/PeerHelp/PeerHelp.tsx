@@ -8,13 +8,13 @@ import uuid from '../../../../utils/uuid';
 import { addHelpSession, changeHelperLists } from '../../../../actions/sharedb_actions';
 import { updateCurrentActiveHelpSession } from '../../../../actions/user_actions';
 
-const PeerHelp = ({ sessions, problem, dispatch, myuid, myemail, userSolution, listView }) => {
+const PeerHelp = ({ sessions, problem, dispatch, myuid, myemail, userSolution, listView, currentTest }) => {
     const [viewNum, setViewNum] = React.useState(0);
     const [isListView, setIsList] = React.useState(true);
 
-    const open_sessions = sessions.filter((s:ISharedSession) => s.status);
-    const close_sessions = sessions.filter((s:ISharedSession) => !s.status);
-    const my_sessions = sessions.filter((s:ISharedSession) => s.userID === myuid);
+    const open_sessions = sessions.filter((s: ISharedSession) => s.status);
+    const close_sessions = sessions.filter((s: ISharedSession) => !s.status);
+    const my_sessions = sessions.filter((s: ISharedSession) => s.userID === myuid);
     const sessionCollections = [open_sessions, close_sessions, my_sessions];
     const current_sessions = sessionCollections[viewNum];
 

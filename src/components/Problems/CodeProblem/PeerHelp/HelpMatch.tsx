@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import update from 'immutability-helper';
-import { ISharedSession, ICodeTest } from '../../../../reducers/aggregateData';
+import { ISharedSession } from '../../../../reducers/aggregateData';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import SessionList from './SessionList';
 import getChannelName from '../../../../utils/channelName';
@@ -9,10 +9,6 @@ import { analytics } from '../../../../utils/Firebase';
 import uuid from '../../../../utils/uuid';
 import { addHelpSession, changeHelperLists } from '../../../../actions/sharedb_actions';
 import { updateCurrentActiveHelpSession } from '../../../../actions/user_actions';
-
-
-
-
 
 const HelpMatch = ({ dispatch, redirectCallback, problem, myemail, helpSessionObjects, myHelpSession, currentTest, currentResult, userSolution, myuid }) => {
     const [isDisplay, setIsDisplay] = React.useState(true);
@@ -123,27 +119,17 @@ const HelpMatch = ({ dispatch, redirectCallback, problem, myemail, helpSessionOb
 
 function mapStateToProps(state, ownProps) {
     const { intermediateUserState, shareDBDocs, solutions, users } = state;
-    const { problem } = ownProps;
+    const { problem, currentTest } = ownProps;
     const aggregateData = shareDBDocs.i.aggregateData
     const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
-    const { problemDetails } = problem;
-    const instructorTests = problemDetails.tests;
     const myuid = users.myuid as string;
     const myemail = users.allUsers[myuid].email;
     const username = users.allUsers[myuid].username;
 
-    const { currentActiveTest, testResults } = intermediateCodeState;
-    let tests = {};
-    if (aggregateData) {
-        tests = aggregateData.userData[problem.id].tests;
-    }
+    const { testResults } = intermediateCodeState;
+
     const userSolution = solutions.allSolutions[problem.id][myuid];
 
-
-    const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
-    const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
-
-    const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
     const currentResult = currentTest && testResults[currentTest.id];
 
     let helpSessions = {};

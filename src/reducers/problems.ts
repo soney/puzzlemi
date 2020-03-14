@@ -1,6 +1,6 @@
-import {ICodeTest, ICodeSolutionAggregate, CodeTestStatus} from './aggregateData';
+import { ICodeTest, ICodeSolutionAggregate, CodeTestStatus } from './aggregateData';
 import { IPMState } from '.';
-import { ICodeTestResult } from './intermediateUserState';
+import { ICodeSolutionTestResultsState } from './intermediateUserState';
 
 export interface IProblem {
     id: string;
@@ -9,13 +9,13 @@ export interface IProblem {
 };
 
 export enum IProblemType {
-    TextResponse='text-response',
-    MultipleChoice='multiple-choice',
-    Code='code'
+    TextResponse = 'text-response',
+    MultipleChoice = 'multiple-choice',
+    Code = 'code'
 }
 
 export enum IMultipleChoiceOptionType {
-    Fixed='fixed'
+    Fixed = 'fixed'
 }
 
 export interface IMultipleChoiceOption {
@@ -40,32 +40,32 @@ export interface IMultipleChoiceProblem {
 }
 
 export enum IMultipleChoiceSelectionType {
-    Single='single',
-    Multiple='multiple'
+    Single = 'single',
+    Multiple = 'multiple'
 }
 
 export interface ILiveCode {
     code: string;
-    result: ICodeTestResult;
+    testResults: ICodeSolutionTestResultsState;
     sketch: any[];
 }
 export interface ICodeProblem {
     description: string;
     givenCode: string;
-    liveCode: ILiveCode;   
+    liveCode: ILiveCode;
     standardCode: string;
     // notes: string;
     files: ICodeFile[];
     config: ICodeProblemConfig;
     // sketch: any[];
-    tests:{
+    tests: {
         [testID: string]: ICodeTest
     };
     problemType: IProblemType.Code;
 }
 
 export enum StudentTestConfig {
-    DISABLED='disabled', ENABLED='enabled', REQUIRED='required'
+    DISABLED = 'disabled', ENABLED = 'enabled', REQUIRED = 'required'
 };
 
 export interface ICodeProblemConfig {
@@ -107,29 +107,29 @@ export function getCodeProblemCompletionStatus(problem: IProblem, state: IPMStat
     const problemAggregateData = aggregateData && aggregateData.userData[problemID];
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
     const passedAll = completed.indexOf(myuid) >= 0;
-    if(passedAll) {
+    if (passedAll) {
         const { config } = problemDetails as ICodeProblem;
-        if(config.studentTests === StudentTestConfig.REQUIRED) {
+        if (config.studentTests === StudentTestConfig.REQUIRED) {
             const username = users.allUsers[myuid].username;
             const tests = aggregateData ? (aggregateData.userData[problem.id] as ICodeSolutionAggregate).tests : {};
             const myTestObjects: ICodeTest[] = Object.values(tests).filter((t) => t.author === username);
             const validatedTests = myTestObjects.filter((t) => t.status === CodeTestStatus.VERIFIED);
-            if(validatedTests.length > 0) {
+            if (validatedTests.length > 0) {
                 const instructorTests = Object.values(problemDetails.tests);
                 const nonRepeatedTests = validatedTests.filter((t) => {
-                    for(let i: number = 0; i<instructorTests.length; i++) {
-                        if(instructorTests[i].before === t.before && instructorTests[i].after === t.after) {
+                    for (let i: number = 0; i < instructorTests.length; i++) {
+                        if (instructorTests[i].before === t.before && instructorTests[i].after === t.after) {
                             return false;
                         }
                     }
                     return true;
                 })
-                if(nonRepeatedTests.length > 0) {
+                if (nonRepeatedTests.length > 0) {
                     return CodeProblemCompletionStatus.ALL_COMPLETED;
                 } else {
                     return CodeProblemCompletionStatus.TEST_DUPLICATES_INSTRUCTORS;
                 }
-            } else if(myTestObjects.length > 0) {
+            } else if (myTestObjects.length > 0) {
                 return CodeProblemCompletionStatus.TEST_NOT_VERIFIED;
             } else {
                 return CodeProblemCompletionStatus.NO_TESTS;
@@ -142,16 +142,16 @@ export function getCodeProblemCompletionStatus(problem: IProblem, state: IPMStat
     }
 }
 
-export function getFirstIncompleteCodeProblem(state: IPMState): string|null {
+export function getFirstIncompleteCodeProblem(state: IPMState): string | null {
     const { shareDBDocs } = state;
     const problems = shareDBDocs.i.problems;
-    if(problems) {
-        for(let i: number = 0; i<problems.order.length; i++) {
+    if (problems) {
+        for (let i: number = 0; i < problems.order.length; i++) {
             const problemID = problems.order[i];
             const problem = problems.allProblems[problemID];
             const problemType = problem.problemDetails.problemType;
-            if(problemType === IProblemType.Code) {
-                if(getCodeProblemCompletionStatus(problem, state) !== CodeProblemCompletionStatus.ALL_COMPLETED) {
+            if (problemType === IProblemType.Code) {
+                if (getCodeProblemCompletionStatus(problem, state) !== CodeProblemCompletionStatus.ALL_COMPLETED) {
                     return problemID;
                 }
             }

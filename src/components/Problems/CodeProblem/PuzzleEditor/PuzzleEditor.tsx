@@ -3,17 +3,18 @@ import update from 'immutability-helper';
 import { connect } from "react-redux";
 import { CodeEditor } from '../../../CodeEditor';
 import { ICodeSolution } from '../../../../reducers/solutions';
-import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { codeChanged } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
 import { logEvent } from '../../../../utils/Firebase';
 import { deleteTest, changeTestStatus, changeProblemConfig } from '../../../../actions/sharedb_actions';
 import { runCode, runVerifyTest } from '../../../../actions/runCode_actions';
 import TestList from './TestList';
+import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 
-const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, currentTest, flag, aggregateDataDoc }) => {
+const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, flag, aggregateDataDoc, doSelectCallback, currentTest, testResults }) => {
     const [count, setCount] = React.useState(0);
     const [codeTab, setCodeTab] = React.useState('g');
+
     const codeSolution = userSolution as ICodeSolution;
     const p_prb = ['allProblems', problem.id];
     const givenCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'givenCode']);
@@ -25,6 +26,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
     const afterCodeSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'after']) : aggregateDataDoc.subDoc([...p_test, 'after']));
     const testNameSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'name']) : aggregateDataDoc.subDoc([...p_test, 'name']));
     const isEdit = isAdmin ? true : currentTest !== undefined && currentTest.author === username;
+
 
     const doRunCode = () => {
         const graphicsEl = graphicsRef ? graphicsRef.current : null;
@@ -45,12 +47,12 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
                     code = liveCodeSubDoc.getData();
                     break;
             }
-            dispatch(runCode(code, [], problem, graphicsEl, currentTest, 'live'))
+            dispatch(runCode(code, [], problem, graphicsEl, currentTest, codeTab))
         } else {
             dispatch(runCode(code, codeSolution.files, problem, graphicsEl, currentTest));
         }
-        doRunAll();
-        if(currentTest) {
+        doRunAll(code);
+        if (currentTest) {
             doVerifyTest();
         }
     };
@@ -73,7 +75,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
 
     const doDeleteTest = () => {
         dispatch(deleteTest(problem.id, currentTest));
-        logEvent("add_test", {test: JSON.stringify(currentTest)}, problem.id, myuid);
+        logEvent("add_test", { test: JSON.stringify(currentTest) }, problem.id, myuid);
     }
 
     const doVerifyTest = () => {
@@ -88,22 +90,22 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
     const onSwitchLiveCode = (e) => {
         const item = e.target.id.split('-')[0];
         dispatch(changeProblemConfig(problem.id, item, e.target.checked));
-        logEvent("instructor_toggle_live_code", {status: e.target.checked}, problem.id, myuid);
+        logEvent("instructor_toggle_live_code", { status: e.target.checked }, problem.id, myuid);
     }
 
-    const doRunAll = () => {
+    const doRunAll = (code) => {
         const graphicsEl_tmp = graphicsRef ? graphicsRef.current : null;
         if (graphicsEl_tmp) {
             graphicsEl_tmp.innerHTML = '';
         }
         const allTestIDs = Object.keys(allTests);
-        logEvent("run_all", {code: codeSolution.code, tests: allTestIDs}, problem.id, myuid);
-        
+        logEvent("run_all", { code, tests: allTestIDs }, problem.id, myuid);
+
         const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
         allTestsObjects.forEach(test => {
             if (test.status === CodeTestStatus.VERIFIED) {
-                dispatch(runCode(codeSolution.code, codeSolution.files, problem, graphicsEl_tmp, test))
+                dispatch(runCode(code, codeSolution.files, problem, graphicsEl_tmp, test, codeTab))
             }
         });
     }
@@ -192,21 +194,14 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
             </div>
             {(currentTest || isAdmin) &&
                 <div className="col-3 tests">
-                    <TestList problem={problem} />
+                    <TestList problem={problem} doSelectCallback={doSelectCallback} currentTest={currentTest} testResults={testResults} />
                 </div>
             }
         </div>
         <div className="row">
-            <div className={(currentTest||isAdmin) ? "col-9 puzzle-editor" : "col"}>
+            <div className={(currentTest || isAdmin) ? "col-9 puzzle-editor" : "col"}>
                 <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
             </div>
-            {/* {currentTest &&
-                <div className="col-3">
-                    {config.runTests &&
-                        <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunAll}>Run All Tests</button>
-                    }
-                </div>
-            } */}
         </div>
     </>;
 }
@@ -223,19 +218,17 @@ function mapStateToProps(state, ownProps) {
     const { config } = problemDetails;
 
     const myuid = users.myuid as string;
-    const myemail = users.allUsers[myuid].email;
+    const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
+    const { testResults } = intermediateCodeState;
+
 
     const username = users.allUsers[myuid].username;
-    const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
-    const { currentActiveTest } = intermediateCodeState;
     const userSolution = solutions.allSolutions[problem.id][myuid];
     const tests: { [id: string]: ICodeTest } = aggregateData ? aggregateData.userData[problem.id].tests : {};
 
-    const instructorTestObjects: ICodeTest[] = Object.values(instructorTests);
-    const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
+    const allTests = Object.assign(JSON.parse(JSON.stringify(instructorTests)), JSON.parse(JSON.stringify(tests)));
 
-    const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
-    return update(ownProps, { $merge: { isAdmin, username, allTests, userSolution, tests, aggregateDataDoc, currentTest, problemsDoc, config, myuid, myemail } })
+    return update(ownProps, { $merge: { isAdmin, username, allTests, userSolution, tests, aggregateDataDoc, problemsDoc, config, myuid, testResults } })
 }
 
 export default connect(mapStateToProps)(PuzzleEditor);

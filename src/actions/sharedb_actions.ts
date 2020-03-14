@@ -8,7 +8,6 @@ import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionTyp
 import { IAggregateData, ISharedSession, IMessage, ICodeSolutionAggregate, ICodeTest, CodeTestStatus, CodeTestType } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
 import { ISolutions } from '../reducers/solutions';
-import { CodePassedState } from '../reducers/intermediateUserState';
 
 export interface IProblemAddedAction {
     type: EventTypes.PROBLEM_ADDED,
@@ -173,7 +172,7 @@ export function addMultipleChoiceOption(problemID: string, optionType: IMultiple
         const problemsDoc = shareDBDocs.problems;
         const aggregateDataDoc = shareDBDocs.aggregateData;
         const numOptions = problemsDoc.getData().allProblems[problemID].problemDetails.options.length;
-        const newOption: IMultipleChoiceOption = getMultipleChoiceOption(`(option ${numOptions+1})`, optionType);
+        const newOption: IMultipleChoiceOption = getMultipleChoiceOption(`(option ${numOptions + 1})`, optionType);
         await problemsDoc.submitListPushOp(['allProblems', problemID, 'problemDetails', 'options'], newOption);
         await aggregateDataDoc.submitObjectInsertOp(['userData', problemID, 'selected', newOption.id], []);
     };
@@ -304,12 +303,9 @@ export function addCodeProblem() {
         const aggregateDataDoc = shareDBDocs.aggregateData;
         const newLiveCode: ILiveCode = {
             code: `# live code demo`,
-            result: {
-                passed: CodePassedState.PENDING,
-                errors:[],
-                output: ``,
-            },
-            sketch: [],        }
+            testResults: {},
+            sketch: [],
+        }
 
         const newCodeProblem: ICodeProblem = {
             problemType: IProblemType.Code,
@@ -365,7 +361,7 @@ export function addMultipleChoiceProblem() {
                 problemType: IProblemType.MultipleChoice,
                 description: '*no description*',
                 options: [getMultipleChoiceOption('(option 1)', IMultipleChoiceOptionType.Fixed),
-                            getMultipleChoiceOption('(option 2)', IMultipleChoiceOptionType.Fixed)],
+                getMultipleChoiceOption('(option 2)', IMultipleChoiceOptionType.Fixed)],
                 selectionType: IMultipleChoiceSelectionType.Single,
                 revealSolution: false
             }
@@ -438,8 +434,8 @@ export function addTest(problemID: string, username: string, isAdmin: boolean, t
             name: isAdmin ? 'instructor test' : 'student test',
             author: username,
             type: isAdmin ? CodeTestType.INSTRUCTOR : CodeTestType.STUDENT,
-            before: defaultTest?defaultTest.before:"# test setup (define given variables here)",
-            after: defaultTest?defaultTest.after:"# test assertions (assert ...)",
+            before: defaultTest ? defaultTest.before : "# test setup (define given variables here)",
+            after: defaultTest ? defaultTest.after : "# test assertions (assert ...)",
             status: isAdmin ? CodeTestStatus.VERIFIED : CodeTestStatus.UNVERIFIED,
             completed: []
         }

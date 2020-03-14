@@ -1,35 +1,33 @@
 import * as React from 'react';
 import update from 'immutability-helper';
 import { connect } from "react-redux";
-import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import { ICodeTest, CodeTestStatus } from '../../../../reducers/aggregateData';
 import { addTest, changeProblemConfig } from '../../../../actions/sharedb_actions';
 import { runVerifyTest } from '../../../../actions/runCode_actions';
 import TestItem from './TestItem';
 import uuid from '../../../../utils/uuid';
-import { setActiveTest } from '../../../../actions/user_actions';
 import { logEvent } from '../../../../utils/Firebase';
 import { StudentTestConfig } from '../../../../reducers/problems';
 
-const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, otherTestObjects, dispatch, currentTest, instructorTestObjects, allTestsObjects }) => {
+const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, otherTestObjects, dispatch, instructorTestObjects, allTestsObjects, doSelectCallback, currentTest, disable, testResults }) => {
     const myWIP = myTestObjects.filter(o => o.status !== CodeTestStatus.VERIFIED).length;
 
     const doAddInstructorTest = () => {
         const testID = uuid();
         dispatch(addTest(problem.id, username, true, testID)).then(() => {
-            dispatch(setActiveTest(testID, problem.id))
+            doSelectCallback(testID);
         });
-        logEvent("add_test", {testID}, problem.id, myuid);
-        logEvent("focus_test", {testID}, problem.id, myuid);
+        logEvent("add_test", { testID }, problem.id, myuid);
+        logEvent("focus_test", { testID }, problem.id, myuid);
     }
     const doAddUserTest = () => {
         const testID = uuid();
 
         dispatch(addTest(problem.id, username, false, testID)).then(() => {
-            dispatch(setActiveTest(testID, problem.id))
+            doSelectCallback(testID)
         });
-        logEvent("add_test", {testID}, problem.id, myuid);
-        logEvent("focus_test", {testID}, problem.id, myuid);
+        logEvent("add_test", { testID }, problem.id, myuid);
+        logEvent("focus_test", { testID }, problem.id, myuid);
     }
 
     const doVerifyAll = () => {
@@ -39,22 +37,10 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
         })
     }
 
-    // const onSwitchAllowAdding = (e) => {
-    //     const item = e.target.id.split('-')[0];
-    //     dispatch(changeProblemConfig(problem.id, item, e.target.checked));
-    //     logEvent("instructor_toggle_adding_tests", {status: e.target.checked}, problem.id, myuid);
-    // }
-
-    // const onSwitchRequireTests = (e) => {
-    //     const item = e.target.id.split('-')[0];
-    //     dispatch(changeProblemConfig(problem.id, item, e.target.checked));
-    //     logEvent("instructor_toggle_require_tests", {status: e.target.checked}, problem.id, myuid);
-    // }
-
     const onSwitchChangeStudentTests = (e) => {
         const { value } = e.target;
         dispatch(changeProblemConfig(problem.id, 'studentTests', value));
-        logEvent("instructor_change_student_tests", {status: value}, problem.id, myuid);
+        logEvent("instructor_change_student_tests", { status: value }, problem.id, myuid);
     }
 
     return <>
@@ -63,9 +49,9 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
                 {(myTestObjects.length > 0 || (config.addTests && !isAdmin)) && <small className="text-muted">My Tests</small>}
                 {myTestObjects.length > 0 &&
                     <ul className="list-group test-lists">
-                        {myTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
+                        {myTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} doSelectCallback={doSelectCallback} currentTest={currentTest} testResults={testResults} />)}
                     </ul>}
-                {((config.studentTests===StudentTestConfig.ENABLED||config.studentTests===StudentTestConfig.REQUIRED) && !isAdmin) &&
+                {((config.studentTests === StudentTestConfig.ENABLED || config.studentTests === StudentTestConfig.REQUIRED) && !isAdmin && !disable) &&
                     <div className="add-button">
                         {myWIP > 2
                             ? <button className="btn btn-outline-success btn-sm btn-block" disabled >+ Test</button>
@@ -78,7 +64,7 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
                 {instructorTestObjects.length > 0 && <small className="text-muted">Instructor</small>}
                 {instructorTestObjects.length > 0 &&
                     <ul className="list-group test-lists">
-                        {instructorTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
+                        {instructorTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} doSelectCallback={doSelectCallback} currentTest={currentTest} testResults={testResults} />)}
                     </ul>}
             </div>
         }
@@ -87,7 +73,7 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
         {otherTestObjects.length > 0 && <small className="text-muted">Students</small>}
         {otherTestObjects.length > 0 &&
             <ul className="list-group test-lists">
-                {otherTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} />)}
+                {otherTestObjects.map((test, i) => <TestItem key={i} test={test} problem={problem} selected={currentTest === test} doSelectCallback={doSelectCallback} currentTest={currentTest} testResults={testResults} />)}
             </ul>
         }
         {isAdmin &&
@@ -97,10 +83,10 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
         }
         {isAdmin &&
             <>
-                <label htmlFor={"studentTests-"+problem.id}>Student tests:</label>
-                <select id={"studentTests-"+problem.id} onChange={onSwitchChangeStudentTests} defaultValue={config.studentTests}>
+                <label htmlFor={"studentTests-" + problem.id}>Student tests:</label>
+                <select className="form-control" id={"studentTests-" + problem.id} onChange={onSwitchChangeStudentTests} defaultValue={config.studentTests}>
                     <option value={`${StudentTestConfig.DISABLED}`}>Disabled</option>
-                    <option value={`${StudentTestConfig.ENABLED}` }>Enabled</option>
+                    <option value={`${StudentTestConfig.ENABLED}`}>Enabled</option>
                     <option value={`${StudentTestConfig.REQUIRED}`}>Mandatory</option>
                 </select>
             </>
@@ -123,8 +109,6 @@ function mapStateToProps(state, ownProps) {
     const myuid = users.myuid as string;
     const myemail = users.allUsers[myuid].email;
     const username = users.allUsers[myuid].username;
-    const intermediateCodeState: ICodeSolutionState = intermediateUserState.intermediateSolutionState[ownProps.problem.id];
-    const { currentActiveTest, testResults } = intermediateCodeState;
     const userSolution = solutions.allSolutions[problem.id][myuid];
     const tests: { [id: string]: ICodeTest } = aggregateData ? aggregateData.userData[problem.id].tests : {};
 
@@ -134,9 +118,7 @@ function mapStateToProps(state, ownProps) {
     const allTests = Object.assign(JSON.parse(JSON.stringify(tests)), instructorTests);
     const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
-    const currentTest = allTests.hasOwnProperty(currentActiveTest) ? allTests[currentActiveTest] : instructorTestObjects[0];
-
-    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, myTestObjects, otherTestObjects, myemail, aggregateDataDoc, currentTest, problemsDoc, testResults, config, instructorTestObjects, allTestsObjects, myuid } })
+    return update(ownProps, { $merge: { isAdmin, username, userSolution, tests, myTestObjects, otherTestObjects, myemail, aggregateDataDoc, allTests, problemsDoc, config, instructorTestObjects, allTestsObjects, myuid } })
 }
 
 export default connect(mapStateToProps)(TestList);

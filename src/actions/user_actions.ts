@@ -20,16 +20,6 @@ export const setUser = (user: IUserInfo): ISetUserAction => ({
     user, type: EventTypes.SET_USER
 });
 
-export interface ISetActiveTestAction {
-    type: EventTypes.SET_ACTIVE_TEST,
-    testID: string,
-    problemID: string
-}
-
-export const setActiveTest = (testID: string, problemID: string): ISetActiveTestAction => ({
-    testID, problemID, type: EventTypes.SET_ACTIVE_TEST
-})
-
 export interface IMultipleChoiceSelectedOptionsChangedAction {
     type: EventTypes.MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED,
     selectedItems: string[],

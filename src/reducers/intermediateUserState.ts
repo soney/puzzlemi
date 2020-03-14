@@ -1,6 +1,6 @@
 import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
-import { ISetIsAdminAction, ICodeChangedAction, IUpdateActiveHelpSessionAction, ISetActiveTestAction } from '../actions/user_actions';
+import { ISetIsAdminAction, ICodeChangedAction, IUpdateActiveHelpSessionAction } from '../actions/user_actions';
 import { IOutputChangedAction, IErrorChangedAction, IDoneRunningCodeAction, IBeginRunningCodeAction, IPassedAddAction, IFailedAddAction } from '../actions/runCode_actions';
 import { IProblemAddedAction, ISDBDocFetchedAction, ITestAddedAction, ITestPartChangedAction, IMultipleChoiceOptionAddedAction } from '../actions/sharedb_actions';
 import { IProblem, ICodeFile, IMultipleChoiceOption, IProblemType } from './problems';
@@ -22,7 +22,6 @@ export interface ICodeSolutionState {
     files: ICodeFile[],
     passedAll: boolean,
     testResults: ICodeSolutionTestResultsState,
-    currentActiveTest: string,
     currentActiveHelpSession: string,
 }
 
@@ -40,7 +39,7 @@ export interface ICodeTestResult {
 
 export type ISolutionState = ICodeSolutionState | null;
 
-export const intermediateUserState = (state: IIntermediateUserState = { isAdmin: false, awaitingFocus: null, intermediateSolutionState: {} }, action: ISetIsAdminAction | IOutputChangedAction | IErrorChangedAction | IDoneRunningCodeAction | IBeginRunningCodeAction | IProblemAddedAction | ISDBDocFetchedAction | ICodeChangedAction | ITestAddedAction | ITestPartChangedAction | IPassedAddAction | IFailedAddAction | IUpdateActiveHelpSessionAction | ISetActiveTestAction) => {
+export const intermediateUserState = (state: IIntermediateUserState = { isAdmin: false, awaitingFocus: null, intermediateSolutionState: {} }, action: ISetIsAdminAction | IOutputChangedAction | IErrorChangedAction | IDoneRunningCodeAction | IBeginRunningCodeAction | IProblemAddedAction | ISDBDocFetchedAction | ICodeChangedAction | ITestAddedAction | ITestPartChangedAction | IPassedAddAction | IFailedAddAction | IUpdateActiveHelpSessionAction) => {
     const { type } = action;
     if (type === EventTypes.SET_IS_ADMIN) {
         const { isAdmin } = action as ISetIsAdminAction;
@@ -158,15 +157,6 @@ export const intermediateUserState = (state: IIntermediateUserState = { isAdmin:
             }
         }
         );
-    } else if (type === EventTypes.SET_ACTIVE_TEST) {
-        const { testID, problemID } = action as ISetActiveTestAction;
-        return update(state, {
-            intermediateSolutionState: {
-                [problemID]: {
-                    currentActiveTest: { $set: testID }
-                }
-            }
-        })
     } else if (type === EventTypes.CODE_CHANGED) {
         const { problemID } = action as ICodeChangedAction;
         const intermediateCodeState: ISolutionState = state.intermediateSolutionState[problemID];
@@ -223,7 +213,6 @@ function getIntermediateSolutionState(problem: IProblem): ISolutionState {
             files: [],
             passedAll: false,
             testResults: {},
-            currentActiveTest: '',
             currentActiveHelpSession: '',
         };
     } else {

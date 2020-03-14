@@ -25,7 +25,7 @@ const jsonExternalLibInfo = {
     path: `${window.location.origin}/json.sk-master/__init__.js`,
 };
 const puzzlemiExternalLibInfo = {
-    path : 'puzzleme_skulpt_lib.js'
+    path: 'puzzleme_skulpt_lib.js'
 };
 
 if (Sk.externalLibraries) {
@@ -99,8 +99,8 @@ const testFunctions = `\nimport puzzlemi\ndef getEditorText(): return puzzlemi.d
 const testFunctionsMatches = testFunctions.match(/\n/g);
 const testFunctionsLines = testFunctionsMatches ? testFunctionsMatches.length : 1;
 function executeCode(beforeCode: string, code: string, afterCode: string, files: { problemFiles: ICodeFile[], userFiles: ICodeFile[], tempFiles: ICodeFile[] }, outputChangeHandler, writeFileHandler, graphics) {
-    beforeCode = beforeCode?beforeCode + '\n':'';
-    afterCode = afterCode?'\n' + afterCode:'';
+    beforeCode = beforeCode ? beforeCode + '\n' : '';
+    afterCode = afterCode ? '\n' + afterCode : '';
     const fullCode = `${beforeCode}${code}${testFunctions}${afterCode}`;
     let oldGetEditorText: any;
     let oldGetOutput: any;
@@ -158,7 +158,7 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files:
         let errString: string;
         myPromise.catch((err) => {
             const pretextLines = (beforeCode.match(/\n/g) || '').length;
- 
+
             const matches = code.match(/\n/g);
             const progLines = matches ? (matches.length + 1) : 1;
 
@@ -186,14 +186,14 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files:
                 errString = err.toString();
             }
         }).finally(() => {
-            if(oldGetEditorText === NONE) {
+            if (oldGetEditorText === NONE) {
                 delete window['getEditorText'];
             } else {
                 window['getEditorText'] = oldGetEditorText;
             }
             oldGetEditorText = undefined;
 
-            if(oldGetOutput === NONE) {
+            if (oldGetOutput === NONE) {
                 delete window['getOutput'];
             } else {
                 window['getOutput'] = oldGetOutput;
@@ -213,7 +213,7 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
         const problemDetails = problem.problemDetails as ICodeProblem;
         const files = { problemFiles: problemDetails.files, userFiles, tempFiles: [] };
         const writtenFiles: string[] = [];
-        const testID = test? test.id:"default";
+        const testID = test ? test.id : "default";
         // const fullCode = test.before.concat(' \n' + code, ' \n' + test.after);
         const outputChangeHandler = (output) => {
             dispatch({
@@ -224,16 +224,16 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
             } as IOutputChangedAction);
         }
         const writeFileHandler = (contents, fname) => {
-            if(writtenFiles.indexOf(fname) < 0) {
-                let fileID: string|null = null;
-                for(let i: number = 0; i<userFiles.length; i++) {
+            if (writtenFiles.indexOf(fname) < 0) {
+                let fileID: string | null = null;
+                for (let i: number = 0; i < userFiles.length; i++) {
                     const userFile = userFiles[i];
-                    if(userFile.name === fname) {
+                    if (userFile.name === fname) {
                         fileID = userFile.id;
                         break;
                     }
                 }
-                if(fileID) {
+                if (fileID) {
                     dispatch({
                         problem, fileID,
                         type: EventTypes.DELETE_USER_FILE
@@ -280,10 +280,10 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
             const intermediateCodeState: ICodeSolutionState = intermediateSolutionState[problem.id]!;
             const { testResults } = intermediateCodeState;
             let passedAll: boolean = true;
-            for(let testID in testResults) {
-                if(testResults.hasOwnProperty(testID)) {
+            for (let testID in testResults) {
+                if (testResults.hasOwnProperty(testID)) {
                     const testResult = testResults[testID];
-                    if(testResult.passed !== CodePassedState.PASSED) {
+                    if (testResult.passed !== CodePassedState.PASSED) {
                         passedAll = false;
                         break;
                     }
@@ -295,41 +295,41 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
             const aggregateData = aggregateDataDoc.getData();
             const completedIndex = aggregateData.userData[problem.id].completed!.indexOf(myuid);
             const isMarkedAsPassedAll = completedIndex >= 0;
-            if(passedAll && !isMarkedAsPassedAll) {
+            if (passedAll && !isMarkedAsPassedAll) {
                 aggregateDataDoc.submitListPushOp(['userData', problem.id, 'completed'], myuid);
-            } else if(!passedAll && isMarkedAsPassedAll) {
+            } else if (!passedAll && isMarkedAsPassedAll) {
                 aggregateDataDoc.submitListDeleteOp(['userData', problem.id, 'completed', completedIndex]);
             }
 
             const problemsDoc = shareDBDocs.problems!;
-            if(option === "live"){
-                const newResult:ICodeTestResult = {
+            if (option === "l") {
+                const newResult: ICodeTestResult = {
                     passed,
-                    errors: errString?[errString]:[],
+                    errors: errString ? [errString] : [],
                     output,
                 }
-                problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'liveCode', 'result'], newResult)
+                problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'liveCode', 'testResults', testID], newResult)
             }
 
-            logEvent("run_code", {code, test: test?JSON.stringify(test):"", result: JSON.stringify({passed, errString, output})}, problem.id, myuid);
+            logEvent("run_code", { code, test: test ? JSON.stringify(test) : "", result: JSON.stringify({ passed, errString, output }) }, problem.id, myuid);
         });
     }
 }
 
-export function runVerifyTest(problem: IProblem, test:ICodeTest) {
+export function runVerifyTest(problem: IProblem, test: ICodeTest) {
     return (dispatch: Dispatch, getState) => {
         const { id: problemID } = problem;
         const problemDetails = problem.problemDetails as ICodeProblem;
         const { standardCode } = problemDetails;
         const tempFiles: ICodeFile[] = [];
         const files = { problemFiles: problemDetails.files, userFiles: [], tempFiles };
-       
+
         const outputChangeHandler = (output) => { };
 
         const writeFileHandler = (contents, name) => {
             const fIndex = tempFiles.findIndex((f) => f.name === name);
-            if(fIndex < 0) {
-                tempFiles.push({ id: uuid(), name, contents});
+            if (fIndex < 0) {
+                tempFiles.push({ id: uuid(), name, contents });
             } else {
                 tempFiles[fIndex].contents = tempFiles[fIndex].contents + contents;
             }
@@ -344,13 +344,13 @@ export function runVerifyTest(problem: IProblem, test:ICodeTest) {
             const problemsDoc = shareDBDocs.problems;
             const aggregateDataDoc = shareDBDocs.aggregateData;
             const newStatus = (passedStandard && !passedEmpty) ? CodeTestStatus.VERIFIED : CodeTestStatus.VERIFICATION_FAILED;
-            if(test.type === CodeTestType.INSTRUCTOR) {
+            if (test.type === CodeTestType.INSTRUCTOR) {
                 problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'tests', test.id, 'status'], newStatus);
             } else {
                 aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'tests', test.id, 'status'], newStatus);
             }
             const myuid = users.myuid as string;
-            logEvent("verify_test", {code: standardCode, test: test?JSON.stringify(test):"", newStatus: newStatus}, problem.id, myuid);
+            logEvent("verify_test", { code: standardCode, test: test ? JSON.stringify(test) : "", newStatus: newStatus }, problem.id, myuid);
         })
     }
 }
