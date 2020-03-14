@@ -201,7 +201,7 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
                     }
                 }
                 const userInfo = `${u.fullName} (${score})`;
-                const pct = (score - lowScore) / (highScore - lowScore);
+                const pct = (highScore === lowScore) ? 0.5 : (score - lowScore) / (highScore - lowScore);
                 const userStyle = isSelectedUser ? {} : {color: rgbToHex(interpolatergb(failColor, successColor, pct))};
                 return <a href="#0" style={userStyle} className={classNames({ user: true, selected: isSelectedUser })} key={u.uid} onClick={selectUser}>{userInfo}</a>
             });
