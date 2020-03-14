@@ -72,7 +72,7 @@ const ChatWidget = ({ dispatch, problem, chatMessages, user, path, myuid }) => {
 
                     <div className="chat-message-item">
                         <div className="chat-header">
-                            <span className="sender" style={{'color': message.sender.userColor}}>{getSender(message)}</span>
+                            <span className="sender" style={{'color': message.sender.userColor}}><i className={`fas fa-${message.sender.userIcon}`}></i> {getSender(message)}</span>
                             <span className="timestamp">
                                 ({timeAgo(parseInt(message.timestamp))})
                             </span>

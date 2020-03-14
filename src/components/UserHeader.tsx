@@ -35,7 +35,7 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
     const { myuid } = users;
     if (!myuid) { return <nav>fetching user information...</nav> }
 
-    const { loggedIn, isInstructor, username, email } = users.allUsers[myuid];
+    const { loggedIn, isInstructor, username, email, anonymousName, userColor, userIcon } = users.allUsers[myuid];
 
     const toggleIsAdmin = () => {
         dispatch(setIsAdmin(!isAdmin));
@@ -153,6 +153,7 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
         allUserDisplays.splice(0, 0, "(nobody here)");
     }
 
+
     const editButton = isInstructor ? <div className="custom-control custom-switch">
         <input id="admin-mode" type="checkbox" className="custom-control-input" onChange={handleEditChange} checked={isAdmin} />
         <label htmlFor="admin-mode" className="custom-control-label">Admin Mode</label>
@@ -230,6 +231,7 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
             <span className='navbar-brand nav-item'>PuzzleMI [{channel}]</span>
             <ul className='navbar-nav mr-auto'>
                 <li className='nav-item'>{userInfo}</li>
+                <li className='nav-item' style={{color: userColor!}}>&nbsp;(<i className={`fas fa-${userIcon}`}></i>&nbsp;{anonymousName})</li>
             </ul>
             {isAdmin &&
                 <form className="form-inline">

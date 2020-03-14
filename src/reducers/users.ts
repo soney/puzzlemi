@@ -7,6 +7,7 @@ export interface IUserInfo {
     username: string|null,
     anonymousName: string|null,
     userColor: string|null,
+    userIcon: string|null,
     email: string|null,
     isInstructor: boolean,
     loggedIn: boolean,
