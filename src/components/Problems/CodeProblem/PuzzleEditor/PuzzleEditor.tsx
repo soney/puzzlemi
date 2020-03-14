@@ -17,7 +17,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
     const codeSolution = userSolution as ICodeSolution;
     const p_prb = ['allProblems', problem.id];
     const givenCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'givenCode']);
-    const liveCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'liveCode']);
+    const liveCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'liveCode', 'code']);
     const standardCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'standardCode']);
 
     const p_test = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? ['allProblems', problem.id, 'problemDetails', 'tests', currentTest.id] : ['userData', problem.id, 'tests', currentTest.id]);
@@ -45,7 +45,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
                     code = liveCodeSubDoc.getData();
                     break;
             }
-            dispatch(runCode(code, [], problem, graphicsEl, currentTest))
+            dispatch(runCode(code, [], problem, graphicsEl, currentTest, 'live'))
         } else {
             dispatch(runCode(code, codeSolution.files, problem, graphicsEl, currentTest));
         }

@@ -1,5 +1,6 @@
 import {ICodeTest, ICodeSolutionAggregate, CodeTestStatus} from './aggregateData';
 import { IPMState } from '.';
+import { ICodeTestResult } from './intermediateUserState';
 
 export interface IProblem {
     id: string;
@@ -43,15 +44,20 @@ export enum IMultipleChoiceSelectionType {
     Multiple='multiple'
 }
 
+export interface ILiveCode {
+    code: string;
+    result: ICodeTestResult;
+    sketch: any[];
+}
 export interface ICodeProblem {
     description: string;
     givenCode: string;
-    liveCode: string;
+    liveCode: ILiveCode;   
     standardCode: string;
-    notes: string;
+    // notes: string;
     files: ICodeFile[];
     config: ICodeProblemConfig;
-    sketch: any[];
+    // sketch: any[];
     tests:{
         [testID: string]: ICodeTest
     };

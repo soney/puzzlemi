@@ -4,10 +4,11 @@ import uuid from '../utils/uuid';
 import { getTimeStamp } from '../utils/timestamp';
 import EventTypes from './EventTypes';
 import sharedb, { ObjectInsertOp, ListDeleteOp, ListInsertOp } from 'sharedb';
-import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType, IProblemType, IMultipleChoiceOptionType, StudentTestConfig } from '../reducers/problems';
+import { IProblem, IMultipleChoiceOption, IProblems, IMultipleChoiceSelectionType, IProblemType, IMultipleChoiceOptionType, StudentTestConfig, ICodeProblem, ILiveCode } from '../reducers/problems';
 import { IAggregateData, ISharedSession, IMessage, ICodeSolutionAggregate, ICodeTest, CodeTestStatus, CodeTestType } from '../reducers/aggregateData';
 import { IUsers } from '../reducers/users';
 import { ISolutions } from '../reducers/solutions';
+import { CodePassedState } from '../reducers/intermediateUserState';
 
 export interface IProblemAddedAction {
     type: EventTypes.PROBLEM_ADDED,
@@ -301,30 +302,39 @@ export function addCodeProblem() {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
         const aggregateDataDoc = shareDBDocs.aggregateData;
+        const newLiveCode: ILiveCode = {
+            code: `# live code demo`,
+            result: {
+                passed: CodePassedState.PENDING,
+                errors:[],
+                output: ``,
+            },
+            sketch: [],        }
+
+        const newCodeProblem: ICodeProblem = {
+            problemType: IProblemType.Code,
+            givenCode: `# code here`,
+            standardCode: `# standard solution`,
+            liveCode: newLiveCode,
+            description: '*no description*',
+            files: [],
+            config: {
+                runTests: true,
+                displayInstructor: false,
+                peerHelp: false,
+                revealSolutions: false,
+                disableEdit: false,
+                studentTests: StudentTestConfig.DISABLED
+            },
+            tests: {
+            }
+
+        }
 
         const newProblem: IProblem = {
             id: uuid(),
             visible: true,
-            problemDetails: {
-                problemType: IProblemType.Code,
-                givenCode: `# code here`,
-                standardCode: `# standard solution`,
-                liveCode: `# live code demo`,
-                notes: '*no notes*',
-                description: '*no description*',
-                files: [],
-                sketch: [],
-                config: {
-                    runTests: true,
-                    displayInstructor: false,
-                    peerHelp: false,
-                    revealSolutions: false,
-                    disableEdit: false,
-                    studentTests: StudentTestConfig.DISABLED
-                },
-                tests: {
-                }
-            }
+            problemDetails: newCodeProblem
         };
 
         const newCodeSolutionAggregate: ICodeSolutionAggregate = {

@@ -31,5 +31,6 @@ enum EventTypes {
     ADD_PASSED_TESTS = 'add passed tests',
     ADD_FAILED_TEST = 'add failed test',
     UPDATE_ACTIVE_HELP_SESSION = 'update active help session',
+    DONE_RUNNING_LIVE = 'done running live code'
 };
 export default EventTypes;

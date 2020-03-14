@@ -4,7 +4,7 @@ import '../js/skulpt/skulpt-stdlib.js';
 import EventTypes from "./EventTypes";
 import { IProblem, ICodeProblem, ICodeFile } from "../reducers/problems";
 import { ICodeTest, CodeTestType, CodeTestStatus } from "../reducers/aggregateData";
-import { ICodeSolutionState, CodePassedState } from "../reducers/intermediateUserState";
+import { ICodeSolutionState, CodePassedState, ICodeTestResult } from "../reducers/intermediateUserState";
 import { IPMState } from "../reducers/index.js";
 import uuid from "../utils/uuid";
 import { logEvent } from '../utils/Firebase';
@@ -81,6 +81,13 @@ export interface IFailedAddAction {
     type: EventTypes.ADD_FAILED_TEST,
     problemID: string,
     failedID: string
+}
+
+export interface IDoneRunningLiveCodeAction {
+    type: EventTypes.DONE_RUNNING_LIVE,
+    problemID: string,
+    passed: CodePassedState,
+    errors: string[]
 }
 
 export interface IExecuteCodeResult {
@@ -200,7 +207,7 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files:
     });
 }
 
-export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem, graphics: HTMLDivElement | null, test: ICodeTest) {
+export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem, graphics: HTMLDivElement | null, test: ICodeTest, option?) {
     return (dispatch: Dispatch, getState) => {
         const { id: problemID } = problem;
         const problemDetails = problem.problemDetails as ICodeProblem;
@@ -293,6 +300,17 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
             } else if(!passedAll && isMarkedAsPassedAll) {
                 aggregateDataDoc.submitListDeleteOp(['userData', problem.id, 'completed', completedIndex]);
             }
+
+            const problemsDoc = shareDBDocs.problems!;
+            if(option === "live"){
+                const newResult:ICodeTestResult = {
+                    passed,
+                    errors: errString?[errString]:[],
+                    output,
+                }
+                problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'liveCode', 'result'], newResult)
+            }
+
             logEvent("run_code", {code, test: test?JSON.stringify(test):"", result: JSON.stringify({passed, errString, output})}, problem.id, myuid);
         });
     }
