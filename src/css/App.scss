@@ -35,7 +35,25 @@ html {
     }
     @include box-shadow(0px, 0px, 5px, rgba(100, 100, 100, 0.2));
     .problem-description {
-      word-wrap: break-word;
+      p {
+        word-wrap: break-word;
+      }
+      .CodeMirror-scroll {
+        min-height: 80px;
+        max-height: 200px;
+      }
+    }
+    .before-code, .after-code {
+      .CodeMirror-scroll {
+        min-height: 80px;
+        max-height: 300px;
+      }
+    }
+    .live-code-view, .given-code, .live-code, .solution-code, .student-code {
+      .CodeMirror-scroll {
+        min-height: 300px;
+        max-height: 600px;
+      }
     }
 
     .completion-info {

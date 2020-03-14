@@ -21,16 +21,16 @@ const ProblemDescription = ({ problem, isAdmin, problemsDoc, description, focusO
         const p = ['allProblems', problem.id, 'problemDetails', 'description'];
         const subDoc = problemsDoc.subDoc(p) as SDBSubDoc<string>;
         return <div className="row">
-            <div className="col">
-                <CodeEditor focusOnMount={focusOnMount} shareDBSubDoc={subDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true, height: 80}} />
+            <div className="col problem-description">
+                <CodeEditor focusOnMount={focusOnMount} shareDBSubDoc={subDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true}} />
             </div>
         </div>;
     } else {
         const converter = new showdown.Converter();
         const problemDescription = { __html: converter.makeHtml(description) };
         return <div className="row">
-            <div className="col">
-                <p className="problem-description" dangerouslySetInnerHTML={problemDescription} />
+            <div className="col problem-description">
+                <p dangerouslySetInnerHTML={problemDescription} />
             </div>
         </div>;
     }

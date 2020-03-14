@@ -163,26 +163,26 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
                     </>
                 }
                 {currentTest &&
-                    <CodeEditor run={doRunCode} shareDBSubDoc={beforeCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80, lineWrapping: true }} refreshDoc={currentTest.id} onChange={doInitTestStatus} />
+                    <div className="before-code"><CodeEditor run={doRunCode} shareDBSubDoc={beforeCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, lineWrapping: true }} refreshDoc={currentTest.id} onChange={doInitTestStatus} /></div>
                 }
                 {isAdmin
                     ? <>
                         <div className="tab-content" id={"nav-instructor-code-tabContent-" + problem.id}>
-                            <div className="tab-pane fade show active" id={"nav-given-" + problem.id} role="tabpanel" aria-labelledby={"nav-given-tab-" + problem.id}>
-                                <CodeEditor shareDBSubDoc={givenCodeSubDoc} options={{ lineNumbers: true, height: 200, lineWrapping: true }} />
+                            <div className="tab-pane fade show active given-code" id={"nav-given-" + problem.id} role="tabpanel" aria-labelledby={"nav-given-tab-" + problem.id}>
+                                <CodeEditor shareDBSubDoc={givenCodeSubDoc} options={{ lineNumbers: true, lineWrapping: true }} />
                             </div>
-                            <div className="tab-pane fade" id={"nav-standard-" + problem.id} role="tabpanel" aria-labelledby={"nav-standard-tab-" + problem.id}>
-                                <CodeEditor run={doRunCode} shareDBSubDoc={standardCodeSubDoc} options={{ lineNumbers: true, height: 200, lineWrapping: true }} flag={count} />
+                            <div className="tab-pane fade solution-code" id={"nav-standard-" + problem.id} role="tabpanel" aria-labelledby={"nav-standard-tab-" + problem.id}>
+                                <CodeEditor run={doRunCode} shareDBSubDoc={standardCodeSubDoc} options={{ lineNumbers: true, lineWrapping: true }} flag={count} />
                             </div>
-                            <div className="tab-pane fade" id={"nav-live-" + problem.id} role="tabpanel" aria-labelledby={"nav-live-tab-" + problem.id}>
-                                <CodeEditor run={doRunCode} shareDBSubDoc={liveCodeSubDoc} options={{ lineNumbers: true, height: 200, lineWrapping: true }} flag={count} />
+                            <div className="tab-pane fade live-code" id={"nav-live-" + problem.id} role="tabpanel" aria-labelledby={"nav-live-tab-" + problem.id}>
+                                <CodeEditor run={doRunCode} shareDBSubDoc={liveCodeSubDoc} options={{ lineNumbers: true, lineWrapping: true }} flag={count} />
                             </div>
                         </div>
                     </>
-                    : <CodeEditor run={doRunCode} value={codeSolution.code} options={{ lineNumbers: true, height: 300, lineWrapping: true, readOnly: config.disableEdit }} onChange={doSetCode} flag={flag} />
+                    : <div className="student-code"><CodeEditor run={doRunCode} value={codeSolution.code} options={{ lineNumbers: true, lineWrapping: true, readOnly: config.disableEdit }} onChange={doSetCode} flag={flag} /></div>
                 }
                 {currentTest &&
-                    <CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, height: 80, lineWrapping: true }} refreshDoc={currentTest.id} onChange={doInitTestStatus} />
+                    <div className="after-code"><CodeEditor shareDBSubDoc={afterCodeSubDoc} options={{ readOnly: !isEdit, lineNumbers: true, lineWrapping: true }} refreshDoc={currentTest.id} onChange={doInitTestStatus} /></div>
                 }
             </div>
             {(currentTest || isAdmin) &&

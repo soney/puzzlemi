@@ -8,16 +8,14 @@ const LiveCode = ({ index, problem, flag, problemsDoc }) => {
     const p = ['allProblems', problem.id];
     const liveCodeSubDoc = problemsDoc.subDoc([...p, 'problemDetails', 'liveCode']);
 
-    return <div>
-        <div className="row">
-            <div className="col">
-                <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true, height: 300 }} />
-            </div>
-            <div className="col">
-                <ProblemNotes problem={problem} />
-            </div>
+    return <div className="row">
+        <div className="col live-code-view">
+            <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true }} />
         </div>
-    </div>
+        <div className="col">
+            <ProblemNotes problem={problem} />
+        </div>
+    </div>;
 }
 
 function mapStateToProps(state, ownProps) {
