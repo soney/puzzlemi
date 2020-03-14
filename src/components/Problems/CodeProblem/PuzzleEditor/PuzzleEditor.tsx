@@ -49,7 +49,12 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
         } else {
             dispatch(runCode(code, codeSolution.files, problem, graphicsEl, currentTest));
         }
+        doRunAll();
+        if(currentTest) {
+            doVerifyTest();
+        }
     };
+
 
     const refreshCM = () => {
         setCount(count + 1);
@@ -195,13 +200,13 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, myemail, allTests, pro
             <div className={(currentTest||isAdmin) ? "col-9 puzzle-editor" : "col"}>
                 <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunCode}>Run</button>
             </div>
-            {currentTest &&
+            {/* {currentTest &&
                 <div className="col-3">
                     {config.runTests &&
                         <button disabled={false} className='btn btn-outline-success btn-sm btn-block' onClick={doRunAll}>Run All Tests</button>
                     }
                 </div>
-            }
+            } */}
         </div>
     </>;
 }

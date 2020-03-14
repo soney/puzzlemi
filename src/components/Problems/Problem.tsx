@@ -9,7 +9,11 @@ import TextResponseProblem from './TextResponseProblem/TextResponseProblem';
 import { IPMState } from '../../reducers';
 import { IProblemType, CodeProblemCompletionStatus, getCodeProblemCompletionStatus } from '../../reducers/problems';
 
-const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSolution, isAdmin, pointUserToOtherProblem }) => {
+enum PassedStatus {
+    NOT_PASSED='not_passed', AWAITING_TEST='awaiting_test', PASSED='passed'
+}
+
+const Problem = ({ problem, dispatch, numCompleted, passedStatus, visible, revealSolution, isAdmin, pointUserToOtherProblem }) => {
     const { id: problemID, problemDetails } = problem;
     const { problemType } = problemDetails;
 
@@ -57,7 +61,7 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
         </div>;
     }
 
-    return <div id={problem.id} className={classNames({'problem': true, 'container': true, 'passedAll': passedAll&&!isAdmin})} ref={elementRef}>
+    return <div id={problem.id} className={classNames({'problem': true, 'container': true, 'warning': (passedStatus === PassedStatus.AWAITING_TEST)&&!isAdmin, 'success': (passedStatus===PassedStatus.PASSED)&&!isAdmin})} ref={elementRef}>
         { isAdmin &&
             <div className="btn-toolbar justify-content-between">
                 <div className="btn-group btn-group-toggle" data-toggle="buttons">
@@ -90,10 +94,10 @@ const Problem = ({ problem, dispatch, numCompleted, passedAll, visible, revealSo
             ((problemType === IProblemType.MultipleChoice && revealSolution)) &&
             <div className="row completion-info">
                 <div className="col">
-                    {passedAll &&
+                    {passedStatus === PassedStatus.PASSED &&
                         <span>You are one of </span>
                     }
-                    {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{passedAll && <span> that</span>} answered correctly.
+                    {numCompleted} {numCompleted === 1 ? 'person' : 'people'}{(passedStatus===PassedStatus.PASSED) && <span> that</span>} answered correctly.
                 </div>
             </div>
         }
@@ -115,16 +119,23 @@ function mapStateToProps(state: IPMState, ownProps) {
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
     const numCompleted = completed.length;
 
-    let passedAll: boolean = false;
+    let passedStatus: PassedStatus = PassedStatus.NOT_PASSED;
     if(problemType === IProblemType.Code) {
-        passedAll = getCodeProblemCompletionStatus(problem, state) === CodeProblemCompletionStatus.ALL_COMPLETED;
+        const completionStatus = getCodeProblemCompletionStatus(problem, state);
+        if(completionStatus === CodeProblemCompletionStatus.ALL_COMPLETED) {
+            passedStatus = PassedStatus.PASSED;
+        } else if(completionStatus === CodeProblemCompletionStatus.NO_TESTS || completionStatus === CodeProblemCompletionStatus.TEST_DUPLICATES_INSTRUCTORS || completionStatus === CodeProblemCompletionStatus.TEST_NOT_VERIFIED) {
+            passedStatus = PassedStatus.AWAITING_TEST;
+        }
     } else if(problemType === IProblemType.MultipleChoice) {
-        passedAll = completed.indexOf(myuid) >= 0 && !revealSolution;
+        if(completed.indexOf(myuid) >= 0 && !revealSolution) {
+            passedStatus = PassedStatus.PASSED;
+        }
     }
     // const passedAll = completed.indexOf(myuid) >= 0 && !(problemType===IProblemType.MultipleChoice&&!revealSolution);
 
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
 
-    return update(ownProps, {$merge: { isAdmin, numCompleted, passedAll, visible, revealSolution, claimFocus }});
+    return update(ownProps, {$merge: { isAdmin, numCompleted, passedStatus, visible, revealSolution, claimFocus }});
 }
 export default connect(mapStateToProps)(Problem);

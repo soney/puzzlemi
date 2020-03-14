@@ -83,7 +83,7 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
     let testFeedback: JSX.Element|null = null;
     if(codeTestFeedback === CodeProblemCompletionStatus.NO_TESTS) {
         testFeedback = <div className="alert alert-danger" role="alert">
-            Write at least one test case. <a href={HELP_DOCS.WRITING_TEST_CASES} target="_blank" rel="noopener noreferrer">(see how)</a>.
+            You passed our tests but you must write at least one test case. <a href={HELP_DOCS.WRITING_TEST_CASES} target="_blank" rel="noopener noreferrer">(see how)</a>.
         </div>;
     } else if (codeTestFeedback === CodeProblemCompletionStatus.TEST_NOT_VERIFIED) {
         testFeedback = <div className="alert alert-danger" role="alert">
