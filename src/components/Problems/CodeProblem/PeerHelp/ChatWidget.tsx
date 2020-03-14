@@ -68,6 +68,9 @@ const ChatWidget = ({ dispatch, problem, chatMessages, user, path, myuid }) => {
     return <div>
         <div className="chat-container">
             <div className="chat-messages-wrapper" ref={chatWrapper} >
+                {chatMessages.length === 0 &&
+                <div className="no-messaages"> No Messages </div>
+                }
                 {chatMessages.map((message, i) => <div className={"chat-message-container" + ((message.sender.uid === user.uid) ? ' isSender' : '')} key={i}>
 
                     <div className="chat-message-item">
