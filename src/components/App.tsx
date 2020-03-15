@@ -5,7 +5,7 @@ import { ReconnectingWebsocket, SDBClient, SDBDoc } from 'sdb-ts';
 import Problems from './Problems/Problems';
 import { setProblemsDoc, beginListeningOnProblemsDoc, setSolutionsDoc, setUsersDoc, setAggregateDataDoc, beginListeningOnDoc } from '../actions/sharedb_actions';
 import { setUser } from '../actions/user_actions';
-import UserHeader from './UserHeader';
+import UserHeader from './UserHeader/UserHeader';
 import { IProblems } from '../reducers/problems';
 import { IAggregateData } from '../reducers/aggregateData';
 import { IPMState } from '../reducers';
