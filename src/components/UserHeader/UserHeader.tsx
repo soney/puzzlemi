@@ -204,7 +204,7 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
             </form>
         </nav>
         {usersRow}
-        <Leaderboard maximumToDisplay={10} />
+        <Leaderboard maximumToDisplay={isAdmin ? false : 10} />
     </>;
 }
 

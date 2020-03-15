@@ -368,24 +368,33 @@ nav {
     .tie {
       color: #AAA;
     }
+    &::before {
+      content: '#';
+    }
   }
   .leaderboardUser {
-    white-space: nowrap;
+    // white-space: nowrap;
     margin-right: 5px;
   }
   .isUser {
     font-weight: bold;
     .user_alias {
       text-decoration: underline;
+      &::before {
+        content: '**';
+      }
+      &::after {
+        content: '**';
+      }
     }
   }
   .users {
     // line-break: strict;
     // white-space: pre;
     word-wrap: break-word;
-    // overflow-wrap: break-word;
+    overflow-wrap: break-word;
     // height: 100px;
-    // overflow-x: hidden;
+    overflow-x: hidden;
     overflow-y: auto;
     max-height: 200px;
 
