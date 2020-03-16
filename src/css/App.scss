@@ -739,12 +739,11 @@ nav {
   height: 100%;
 }
 
-.sketchContainerAdmin {
+.sketchContainer{
   width: calc(100% - 30px);
-}
-
-.sketchContainerStudent {
-  width: calc(100% - 30px);
+  height: calc(100% - 50px);
+  top: 50px;
+  position: absolute;
 }
 
 .sketchMode {
