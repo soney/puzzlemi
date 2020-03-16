@@ -53,21 +53,21 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
         event.preventDefault();
     };
 
-    const downloadAll = (event) => {
-        const problemsData = problemsDoc.getData();
-        const aggregateDataData = aggregateDataDoc.getData();
-        const solutionsData = solutionsDoc.getData();
-        const usersData = usersDoc.getData();
-        const data = {
-            problems: problemsData,
-            aggregateData: aggregateDataData,
-            solutions: solutionsData,
-            users: usersData,
-        }
-        const stringifiedData = JSON.stringify(data);
-        download('puzzlemi-all-saved.json', stringifiedData);
-        event.preventDefault();
-    }
+    // const downloadAll = (event) => {
+    //     const problemsData = problemsDoc.getData();
+    //     const aggregateDataData = aggregateDataDoc.getData();
+    //     const solutionsData = solutionsDoc.getData();
+    //     const usersData = usersDoc.getData();
+    //     const data = {
+    //         problems: problemsData,
+    //         aggregateData: aggregateDataData,
+    //         solutions: solutionsData,
+    //         users: usersData,
+    //     }
+    //     const stringifiedData = JSON.stringify(data);
+    //     download('puzzlemi-all-saved.json', stringifiedData);
+    //     event.preventDefault();
+    // }
 
     const getMarkdown = (event) => {
         const problemsData: IProblems = problemsDoc.getData();
@@ -192,9 +192,9 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
                             <i className="fas fa-file-import"></i>&nbsp;Import Problems
                             <input type="file" onChange={handleFile} className="form-control-file" />
                         </label>
-                        <button onClick={downloadAll} className='btn btn-sm btn-outline-secondary'>
+                        {/* <button onClick={downloadAll} className='btn btn-sm btn-outline-secondary'>
                             <i className="fas fa-file-export"></i>&nbsp;Export All
-                        </button>
+                        </button> */}
                     </div>
                 </form>
             }
