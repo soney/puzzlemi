@@ -418,7 +418,7 @@ export function updateSketch(problemID: string, sketch: any[]) {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
 
-        problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'sketch'], sketch);
+        problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'liveCode', 'sketch'], sketch);
     };
 }
 

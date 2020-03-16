@@ -9,6 +9,9 @@ const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInst
     const [sketchData, setSketchData] = React.useState(sketch);
     const [color, setColor] = React.useState('#000000');
     const [displayColorPicker, setDisplayColorPicker] = React.useState(false);
+    React.useEffect(()=>{
+        setSketchData(sketch)
+    },[sketch])
 
     const toggleErase = (e) => {
         if(e.target.id === "erase") setErasing(true);
