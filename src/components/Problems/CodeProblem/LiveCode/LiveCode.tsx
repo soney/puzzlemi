@@ -4,6 +4,7 @@ import { CodeEditor } from '../../../CodeEditor';
 import update from 'immutability-helper';
 import TestList from '../PuzzleEditor/TestList';
 import { ICodeTest, CodeTestType } from '../../../../reducers/aggregateData';
+import SketchOverlay from './SketchOverlay';
 // import ProblemNotes from './ProblemNotes';
 
 const LiveCode = ({ problem, flag, problemsDoc, testResults, allTests, aggregateDataDoc }) => {
@@ -19,7 +20,8 @@ const LiveCode = ({ problem, flag, problemsDoc, testResults, allTests, aggregate
     const doSelectCallback = (ID) => {
         setCurrentTestID(ID);
     }
-    return <div className="row">
+    return <div>
+    <div className="row">
         <div className={currentTest ? "col-7" : "col"}>
             {currentTest
                 ? <div className="row">
@@ -28,7 +30,7 @@ const LiveCode = ({ problem, flag, problemsDoc, testResults, allTests, aggregate
                         <div className="live-code"><CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true }} /></div>
                         <div className="after-code"><CodeEditor shareDBSubDoc={afterCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true, lineWrapping: true }} refreshDoc={{ currentTest, flag }} /></div>
                     </div>
-                    <div className="col-3 tests">
+                    <div className="col-3 tests live-code-tests">
                         <TestList problem={problem} doSelectCallback={doSelectCallback} currentTest={currentTest} disable={true} testResults={testResults} />
                     </div>
                 </div>
@@ -53,7 +55,9 @@ const LiveCode = ({ problem, flag, problemsDoc, testResults, allTests, aggregate
                 </>
             }
         </div>
-    </div >;
+    </div >
+    <SketchOverlay problem={problem} />
+    </div>;
 }
 
 function mapStateToProps(state, ownProps) {
