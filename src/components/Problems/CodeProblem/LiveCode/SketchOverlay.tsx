@@ -112,7 +112,7 @@ const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInst
         }
 
     }
-    return <div style={{ top: '0', height: '100%', position: 'absolute' }} className={(isInstructor ? 'sketchContainerAdmin' : 'sketchContainerStudent')} >
+    return <div className='sketchContainer'>
         <svg
             className={(isInstructor ? 'sketchAdmin' : 'sketchStudent') + (isInstructor ? ' sketchMode' : '')}
             onMouseDown={svgOnMouseDown} onMouseUp={svgOnMouseUp} onMouseMove={svgOnMouseMove}>

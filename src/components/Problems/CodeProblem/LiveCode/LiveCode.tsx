@@ -21,42 +21,44 @@ const LiveCode = ({ problem, flag, problemsDoc, testResults, allTests, aggregate
         setCurrentTestID(ID);
     }
     return <div>
-    <div className="row">
-        <div className={currentTest ? "col-7" : "col"}>
-            {currentTest
-                ? <div className="row">
-                    <div className="col-9 puzzle-editor">
-                        <div className="before-code"><CodeEditor shareDBSubDoc={beforeCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true, lineWrapping: true }} refreshDoc={{ currentTest, flag }} /></div>
-                        <div className="live-code"><CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true }} /></div>
-                        <div className="after-code"><CodeEditor shareDBSubDoc={afterCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true, lineWrapping: true }} refreshDoc={{ currentTest, flag }} /></div>
+        <div className="row">
+            <div className={currentTest ? "col-7" : "col"}>
+                {currentTest
+                    ? <div className="row">
+                        <div className="col-9 puzzle-editor">
+                            <div className="before-code"><CodeEditor shareDBSubDoc={beforeCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true, lineWrapping: true }} refreshDoc={{ currentTest, flag }} /></div>
+                            <div className="live-code"><CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true }} /></div>
+                            <div className="after-code"><CodeEditor shareDBSubDoc={afterCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true, lineWrapping: true }} refreshDoc={{ currentTest, flag }} /></div>
+                        </div>
+                        <div className="col-3 tests live-code-tests">
+                            <TestList problem={problem} doSelectCallback={doSelectCallback} currentTest={currentTest} disable={true} testResults={testResults} />
+                        </div>
                     </div>
-                    <div className="col-3 tests live-code-tests">
-                        <TestList problem={problem} doSelectCallback={doSelectCallback} currentTest={currentTest} disable={true} testResults={testResults} />
+                    : <div className="row">
+                        <div className="col">
+                            <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true }} />
+                        </div>
                     </div>
-                </div>
-                : <div className="row">
-                    <div className="col">
-                        <CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true }} />
-                    </div>
-                </div>
-            }
-        </div>
-        <div className={currentTest ? "col-5 live-code-result" : "col live-code-result"}>
-            {currentResult &&
-                <>
-                    {currentResult.output !== "" &&
-                        <pre className={'codeOutput no-error'}>
-                            {currentResult.output}
+                }
+            </div>
+            <div className={currentTest ? "col-5 live-code-result" : "col live-code-result"}>
+                {currentResult &&
+                    <>
+                        {currentResult.output !== "" &&
+                            <pre className={'codeOutput no-error'}>
+                                {currentResult.output}
+                            </pre>
+                        }
+                        <pre className={'codeError' + (currentResult.errors.length > 0 ? ' alert alert-danger' : ' no-error')}>
+                            {currentResult.errors.join('\n')}
                         </pre>
-                    }
-                    <pre className={'codeError' + (currentResult.errors.length > 0 ? ' alert alert-danger' : ' no-error')}>
-                        {currentResult.errors.join('\n')}
-                    </pre>
-                </>
-            }
+                    </>
+                }
+            </div>
+        </div >
+        <div className="row">
+            <SketchOverlay problem={problem} />
         </div>
-    </div >
-    <SketchOverlay problem={problem} />
     </div>;
 }
 
