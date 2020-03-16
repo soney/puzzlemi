@@ -1,5 +1,4 @@
 import * as React from 'react';
-import '../css/App.scss';
 import * as reactRedux from 'react-redux';
 import { ReconnectingWebsocket, SDBClient, SDBDoc } from 'sdb-ts';
 import Problems from './Problems/Problems';
@@ -16,6 +15,9 @@ import { ISolutions } from '../reducers/solutions';
 import { IUsers, IUserInfo } from '../reducers/users';
 import uuid from '../utils/uuid';
 import { analytics } from '../utils/Firebase';
+
+import '../css/App.scss';
+import '../css/fontawesome-pro-5.8.2-web/css/all.min.css';
 
 export const HELP_DOCS = {
     WRITING_TEST_CASES: "https://paper.dropbox.com/doc/PuzzleMI-Writing-Test-Cases--AvzSwi9AEmHCTjERSzh_PFqCAg-ryAyWG7v8EbdPDDn3MyAk#:uid=590417537393530640426514&h2=Adding-a-Test",
