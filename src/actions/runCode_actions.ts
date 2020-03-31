@@ -27,14 +27,24 @@ const jsonExternalLibInfo = {
 const puzzlemiExternalLibInfo = {
     path: 'puzzleme_skulpt_lib.js'
 };
+const requestsLibInfo = {
+    path: `${window.location.origin}/requests/__init__.js`,
+};
+const requestsWithCachingLibInfo = {
+    path: `${window.location.origin}/requests_with_caching/__init__.js`,
+};
 
 if (Sk.externalLibraries) {
     Sk.externalLibraries.json = jsonExternalLibInfo;
     Sk.externalLibraries.puzzlemi = puzzlemiExternalLibInfo;
+    Sk.externalLibraries.requests = requestsLibInfo;
+    Sk.externalLibraries.requests_with_caching = requestsWithCachingLibInfo;
 } else {
     Sk.externalLibraries = {
         json: jsonExternalLibInfo,
-        puzzlemi: puzzlemiExternalLibInfo
+        puzzlemi: puzzlemiExternalLibInfo,
+        requests: requestsLibInfo,
+        requests_with_caching: requestsWithCachingLibInfo
     };
 }
 
