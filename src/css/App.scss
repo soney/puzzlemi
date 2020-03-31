@@ -71,7 +71,7 @@ html {
     }
     .session-open {
       &::before {
-        font-family: "Font Awesome 5 Free";
+        font-family: "Font Awesome 5 Pro";
         font-weight: 900;
         content: "\f059  ";
         color: #2cbe4e;
@@ -84,7 +84,7 @@ html {
     }
     .session-close {
         &::before {
-          font-family: "Font Awesome 5 Free";
+          font-family: "Font Awesome 5 Pro";
           font-weight: 900;
           content: "\f057  ";
           color: #cb2431;
@@ -229,7 +229,7 @@ html {
           color: #155724;
         }
         &::before {
-          font-family: "Font Awesome 5 Free";
+          font-family: "Font Awesome 5 Pro";
           font-weight: 900;
           content: "\f00c  ";
         }
@@ -240,7 +240,7 @@ html {
           color: #721c24;
         }
         &::before {
-          font-family: "Font Awesome 5 Free";
+          font-family: "Font Awesome 5 Pro";
           font-weight: 900;
           content: "\f00d  ";
         }
@@ -251,7 +251,7 @@ html {
           color: #856404;
         }
         &::before {
-          font-family: "Font Awesome 5 Free";
+          font-family: "Font Awesome 5 Pro";
           font-weight: 900;
           content: "\f141  ";
         }
@@ -262,7 +262,7 @@ html {
       // }
       &.unverified {
         &::after {
-          font-family: "Font Awesome 5 Free";
+          font-family: "Font Awesome 5 Pro";
           font-weight: 900;
           content: "\f110  ";
           color: #bbb;
@@ -271,7 +271,7 @@ html {
       }
       &.not-verified {
         &::after {
-          font-family: "Font Awesome 5 Free";
+          font-family: "Font Awesome 5 Pro";
           font-weight: 900;
           content: "\f05e  ";
           color: #bbb;
@@ -685,7 +685,7 @@ nav {
 
 .return-button{
     &::before{
-        font-family: "Font Awesome 5 Free";
+        font-family: "Font Awesome 5 Pro";
         font-weight: 900;
         content: "\f053  ";
     }
