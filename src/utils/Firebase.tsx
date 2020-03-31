@@ -2,14 +2,14 @@ import * as firebase from 'firebase';
 import { getTimeStamp } from './timestamp';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCzx8LQwyDouWcJi1UdaK2CVbSJiFeOhW8",
-  authDomain: "puzzlemi-log.firebaseapp.com",
-  databaseURL: "https://puzzlemi-log.firebaseio.com",
-  projectId: "puzzlemi-log",
-  storageBucket: "puzzlemi-log.appspot.com",
-  messagingSenderId: "5171804162",
-  appId: "1:5171804162:web:c964421e3a8a72a5c24f1b",
-  measurementId: "G-C6ZX5CMK5E"
+  apiKey: "AIzaSyCSzvVwCpFS3zVipQ7qso_Cxaa9HTolLBk",
+  authDomain: "puzzlemi-log2.firebaseapp.com",
+  databaseURL: "https://puzzlemi-log2.firebaseio.com",
+  projectId: "puzzlemi-log2",
+  storageBucket: "puzzlemi-log2.appspot.com",
+  messagingSenderId: "2360208709",
+  appId: "1:2360208709:web:550b4bed983f1af10f622c",
+  measurementId: "G-YMDRC9GJFS"
 };
 firebase.initializeApp(firebaseConfig);
 
