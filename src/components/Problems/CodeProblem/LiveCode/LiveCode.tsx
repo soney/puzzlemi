@@ -27,7 +27,7 @@ const LiveCode = ({ problem, flag, problemsDoc, testResults, allTests, aggregate
                     ? <div className="row">
                         <div className="col-9 puzzle-editor">
                             <div className="before-code"><CodeEditor shareDBSubDoc={beforeCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true, lineWrapping: true }} refreshDoc={{ currentTest, flag }} /></div>
-                            <div className="live-code"><CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true }} /></div>
+                            <div className="live-code"><CodeEditor shareDBSubDoc={liveCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true, lineWrapping: true }} /></div>
                             <div className="after-code"><CodeEditor shareDBSubDoc={afterCodeSubDoc} flag={flag} options={{ readOnly: true, lineNumbers: true, lineWrapping: true }} refreshDoc={{ currentTest, flag }} /></div>
                         </div>
                         <div className="col-3 tests live-code-tests">

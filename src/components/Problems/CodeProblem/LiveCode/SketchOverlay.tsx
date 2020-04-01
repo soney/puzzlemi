@@ -6,16 +6,23 @@ import { CompactPicker } from 'react-color';
 const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInstructor }) => {
     const [activated, setActivated] = React.useState(false);
     const [erasing, setErasing] = React.useState(false);
+    const [drawing, setDrawing] = React.useState(false);
     const [sketchData, setSketchData] = React.useState(sketch);
     const [color, setColor] = React.useState('#000000');
     const [displayColorPicker, setDisplayColorPicker] = React.useState(false);
-    React.useEffect(()=>{
+    React.useEffect(() => {
         setSketchData(sketch)
-    },[sketch])
+    }, [sketch])
 
     const toggleErase = (e) => {
-        if(e.target.id === "erase") setErasing(true);
-        if(e.target.id === "pen") setErasing(false);
+        if (e.target.id === "erase") {
+            setDrawing(false);
+            setErasing(!erasing);
+        }
+        if (e.target.id === "pen") {
+            setErasing(false);
+            setDrawing(!drawing);
+        }
     }
 
     const handleColorClick = () => {
@@ -59,11 +66,12 @@ const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInst
 
     const svgOnMouseMove = (e) => {
         if (activated && isInstructor) {
-            if (erasing === false) {
+            if (drawing) {
                 let newSketch = sketchData.slice(0)
                 newSketch.push([e.nativeEvent.offsetX, e.nativeEvent.offsetY, color])
                 setSketchData(newSketch)
-            } else {
+            }
+            else if (erasing) {
                 let newSketch = sketchData.slice(0)
                 for (var i = newSketch.length - 1; i >= 0; i--) {
                     var point = newSketch[i]
@@ -86,7 +94,7 @@ const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInst
     const svgOnMouseUp = () => {
         if (activated && isInstructor) {
             var newSketch = sketchData.slice(0)
-            if (erasing === false) {
+            if (drawing) {
                 newSketch.push(false)
             }
             setSketchData(newSketch);
@@ -97,7 +105,7 @@ const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInst
 
     const svgOnMouseDown = (e) => {
         if (!activated && isInstructor) {
-            if (erasing === false) {
+            if (drawing) {
                 let newSketch = sketchData.slice(0)
                 if (newSketch[newSketch.length - 1] !== false) {
                     newSketch.push(false)
@@ -105,7 +113,7 @@ const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInst
                 newSketch.push([e.nativeEvent.offsetX, e.nativeEvent.offsetY, color])
                 setSketchData(newSketch);
                 setActivated(true);
-            } else {
+            } else if (erasing) {
                 setActivated(true);
             }
 
@@ -113,15 +121,17 @@ const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInst
 
     }
     return <div className='sketchContainer'>
-        <svg
-            className={(isInstructor ? 'sketchAdmin' : 'sketchStudent') + (isInstructor ? ' sketchMode' : '')}
-            onMouseDown={svgOnMouseDown} onMouseUp={svgOnMouseUp} onMouseMove={svgOnMouseMove}>
-            {renderDots()}
-        </svg>
+        <div className='sketchSVG' style={erasing || drawing ? {} : { pointerEvents: 'none' }}>
+            <svg
+                className={(isInstructor ? 'sketchAdmin' : 'sketchStudent') + (isInstructor ? ' sketchMode' : '')}
+                onMouseDown={svgOnMouseDown} onMouseUp={svgOnMouseUp} onMouseMove={svgOnMouseMove}>
+                {renderDots()}
+            </svg>
+        </div>
         {isInstructor &&
             <div className="instructor-sketch-tools btn-group btn-group-toggle" style={{ float: 'right', top: 'calc(100% - 17px)' }}>
-                <label className={"btn btn-sm " + (!erasing ? "btn-primary" : "btn-outline-primary")} onClick={toggleErase}>
-                    <input type="radio" name="pen_erase" id="pen" defaultChecked/> Pen
+                <label className={"btn btn-sm " + (drawing ? "btn-primary" : "btn-outline-primary")} onClick={toggleErase}>
+                    <input type="radio" name="pen_erase" id="pen" defaultChecked /> Pen
                         </label>
                 <label className={"btn btn-sm " + (erasing ? "btn-secondary" : "btn-outline-secondary")} onClick={toggleErase}>
                     <input type="radio" name="pen_erase" id="erase" /> Erase
