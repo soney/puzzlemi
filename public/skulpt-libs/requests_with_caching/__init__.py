@@ -1,8 +1,8 @@
 import requests
 import json
 
-PERMANENT_CACHE_FNAME = "permanent_cache.txt"
-TEMP_CACHE_FNAME = "this_page_cache.txt"
+PERMANENT_CACHE_FNAME = "permanent_cache.json"
+TEMP_CACHE_FNAME = "temp_cache.json"
 
 def _write_to_file(cache, fname):
     with open(fname, 'w') as outfile:
