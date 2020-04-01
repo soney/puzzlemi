@@ -20,18 +20,18 @@ Sk.configure({
 
 const jsonExternalLibInfo = {
     dependencies: [
-        `${window.location.origin}/skulpt/json.sk-master/stringify.js`,
+        `skulpt-libs/json.sk-master/stringify.js`,
     ],
-    path: `${window.location.origin}/skulpt/json.sk-master/__init__.js`,
+    path: `skulpt-libs/json.sk-master/__init__.js`,
 };
 const puzzlemiExternalLibInfo = {
-    path: 'puzzleme_skulpt_lib.js'
+    path: 'skulpt-libs/puzzlemi_skulpt_lib.js'
 };
 const requestsLibInfo = {
-    path: `${window.location.origin}/skulpt/requests/__init__.js`,
+    path: `skulpt-libs/requests/__init__.py`,
 };
 const requestsWithCachingLibInfo = {
-    path: `${window.location.origin}/skulpt/requests_with_caching/__init__.js`,
+    path: `skulpt-libs/requests_with_caching/__init__.py`,
 };
 
 if (Sk.externalLibraries) {

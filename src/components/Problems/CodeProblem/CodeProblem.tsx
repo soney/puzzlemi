@@ -49,25 +49,25 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
     const mySolutionDivRef = React.createRef<HTMLDivElement>();
     const revealSolutionsTabRef = React.createRef<HTMLAnchorElement>();
     const revealSolutionsDivRef = React.createRef<HTMLDivElement>();
-    const refreshMysolution = ()=>{
+    const refreshMySolution = ()=>{
         const mySolutionDiv = mySolutionDivRef.current as HTMLDivElement;
         if(mySolutionDiv && !mySolutionDiv.classList.contains('active')){
             mySolutionDiv.classList.toggle('active');
             mySolutionDiv.classList.toggle('show');    
         }
-    }
+    };
     React.useEffect(()=>{
         if(!config.displayInstructor) {
-            
-        } refreshMysolution();
+        }
+        refreshMySolution();  
     }, [config.displayInstructor])
 
     React.useEffect(()=>{
-        if(!config.revealSolutions) refreshMysolution();
+        if(!config.revealSolutions) { refreshMySolution(); }
     }, [config.revealSolutions])
 
     React.useEffect(()=>{
-        if(!config.peerHelp) refreshMysolution();
+        if(!config.peerHelp) { refreshMySolution(); }
     }, [config.peerHelp])
 
     const doSelectCallback = (ID) => {
@@ -211,10 +211,10 @@ function mapStateToProps(state: IPMState, ownProps: ICodeProblemOwnProps): ICode
     const problemAggregateData = aggregateData && aggregateData.userData[problem.id];
     const claimFocus = awaitingFocus && awaitingFocus.id === problem.id;
     const myuid = users.myuid as string;
-    const { isInstructor } = users.allUsers[myuid];
+    const localUsers = users.allUsers;
+    const isInstructor = localUsers && localUsers[myuid] && localUsers[myuid].isInstructor;
 
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
-    const localUsers = users.allUsers;
     const sdbUsers = shareDBDocs.i.users ? shareDBDocs.i.users.allUsers : {};
     const allUsers = Object.keys(sdbUsers).length > Object.keys(localUsers).length ? sdbUsers : localUsers;
     const allUsersID = Object.keys(allUsers);

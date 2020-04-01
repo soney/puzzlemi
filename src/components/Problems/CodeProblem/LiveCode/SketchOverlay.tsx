@@ -45,7 +45,7 @@ const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInst
         if (isInstructor) {
             return sketchData.map((val, idx) => {
                 if (sketchData[idx + 1] !== false && sketchData[idx + 1] !== undefined) {
-                    let val2 = sketchData[idx + 1]
+                    const val2 = sketchData[idx + 1]
                     return <line x1={val[0]} y1={val[1]} x2={val2[0]} y2={val2[1]} stroke={val[2]} stoke-width="1" key={'line_' + idx.toString()} />
                 } else {
                     return undefined
@@ -73,10 +73,10 @@ const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInst
             }
             else if (erasing) {
                 let newSketch = sketchData.slice(0)
-                for (var i = newSketch.length - 1; i >= 0; i--) {
-                    var point = newSketch[i]
-                    var diff1 = point[0] - e.nativeEvent.offsetX
-                    var diff2 = point[1] - e.nativeEvent.offsetY
+                for (let i = newSketch.length - 1; i >= 0; i--) {
+                    const point = newSketch[i]
+                    const diff1 = point[0] - e.nativeEvent.offsetX
+                    const diff2 = point[1] - e.nativeEvent.offsetY
                     if (diff1 * diff1 + diff2 * diff2 < 100) {
                         if (newSketch[i - 1] === false || newSketch[i + 1] === false) {
                             newSketch.splice(i, 1)
@@ -93,13 +93,15 @@ const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInst
 
     const svgOnMouseUp = () => {
         if (activated && isInstructor) {
-            var newSketch = sketchData.slice(0)
+            const newSketch = sketchData.slice(0)
             if (drawing) {
                 newSketch.push(false)
             }
             setSketchData(newSketch);
             setActivated(false);
             dispatch(updateSketch(problem.id, sketchData));
+            // window.removeEventListener('mousemove', svgOnMouseMove);
+            // window.removeEventListener('mouseup', svgOnMouseUp);
         }
     }
 
@@ -113,8 +115,12 @@ const SketchOverlay = ({ dispatch, problemsDoc, isAdmin, sketch, problem, isInst
                 newSketch.push([e.nativeEvent.offsetX, e.nativeEvent.offsetY, color])
                 setSketchData(newSketch);
                 setActivated(true);
+                // window.addEventListener('mousemove', svgOnMouseMove);
+                // window.addEventListener('mouseup', svgOnMouseUp);
             } else if (erasing) {
                 setActivated(true);
+                // window.addEventListener('mousemove', svgOnMouseMove);
+                // window.addEventListener('mouseup', svgOnMouseUp);
             }
 
         }
