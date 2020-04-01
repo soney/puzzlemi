@@ -13,6 +13,8 @@ Does not work on regular web pages (like google or the michigan daily) because o
 from urllib.request import urlopen
 import json
 
+use_proxy = True
+
 class Response:
     def __init__(self, data, url):
         self.text = data
@@ -76,7 +78,11 @@ def get(baseurl, params={}):
         text_data = "<html><body><h1>invalid request</h1></body></html>"
         full_url = "Couldn’t generate a valid URL"
     else:
-        data = urlopen(full_url)
+        if use_proxy:
+            proxy_url = requestURL('/ajax', {'url': full_url})
+            data = urlopen(proxy_url)
+        else:
+            data = urlopen(full_url)
         text_data = data.read().strip()
         if len(text_data) == 0:
             text_data = "Failed to retrieve that URL"
