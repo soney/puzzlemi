@@ -49,6 +49,7 @@ url_subs = {" ": "+",
             "@": "%40",
             "[": "%5B",
             "]": "%5D",
+            "&": "%26"
             }
 
 def _subst(s, substitutions=url_subs):
