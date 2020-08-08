@@ -49,26 +49,26 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
     const mySolutionDivRef = React.createRef<HTMLDivElement>();
     const revealSolutionsTabRef = React.createRef<HTMLAnchorElement>();
     const revealSolutionsDivRef = React.createRef<HTMLDivElement>();
-    const refreshMySolution = ()=>{
+    const refreshMySolution = React.useCallback(()=>{
         const mySolutionDiv = mySolutionDivRef.current as HTMLDivElement;
         if(mySolutionDiv && !mySolutionDiv.classList.contains('active')){
             mySolutionDiv.classList.toggle('active');
             mySolutionDiv.classList.toggle('show');    
         }
-    };
+    }, [mySolutionDivRef]);
     React.useEffect(()=>{
         if(!config.displayInstructor) {
         }
         refreshMySolution();  
-    }, [config.displayInstructor])
+    }, [config.displayInstructor, refreshMySolution])
 
     React.useEffect(()=>{
         if(!config.revealSolutions) { refreshMySolution(); }
-    }, [config.revealSolutions])
+    }, [config.revealSolutions, refreshMySolution])
 
     React.useEffect(()=>{
         if(!config.peerHelp) { refreshMySolution(); }
-    }, [config.peerHelp])
+    }, [config.peerHelp, refreshMySolution])
 
     const doSelectCallback = (ID) => {
         setCurrentTestID(ID);
