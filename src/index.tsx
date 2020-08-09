@@ -16,7 +16,7 @@ import { IAppState } from './reducers/app';
 import { Helmet } from "react-helmet";
 
 const DEBUG_MODE = window.location.host === 'localhost:3000';
-const ENABLE_LOGGER = true && DEBUG_MODE;
+const ENABLE_LOGGER = false && DEBUG_MODE;
 const middleware = [thunkMiddleware];
 if(ENABLE_LOGGER) {
     const loggerMiddleware = createLogger();

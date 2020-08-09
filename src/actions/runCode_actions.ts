@@ -12,18 +12,12 @@ import { IDeleteUserFileAction } from "./user_actions.js";
 
 declare const Sk;
 
-Sk.configure({
-    inputfunTakesPrompt: true,
-    jsonpSites: ['https://itunes.apple.com'],
-    python3: true,
-});
-
-const jsonExternalLibInfo = {
-    dependencies: [
-        `skulpt-libs/json.sk-master/stringify.js`,
-    ],
-    path: `skulpt-libs/json.sk-master/__init__.js`,
-};
+// const jsonExternalLibInfo = {
+//     dependencies: [
+//         `skulpt-libs/json.sk-master/stringify.js`,
+//     ],
+//     path: `skulpt-libs/json.sk-master/__init__.js`,
+// };
 const puzzlemiExternalLibInfo = {
     path: 'skulpt-libs/puzzlemi_skulpt_lib.js'
 };
@@ -34,19 +28,27 @@ const requestsWithCachingLibInfo = {
     path: `skulpt-libs/requests_with_caching/__init__.py`,
 };
 
-if (Sk.externalLibraries) {
-    Sk.externalLibraries.json = jsonExternalLibInfo;
-    Sk.externalLibraries.puzzlemi = puzzlemiExternalLibInfo;
-    Sk.externalLibraries.requests = requestsLibInfo;
-    Sk.externalLibraries.requests_with_caching = requestsWithCachingLibInfo;
-} else {
-    Sk.externalLibraries = {
-        json: jsonExternalLibInfo,
-        puzzlemi: puzzlemiExternalLibInfo,
-        requests: requestsLibInfo,
-        requests_with_caching: requestsWithCachingLibInfo
-    };
-}
+const externalLibs = {
+    // 'json': jsonExternalLibInfo,
+    './puzzlemi/__init__.js': puzzlemiExternalLibInfo,
+    'src/builtin/requests.py': requestsLibInfo,
+    'src/builtin/requests_with_caching.py': requestsWithCachingLibInfo
+};
+
+Sk.configure({
+});
+
+
+// if (Sk.externalLibraries) {
+//     Sk.externalLibraries.json = jsonExternalLibInfo;
+//     Sk.externalLibraries.puzzlemi = puzzlemiExternalLibInfo;
+//     Sk.externalLibraries.requests = requestsLibInfo;
+//     Sk.externalLibraries.requests_with_caching = requestsWithCachingLibInfo;
+// } else {
+//     Sk.externalLibraries = {
+//     };
+// }
+// console.log(Sk.externalLibraries);
 
 export interface IDoneRunningCodeAction {
     type: EventTypes.DONE_RUNNING_CODE,
@@ -133,7 +135,12 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files:
         const readf = (fname: string): string => {
             const { problemFiles, userFiles, tempFiles } = files;
 
-            if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][fname] === undefined) {
+            if (externalLibs[fname] !== undefined) {
+                return Sk.misceval.promiseToSuspension(
+                    fetch(externalLibs[fname].path).then(
+                        function (resp){ return resp.text(); }
+                    ));
+            } else if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][fname] === undefined) {
                 let file;
                 [...problemFiles, ...userFiles, ...tempFiles].forEach((f) => {
                     const { name } = f;
@@ -156,6 +163,9 @@ function executeCode(beforeCode: string, code: string, afterCode: string, files:
         };
 
         Sk.configure({
+            jsonpSites: ['https://itunes.apple.com'],
+            // python3: true,
+            __future__: Sk.python3,
             filewriter: writef,
             output: outf,
             read: readf,

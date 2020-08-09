@@ -19,7 +19,6 @@ import { IProblem, ICodeProblemConfig, ICodeProblem, getCodeProblemCompletionSta
 import { HELP_DOCS } from '../../App';
 import { ICodeTest, ICodeSolutionAggregate } from '../../../reducers/aggregateData';
 
-
 interface ICodeProblemOwnProps {
     problem: IProblem;
 }

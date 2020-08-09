@@ -74,10 +74,9 @@ def requestURL(baseurl, params={}):
         return None
 
 def get(baseurl, params={}):
-    full_url = requestURL(baseurl, params)
     if not full_url:
         text_data = "<html><body><h1>invalid request</h1></body></html>"
-        full_url = "Couldn’t generate a valid URL"
+        full_url = "Couldn't generate a valid URL"
     else:
         if use_proxy:
             proxy_url = requestURL('/ajax', {'url': full_url})
