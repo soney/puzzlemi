@@ -29,6 +29,7 @@ export interface IMultipleChoiceOption {
 export interface ITextResponseProblem {
     description: string;
     problemType: IProblemType.TextResponse;
+    exampleCorrectSolution: string;
 }
 
 export interface IMultipleChoiceProblem {

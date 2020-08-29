@@ -20,7 +20,7 @@ class ShareDBCodeMirrorBinding {
     private onSDBDocEvent = (type, ops, source): void => {
         this.suppressChanges = true;
         if (type === null) {
-            const data = this.doc.getData() as string;
+            const data = this.doc.getData() as string || '';
             this.codeMirror.setValue(data);
             this.gotInitialFetch = true;
             this.initialFetchCallbacks.forEach((callback) => callback());

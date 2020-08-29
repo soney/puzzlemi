@@ -24,6 +24,7 @@ enum EventTypes {
     SET_USER = 'set user',
     MULTIPLE_CHOICE_SELECTED_OPTIONS_CHANGED = 'multiple-choice selected options changed',
     TEXT_RESPONSE_CHANGED = 'text response changed',
+    TEXT_RESPONSE_EXAMPLE_CORRECT_SOLUTION_CHANGED = 'text response example correct solution changed',
     SDB_DOC_CHANGED = 'sharedb doc changed',
     APP_STATE_CHANGED = 'app state changed',
     SELECT_USER_FOR_SOLUTION_VIEW = 'select user for solution view',

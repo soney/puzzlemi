@@ -25,9 +25,9 @@ if(ENABLE_LOGGER) {
 
 export const appState:IAppState = {
     debugMode: DEBUG_MODE,
-    websocketLocation: DEBUG_MODE ? `ws://localhost:8000` : `${window.location.protocol === 'http:' ? 'ws' : 'wss'}://${window.location.host}`,
+    websocketLocation: DEBUG_MODE ? `ws://${window.location.hostname}:8000` : `${window.location.protocol === 'http:' ? 'ws' : 'wss'}://${window.location.host}`,
     channel: DEBUG_MODE ? 'p' : window.location.pathname.slice(1).split('/')[1],
-    postBase: DEBUG_MODE ? `http://localhost:8000` : '',
+    postBase: DEBUG_MODE ? `http://${window.location.hostname}:8000` : '',
     selectedUserForSolutionsView: false
 };
 
