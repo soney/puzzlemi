@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import ProblemDescription from '../ProblemDescription';
 import update from 'immutability-helper';
 import { CodeEditor } from '../../CodeEditor';
-import { setTextResponse, setTextResponseSolution } from '../../../actions/user_actions';
+import { setTextResponse } from '../../../actions/user_actions';
 import { IPMState } from '../../../reducers';
 import { ITextResponseSolution } from '../../../reducers/solutions';
 import TextResponseSolutionView from './TextResponseSolutionView';
