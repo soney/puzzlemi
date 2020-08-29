@@ -103,6 +103,17 @@ export async function updateUserMultipleChoiceCorrectness(problemID, dispatch, g
     }
 }
 
+export interface ITextResponseExampleCorrectSolutionChangedAction {
+    type: EventTypes.TEXT_RESPONSE_EXAMPLE_CORRECT_SOLUTION_CHANGED,
+    exampleCorrectSolution: string,
+    problemID: string
+}
+export async function exampleCorrectSolutionChanged(problemID: string, exampleCorrectSolution: string, dispatch: Dispatch, getState) {
+    dispatch({
+        problemID, exampleCorrectSolution, type: EventTypes.TEXT_RESPONSE_EXAMPLE_CORRECT_SOLUTION_CHANGED
+    } as ITextResponseExampleCorrectSolutionChangedAction);
+}
+
 export interface IMultipleChoiceOptionAddedAction {
     type: EventTypes.OPTION_ADDED,
     option: IMultipleChoiceOption,
@@ -388,6 +399,7 @@ export function addTextResponseProblem() {
             problemDetails: {
                 problemType: IProblemType.TextResponse,
                 description: '*no description*',
+                exampleCorrectSolution: ''
             }
         };
 
@@ -738,6 +750,13 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                         if (li) {
                             multipleChoiceOptionAdded(problemID, li, dispatch, getState);
                         }
+                    }
+
+                    const exampleCorrectSolutionMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'exampleCorrectSolution']);
+                    if (exampleCorrectSolutionMatches) {
+                        const problemID = p[1] as string;
+                        const exampleCorrectSolution = doc.traverse(['allProblems', problemID, 'problemDetails', 'exampleCorrectSolution']);
+                        exampleCorrectSolutionChanged(problemID, exampleCorrectSolution, dispatch, getState);
                     }
                 });
             }

@@ -3,19 +3,38 @@ import { connect } from "react-redux";
 import ProblemDescription from '../ProblemDescription';
 import update from 'immutability-helper';
 import { CodeEditor } from '../../CodeEditor';
-import { setTextResponse } from '../../../actions/user_actions';
+import { setTextResponse, setTextResponseSolution } from '../../../actions/user_actions';
 import { IPMState } from '../../../reducers';
 import { ITextResponseSolution } from '../../../reducers/solutions';
 import TextResponseSolutionView from './TextResponseSolutionView';
+import { IProblem, IProblems } from '../../../reducers/problems';
+import { Dispatch } from 'redux';
+import { SDBDoc, SDBSubDoc } from 'sdb-ts';
 
-const TextResponseProblem = ({ problem, userSolution, dispatch, isAdmin, claimFocus }) => {
+interface ITextResponseProblemOwnProps {
+    problem: IProblem;
+}
+interface ITextResponseProblemProps extends ITextResponseProblemOwnProps {
+    userSolution: ITextResponseSolution;
+    isAdmin: boolean;
+    claimFocus: boolean;
+    dispatch: Dispatch<any>;
+    problemsDoc: SDBDoc<IProblems>;
+}
+
+const TextResponseProblem = ({ problem, userSolution, problemsDoc, dispatch, isAdmin, claimFocus }: ITextResponseProblemProps) => {
     const { response } = userSolution;
     const doSetResponse = (ev) => {
         const { value } = ev;
         return dispatch(setTextResponse(problem.id, value));
     };
+    const p = ['allProblems', problem.id, 'problemDetails', 'exampleCorrectSolution'];
+    const subDoc = problemsDoc.subDoc(p) as SDBSubDoc<string>;
     return <>
             <ProblemDescription focusOnMount={claimFocus} problem={problem} />
+            { isAdmin &&
+                <CodeEditor shareDBSubDoc={subDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true}} />
+            }
             { isAdmin &&
                 <TextResponseSolutionView problem={problem} />
             }
