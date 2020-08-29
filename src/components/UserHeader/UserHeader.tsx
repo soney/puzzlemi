@@ -71,47 +71,7 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
 
     const getMarkdown = (event) => {
         const problemsData: IProblems = problemsDoc.getData();
-        const { order, allProblems } = problemsData;
-        let result: string = '';
-        order.forEach((problemID: string, i: number) => {
-            const problem = allProblems[problemID];
-            const { problemDetails } = problem;
-            const { problemType } = problemDetails;
-            if (problemType === IProblemType.Code) {
-                const { description, givenCode, tests } = (problemDetails as ICodeProblem);
-                result += `${description}\n\n\n`;
-                let canonicalInstructorTest: ICodeTest | null = null;
-                for (let testID in tests) {
-                    if (tests.hasOwnProperty(testID)) {
-                        const test = tests[testID];
-                        if (test.type === CodeTestType.INSTRUCTOR && test.author === 'default') {
-                            canonicalInstructorTest = test;
-                            break;
-                        }
-                    }
-                }
-                if (canonicalInstructorTest) {
-                    result += `\`\`\`python\n${canonicalInstructorTest.before}\n\`\`\`\n\n\n`;
-                }
-                result += `\`\`\`python\n${givenCode}\n\`\`\`\n\n\n`;
-                if (canonicalInstructorTest) {
-                    result += `\`\`\`python\n${canonicalInstructorTest.after}\n\`\`\`\n\n\n`;
-                }
-            } else if (problemType === IProblemType.MultipleChoice) {
-                const { description, options } = (problemDetails as IMultipleChoiceProblem);
-                result += `${description}\n\n\n`;
-                options.forEach((option: IMultipleChoiceOption) => {
-                    result += `- ${option.description}\n`;
-                });
-            } else if (problemType === IProblemType.TextResponse) {
-                const { description } = (problemDetails as ITextResponseProblem);
-                result += `${description}\n\n\n`;
-                result += '```text\n\n\n```\n\n';
-            }
-            if (i < order.length - 1) {
-                result += `\n---\n\n`;
-            }
-        });
+        const result = getMarkdownString(problemsData);
         copy(result, { format: 'text/plain' });
         event.preventDefault();
     };
@@ -229,4 +189,50 @@ function mapStateToProps(state: IPMState, ownProps: IUserHeaderOwnProps): IUserH
 
     return update(ownProps, { $merge: { problemsDoc: shareDBDocs.problems, aggregateDataDoc: shareDBDocs.aggregateData, solutionsDoc: shareDBDocs.solutions, usersDoc: shareDBDocs.users, selectedUserForSolutionsView, isAdmin, users, allUsers, channel } }) as IUserHeaderProps;
 }
+
+function getMarkdownString(problemsData:IProblems): string {
+    const { order, allProblems } = problemsData;
+    let result: string = '';
+    order.forEach((problemID: string, i: number) => {
+        const problem = allProblems[problemID];
+        const { problemDetails } = problem;
+        const { problemType } = problemDetails;
+        if (problemType === IProblemType.Code) {
+            const { description, givenCode, tests } = (problemDetails as ICodeProblem);
+            result += `${description}\n\n\n`;
+            let canonicalInstructorTest: ICodeTest | null = null;
+            for (let testID in tests) {
+                if (tests.hasOwnProperty(testID)) {
+                    const test = tests[testID];
+                    if (test.type === CodeTestType.INSTRUCTOR && test.author === 'default') {
+                        canonicalInstructorTest = test;
+                        break;
+                    }
+                }
+            }
+            if (canonicalInstructorTest) {
+                result += `\`\`\`python\n${canonicalInstructorTest.before}\n\`\`\`\n\n\n`;
+            }
+            result += `\`\`\`python\n${givenCode}\n\`\`\`\n\n\n`;
+            if (canonicalInstructorTest) {
+                result += `\`\`\`python\n${canonicalInstructorTest.after}\n\`\`\`\n\n\n`;
+            }
+        } else if (problemType === IProblemType.MultipleChoice) {
+            const { description, options } = (problemDetails as IMultipleChoiceProblem);
+            result += `${description}\n\n\n`;
+            options.forEach((option: IMultipleChoiceOption) => {
+                result += `- ${option.description}\n`;
+            });
+        } else if (problemType === IProblemType.TextResponse) {
+            const { description } = (problemDetails as ITextResponseProblem);
+            result += `${description}\n\n\n`;
+            result += '```text\n\n\n```\n\n';
+        }
+        if (i < order.length - 1) {
+            result += `\n---\n\n`;
+        }
+    });
+    return result;
+}
+
 export default connect(mapStateToProps)(PMUserHeader);
