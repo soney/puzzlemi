@@ -33,7 +33,12 @@ const TextResponseProblem = ({ problem, userSolution, problemsDoc, dispatch, isA
     return <>
             <ProblemDescription focusOnMount={claimFocus} problem={problem} />
             { isAdmin &&
-                <CodeEditor shareDBSubDoc={subDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true}} />
+                <div className="row">
+                    <div className="col">
+                        <strong>Example Correct Solution:</strong>
+                        <CodeEditor shareDBSubDoc={subDoc} options={{lineNumbers: false, mode: 'markdown', lineWrapping: true}} />
+                    </div>
+                </div>
             }
             { isAdmin &&
                 <TextResponseSolutionView problem={problem} />
