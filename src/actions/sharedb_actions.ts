@@ -114,6 +114,17 @@ export async function exampleCorrectSolutionChanged(problemID: string, exampleCo
     } as ITextResponseExampleCorrectSolutionChangedAction);
 }
 
+export interface ITextResponseStarterChangedAction {
+    type: EventTypes.TEXT_RESPONSE_STARTER_CHANGED,
+    starterResponse: string,
+    problemID: string
+}
+export async function starterResponseChanged(problemID: string, starterResponse: string, dispatch: Dispatch, getState) {
+    dispatch({
+        problemID, starterResponse, type: EventTypes.TEXT_RESPONSE_STARTER_CHANGED
+    } as ITextResponseStarterChangedAction);
+}
+
 export interface IMultipleChoiceOptionAddedAction {
     type: EventTypes.OPTION_ADDED,
     option: IMultipleChoiceOption,
@@ -399,7 +410,8 @@ export function addTextResponseProblem() {
             problemDetails: {
                 problemType: IProblemType.TextResponse,
                 description: '*no description*',
-                exampleCorrectSolution: ''
+                exampleCorrectSolution: '',
+                starterResponse: ''
             }
         };
 
@@ -757,6 +769,13 @@ export function beginListeningOnProblemsDoc(doc: SDBDoc<IProblems>) {
                         const problemID = p[1] as string;
                         const exampleCorrectSolution = doc.traverse(['allProblems', problemID, 'problemDetails', 'exampleCorrectSolution']);
                         exampleCorrectSolutionChanged(problemID, exampleCorrectSolution, dispatch, getState);
+                    }
+
+                    const starterResponseMatches = SDBDoc.matches(p, ['allProblems', true, 'problemDetails', 'starterResponse', true]);
+                    if (starterResponseMatches) {
+                        const problemID = p[1] as string;
+                        const starterResponse = doc.traverse(['allProblems', problemID, 'problemDetails', 'starterResponse']);
+                        starterResponseChanged(problemID, starterResponse, dispatch, getState);
                     }
                 });
             }

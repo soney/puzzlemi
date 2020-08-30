@@ -30,6 +30,7 @@ export interface ITextResponseProblem {
     description: string;
     problemType: IProblemType.TextResponse;
     exampleCorrectSolution: string;
+    starterResponse: string;
 }
 
 export interface IMultipleChoiceProblem {

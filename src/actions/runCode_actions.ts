@@ -297,7 +297,7 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
             const state: IPMState = getState();
             const { intermediateUserState, shareDBDocs, users } = state;
             const { intermediateSolutionState } = intermediateUserState;
-            const intermediateCodeState: ICodeSolutionState = intermediateSolutionState[problem.id]!;
+            const intermediateCodeState: ICodeSolutionState = intermediateSolutionState[problem.id] as ICodeSolutionState;
             const { testResults } = intermediateCodeState;
             let passedAll: boolean = true;
             for (let testID in testResults) {

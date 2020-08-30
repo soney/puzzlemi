@@ -1,8 +1,8 @@
 import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
-import { IProblemAddedAction, IGivenCodeChangedAction, IMultipleChoiceSelectionTypeChangedAction, IMultipleChoiceOptionDeletedAction, ISDBDocFetchedAction } from '../actions/sharedb_actions';
+import { IProblemAddedAction, IGivenCodeChangedAction, IMultipleChoiceSelectionTypeChangedAction, IMultipleChoiceOptionDeletedAction, ISDBDocFetchedAction, ITextResponseStarterChangedAction } from '../actions/sharedb_actions';
 import { IPMState } from '.';
-import { IProblem, ICodeProblem, ICodeFile, IProblemType } from './problems';
+import { IProblem, ICodeProblem, ICodeFile, IProblemType, ITextResponseProblem } from './problems';
 import { ICodeChangedAction, ITextResponseChangedAction, IDeleteUserFileAction, IMultipleChoiceSelectedOptionsChangedAction } from '../actions/user_actions';
 import { IFileWrittenAction } from '../actions/runCode_actions';
 import uuid from '../utils/uuid';
@@ -81,7 +81,7 @@ export const solutions = (state: ISolutions = { allSolutions: {} }, action: IPro
     }
 }
 
-export const crossSliceSolutionsReducer = (state: IPMState, action: IProblemAddedAction | ICodeChangedAction | IGivenCodeChangedAction | ITextResponseChangedAction | IFileWrittenAction | IDeleteUserFileAction | IMultipleChoiceSelectedOptionsChangedAction | IMultipleChoiceSelectionTypeChangedAction | IMultipleChoiceOptionDeletedAction | ISDBDocFetchedAction): IPMState => {
+export const crossSliceSolutionsReducer = (state: IPMState, action: IProblemAddedAction | ICodeChangedAction | IGivenCodeChangedAction | ITextResponseChangedAction | IFileWrittenAction | IDeleteUserFileAction | IMultipleChoiceSelectedOptionsChangedAction | IMultipleChoiceSelectionTypeChangedAction | IMultipleChoiceOptionDeletedAction | ISDBDocFetchedAction | ITextResponseStarterChangedAction): IPMState => {
     const { type } = action;
     if (type === EventTypes.PROBLEM_ADDED) {
         const { problem } = action as IProblemAddedAction;
@@ -191,6 +191,25 @@ export const crossSliceSolutionsReducer = (state: IPMState, action: IProblemAdde
                 }
             }
         });
+    } else if (type === EventTypes.TEXT_RESPONSE_STARTER_CHANGED) {
+        const { problemID, starterResponse } = action as ITextResponseStarterChangedAction;
+        const myuid = state.users.myuid as string;
+
+        if (state.intermediateUserState.intermediateSolutionState[problemID]!.modified) {
+            return state;
+        } else {
+            return update(state, {
+                solutions: {
+                    allSolutions: {
+                        [problemID]: {
+                            [myuid]: {
+                                response: { $set: starterResponse }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     } else if (type === EventTypes.DELETE_USER_FILE) {
         const { problem, fileID } = action as IDeleteUserFileAction;
         const myuid = state.users.myuid as string;
@@ -318,7 +337,7 @@ function getDefaultSolution(problem: IProblem): IProblemSolution {
     } else if (problemType === IProblemType.MultipleChoice) {
         return { selectedItems: [] };
     } else if (problemType === IProblemType.TextResponse) {
-        return { response: '' };
+        return { response: (problemDetails as ITextResponseProblem).starterResponse };
     } else {
         throw new Error(`Unknown problem type ${problemType}`);
     }

@@ -90,14 +90,14 @@ export const updateCurrentActiveHelpSession = (problemID: string, helpID: string
     problemID, helpID, type: EventTypes.UPDATE_ACTIVE_HELP_SESSION
 })
 
-export function resetCode(index: number) {
-    return (dispatch: Dispatch, getState) => {
-        const { problems } = getState();
-        const problemInfo = problems[index];
-        const { id, problem } = problemInfo;
-        const { givenCode } = problem;
-        dispatch({
-            code: givenCode, id, modified: false, type: EventTypes.CODE_CHANGED,
-        });
-    };
-}
+// export function resetCode(index: number) {
+//     return (dispatch: Dispatch, getState) => {
+//         const { problems } = getState();
+//         const problemInfo = problems[index];
+//         const { id, problem } = problemInfo;
+//         const { givenCode } = problem;
+//         dispatch({
+//             code: givenCode, id, modified: false, type: EventTypes.CODE_CHANGED,
+//         });
+//     };
+// }

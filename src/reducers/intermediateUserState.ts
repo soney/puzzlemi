@@ -1,6 +1,6 @@
 import EventTypes from '../actions/EventTypes';
 import update from 'immutability-helper';
-import { ISetIsAdminAction, ICodeChangedAction, IUpdateActiveHelpSessionAction } from '../actions/user_actions';
+import { ISetIsAdminAction, ICodeChangedAction, IUpdateActiveHelpSessionAction, ITextResponseChangedAction } from '../actions/user_actions';
 import { IOutputChangedAction, IErrorChangedAction, IDoneRunningCodeAction, IBeginRunningCodeAction, IPassedAddAction, IFailedAddAction } from '../actions/runCode_actions';
 import { IProblemAddedAction, ISDBDocFetchedAction, ITestAddedAction, ITestPartChangedAction, IMultipleChoiceOptionAddedAction } from '../actions/sharedb_actions';
 import { IProblem, ICodeFile, IMultipleChoiceOption, IProblemType } from './problems';
@@ -15,6 +15,10 @@ export interface IIntermediateUserState {
     intermediateSolutionState: {
         [problemID: string]: ISolutionState
     }
+}
+
+export interface ITextResponseSolutionState {
+    modified: boolean;
 }
 
 export interface ICodeSolutionState {
@@ -37,9 +41,9 @@ export interface ICodeTestResult {
     output: string
 }
 
-export type ISolutionState = ICodeSolutionState | null;
+export type ISolutionState = ICodeSolutionState | ITextResponseSolutionState | null;
 
-export const intermediateUserState = (state: IIntermediateUserState = { isAdmin: false, awaitingFocus: null, intermediateSolutionState: {} }, action: ISetIsAdminAction | IOutputChangedAction | IErrorChangedAction | IDoneRunningCodeAction | IBeginRunningCodeAction | IProblemAddedAction | ISDBDocFetchedAction | ICodeChangedAction | ITestAddedAction | ITestPartChangedAction | IPassedAddAction | IFailedAddAction | IUpdateActiveHelpSessionAction) => {
+export const intermediateUserState = (state: IIntermediateUserState = { isAdmin: false, awaitingFocus: null, intermediateSolutionState: {} }, action: ISetIsAdminAction | IOutputChangedAction | IErrorChangedAction | IDoneRunningCodeAction | IBeginRunningCodeAction | IProblemAddedAction | ISDBDocFetchedAction | ICodeChangedAction | ITestAddedAction | ITestPartChangedAction | IPassedAddAction | IFailedAddAction | IUpdateActiveHelpSessionAction | ITextResponseChangedAction) => {
     const { type } = action;
     if (type === EventTypes.SET_IS_ADMIN) {
         const { isAdmin } = action as ISetIsAdminAction;
@@ -172,6 +176,15 @@ export const intermediateUserState = (state: IIntermediateUserState = { isAdmin:
                 }
             }
         });
+    } else if (type === EventTypes.TEXT_RESPONSE_CHANGED) {
+        const { problemID } = action as ITextResponseChangedAction;
+        return update(state, {
+            intermediateSolutionState: {
+                [problemID]: {
+                    modified: { $set: true }
+                }
+            }
+        });
     } else {
         return state;
     }
@@ -214,6 +227,10 @@ function getIntermediateSolutionState(problem: IProblem): ISolutionState {
             passedAll: false,
             testResults: {},
             currentActiveHelpSession: '',
+        };
+    } else if (problemType === IProblemType.TextResponse) {
+        return {
+            modified: false,
         };
     } else {
         // throw new Error(`No way to get solution state object for problem type ${problemType}`)
