@@ -48,25 +48,25 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
     const mySolutionDivRef = React.createRef<HTMLDivElement>();
     const revealSolutionsTabRef = React.createRef<HTMLAnchorElement>();
     const revealSolutionsDivRef = React.createRef<HTMLDivElement>();
-    const refreshMySolution = React.useCallback(()=>{
+    const refreshMySolution = React.useCallback(() => {
         const mySolutionDiv = mySolutionDivRef.current as HTMLDivElement;
-        if(mySolutionDiv && !mySolutionDiv.classList.contains('active')){
+        if (mySolutionDiv && !mySolutionDiv.classList.contains('active')) {
             mySolutionDiv.classList.toggle('active');
-            mySolutionDiv.classList.toggle('show');    
+            mySolutionDiv.classList.toggle('show');
         }
     }, [mySolutionDivRef]);
-    React.useEffect(()=>{
-        if(!config.displayInstructor) {
+    React.useEffect(() => {
+        if (!config.displayInstructor) {
         }
-        refreshMySolution();  
+        refreshMySolution();
     }, [config.displayInstructor, refreshMySolution])
 
-    React.useEffect(()=>{
-        if(!config.revealSolutions) { refreshMySolution(); }
+    React.useEffect(() => {
+        if (!config.revealSolutions) { refreshMySolution(); }
     }, [config.revealSolutions, refreshMySolution])
 
-    React.useEffect(()=>{
-        if(!config.peerHelp) { refreshMySolution(); }
+    React.useEffect(() => {
+        if (!config.peerHelp) { refreshMySolution(); }
     }, [config.peerHelp, refreshMySolution])
 
     const doSelectCallback = (ID) => {
@@ -195,6 +195,40 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
             </div>
             {completionInfo}
             {testFeedback}
+            {(config.startTimer && !passedAll) &&
+                <div className="row time-info">
+                    <div className="col">
+                        {config.currentTime} seconds left
+                    </div>
+                </div>
+            }
+            {config.startTimer &&
+            <div className="problemleaderboard-info">
+                <button className="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                    Check Leaderboard
+  </button>
+            <div className="collapse" id="collapseExample">
+                <div className="card card-body">
+                        <div className="problemleaderboard-header">Leaderboard</div>
+                        <ul className="list-group problemleaderboard-list">
+                            {config.problemLeaderBoard.map((member, index) =>
+                                <li className="list-group-item" key={index}>
+                                    <div className="row leaderboard-user">
+                                        <div className="col leaderboard-rank"> {index + 1}
+                                        </div>
+                                        <div className="col leaderboard-username"> {member.username}
+                                        </div>
+                                        <div className="col leaderboard-time"> {member.completionTime}
+                                        </div>
+                                    </div>
+                                </li>
+                            )}</ul>
+                    </div>
+                </div>
+            </div>
+                        }
+
+
         </>
     }
 }

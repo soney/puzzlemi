@@ -342,6 +342,10 @@ export function addCodeProblem() {
                 peerHelp: false,
                 revealSolutions: false,
                 disableEdit: false,
+                startTimer: false,
+                maxTime: 200,
+                currentTime: 200,
+                problemLeaderBoard: [],
                 studentTests: StudentTestConfig.DISABLED
             },
             tests: {
@@ -523,7 +527,7 @@ export function changeProblemConfig(problemID: string, item: string, value: bool
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
-
+    
         problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'config', item], value);
     }
 }

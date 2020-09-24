@@ -76,7 +76,16 @@ export interface ICodeProblemConfig {
     peerHelp: boolean;
     revealSolutions: boolean;
     disableEdit: boolean;
+    startTimer: boolean;
+    maxTime: number;
+    currentTime: number;
+    problemLeaderBoard: IProblemLeaderBoardList[];
     studentTests: StudentTestConfig;
+}
+
+export interface IProblemLeaderBoardList {
+    username: string,
+    completionTime: number
 }
 
 export interface ICodeFile {

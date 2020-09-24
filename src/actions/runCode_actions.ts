@@ -2,7 +2,7 @@ import { Dispatch } from "redux";
 import '../js/skulpt/skulpt.min.js';
 import '../js/skulpt/skulpt-stdlib.js';
 import EventTypes from "./EventTypes";
-import { IProblem, ICodeProblem, ICodeFile } from "../reducers/problems";
+import { IProblem, ICodeProblem, ICodeFile, IProblemType, IProblemLeaderBoardList } from "../reducers/problems";
 import { ICodeTest, CodeTestType, CodeTestStatus } from "../reducers/aggregateData";
 import { ICodeSolutionState, CodePassedState, ICodeTestResult } from "../reducers/intermediateUserState";
 import { IPMState } from "../reducers/index.js";
@@ -316,6 +316,15 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
             const completedIndex = aggregateData.userData[problem.id].completed!.indexOf(myuid);
             const isMarkedAsPassedAll = completedIndex >= 0;
             if (passedAll && !isMarkedAsPassedAll) {
+                if(problem.problemDetails.problemType === IProblemType.Code){
+                    const username = users.allUsers[myuid].username!;
+                    const problemsDoc = shareDBDocs.problems!;
+                    const newMember:IProblemLeaderBoardList = {
+                        username: username,
+                        completionTime: problem.problemDetails.config.maxTime - problem.problemDetails.config.currentTime
+                    }
+                    problemsDoc.submitListPushOp(['allProblems', problem.id, 'problemDetails', 'config', 'problemLeaderBoard'], newMember);
+                }
                 aggregateDataDoc.submitListPushOp(['userData', problem.id, 'completed'], myuid);
             } else if (!passedAll && isMarkedAsPassedAll) {
                 aggregateDataDoc.submitListDeleteOp(['userData', problem.id, 'completed', completedIndex]);
