@@ -22,6 +22,11 @@ export interface ICodeSolutionAggregate {
     allGroups:{
         [groupID: string]: IGroupSolution   
     }
+    problemLeaderBoard: IProblemLeaderBoardList[];
+}
+export interface IProblemLeaderBoardList {
+    username: string,
+    completionTime: number
 }
 
 export interface IGroupSolution {
@@ -73,8 +78,10 @@ export interface IMultipleChoiceSolutionAggregate {
     completed: string[],
     selected: {
         [itemID: string]: string[]
-    }
+    },
+    problemLeaderBoard: IProblemLeaderBoardList[];
 }
 export interface ITextResponseSolutionAggregate {
-    completed: null
+    completed: null,
+    problemLeaderBoard: IProblemLeaderBoardList[];
 }

@@ -6,7 +6,6 @@ import { addTest, changeProblemConfig } from '../../../../actions/sharedb_action
 import { runVerifyTest } from '../../../../actions/runCode_actions';
 import TestItem from './TestItem';
 import uuid from '../../../../utils/uuid';
-import { logEvent } from '../../../../utils/Firebase';
 import { StudentTestConfig } from '../../../../reducers/problems';
 
 const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, otherTestObjects, dispatch, instructorTestObjects, allTestsObjects, doSelectCallback, currentTest, disable, testResults }) => {
@@ -17,8 +16,6 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
         dispatch(addTest(problem.id, username, true, testID)).then(() => {
             doSelectCallback(testID);
         });
-        logEvent("add_test", { testID }, problem.id, myuid);
-        logEvent("focus_test", { testID }, problem.id, myuid);
     }
     const doAddUserTest = () => {
         const testID = uuid();
@@ -26,12 +23,9 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
         dispatch(addTest(problem.id, username, false, testID)).then(() => {
             doSelectCallback(testID)
         });
-        logEvent("add_test", { testID }, problem.id, myuid);
-        logEvent("focus_test", { testID }, problem.id, myuid);
     }
 
     const doVerifyAll = () => {
-        logEvent("verify_test_all", {}, problem.id, myuid);
         allTestsObjects.forEach(test => {
             if (test.author !== 'default') dispatch(runVerifyTest(problem, test))
         })
@@ -40,7 +34,6 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
     const onSwitchChangeStudentTests = (e) => {
         const { value } = e.target;
         dispatch(changeProblemConfig(problem.id, 'studentTests', value));
-        logEvent("instructor_change_student_tests", { status: value }, problem.id, myuid);
     }
 
     return <>

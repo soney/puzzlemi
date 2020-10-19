@@ -297,7 +297,8 @@ export function replaceProblems(newProblems: IProblems) {
                         tests: {},
                         helpSessions: {},
                         helperLists: {},
-                        allGroups: {}
+                        allGroups: {},
+                        problemLeaderBoard: [],
                     }
                     aggregateDataDoc.submitObjectInsertOp(['userData', problemID], newUserData);
                 } else if (problemDetails.problemType === IProblemType.MultipleChoice) {
@@ -345,7 +346,6 @@ export function addCodeProblem() {
                 startTimer: false,
                 maxTime: 200,
                 currentTime: 200,
-                problemLeaderBoard: [],
                 studentTests: StudentTestConfig.DISABLED
             },
             tests: {
@@ -365,7 +365,8 @@ export function addCodeProblem() {
             },
             helpSessions: {},
             helperLists: {},
-            allGroups: {}
+            allGroups: {},
+            problemLeaderBoard: []
         };
 
         await aggregateDataDoc.submitObjectInsertOp(['userData', newProblem.id], newCodeSolutionAggregate);

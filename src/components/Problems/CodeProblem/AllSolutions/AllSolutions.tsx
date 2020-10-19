@@ -3,7 +3,6 @@ import { connect } from "react-redux";
 import update from 'immutability-helper';
 import SolutionPanel from './SolutionPanel';
 import ChatWidget from '../PeerHelp/ChatWidget';
-import { logEvent } from '../../../../utils/Firebase';
 
 const AllSolutions = ({ problem, allGroups, isInstructor, myuid, sIndex, gIndex, allUsers, flag }) => {
     const [currentSolutionIndex, setCurrentSolutionIndex] = React.useState(sIndex ? sIndex : 0);
@@ -25,14 +24,11 @@ const AllSolutions = ({ problem, allGroups, isInstructor, myuid, sIndex, gIndex,
     const onSelectSolution = (e) => {
         const newIndex = e.target.getAttribute("data-index");
         setCurrentSolutionIndex(parseInt(newIndex));
-        logEvent("focus_group_discussion_solution", {solutionID: solutionIDs[newIndex]}, problem.id, myuid);
     }
     const onSelectGroup = (e) => {
         const newIndex = e.target.getAttribute("data-index");
         setCurrentGroupIndex(parseInt(newIndex));
         setCurrentSolutionIndex(0);
-        logEvent("focus_group_discussion_group", {groupID: groupIDs[newIndex]}, problem.id, myuid);
-        logEvent("focus_group_discussion_solution", {solutionID: solutionIDs.length>=0?solutionIDs[0]:'0'}, problem.id, myuid);
     }
     const getSolutionClass = (id, index) => {
         let className = "btn btn-";

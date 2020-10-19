@@ -5,7 +5,6 @@ import { CodeEditor } from '../../../CodeEditor';
 import { ICodeSolution } from '../../../../reducers/solutions';
 import { codeChanged } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
-import { logEvent } from '../../../../utils/Firebase';
 import { deleteTest, changeTestStatus, changeProblemConfig } from '../../../../actions/sharedb_actions';
 import { runCode, runVerifyTest } from '../../../../actions/runCode_actions';
 import TestList from './TestList';
@@ -75,7 +74,6 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc,
 
     const doDeleteTest = () => {
         dispatch(deleteTest(problem.id, currentTest));
-        logEvent("add_test", { test: JSON.stringify(currentTest) }, problem.id, myuid);
     }
 
     const doVerifyTest = () => {
@@ -90,7 +88,6 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc,
     const onSwitchLiveCode = (e) => {
         const item = e.target.id.split('-')[0];
         dispatch(changeProblemConfig(problem.id, item, e.target.checked));
-        logEvent("instructor_toggle_live_code", { status: e.target.checked }, problem.id, myuid);
     }
 
     const doRunAll = (code) => {
@@ -98,9 +95,6 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc,
         if (graphicsEl_tmp) {
             graphicsEl_tmp.innerHTML = '';
         }
-        const allTestIDs = Object.keys(allTests);
-        logEvent("run_all", { code, tests: allTestIDs }, problem.id, myuid);
-
         const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
         allTestsObjects.forEach(test => {

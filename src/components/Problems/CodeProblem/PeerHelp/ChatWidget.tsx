@@ -6,7 +6,6 @@ import { addMessage } from '../../../../actions/sharedb_actions';
 import { IMessage } from '../../../../reducers/aggregateData';
 import * as showdown from 'showdown';
 import { IUserInfo } from '../../../../reducers/users';
-import { logEvent } from '../../../../utils/Firebase';
 
 let message = 'send your *message* here';
 const ChatWidget = ({ dispatch, problem, chatMessages, user, path, myuid }) => {
@@ -35,7 +34,6 @@ const ChatWidget = ({ dispatch, problem, chatMessages, user, path, myuid }) => {
             isAnonymous,
         }
         dispatch(addMessage(newMessage, path))
-        logEvent("send_message", {message: JSON.stringify(newMessage), path: JSON.stringify(path)}, problem.id, myuid);
 
         message = '';
         if (chatInput.current) {

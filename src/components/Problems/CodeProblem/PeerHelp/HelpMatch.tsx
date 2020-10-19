@@ -4,8 +4,6 @@ import update from 'immutability-helper';
 import { ISharedSession } from '../../../../reducers/aggregateData';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 import SessionList from './SessionList';
-import getChannelName from '../../../../utils/channelName';
-import { analytics } from '../../../../utils/Firebase';
 import uuid from '../../../../utils/uuid';
 import { addHelpSession, changeHelperLists } from '../../../../actions/sharedb_actions';
 import { updateCurrentActiveHelpSession } from '../../../../actions/user_actions';
@@ -64,7 +62,6 @@ const HelpMatch = ({ dispatch, redirectCallback, problem, myemail, helpSessionOb
             title = "Help me with **" + currentTest.name + "**";
         }
         const newCode = currentTest.before + "\n" + userSolution.code + "\n" + currentTest.after;
-        analytics.logEvent("add_help_session", { problemID: problem.id, channel: getChannelName(), user: myemail, helpID });
 
         dispatch(addHelpSession(problem.id, myuid, newCode, helpID, errorTags, testTags, title)).then(() => {
             dispatch(updateCurrentActiveHelpSession(problem.id, helpID));

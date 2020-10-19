@@ -2,12 +2,11 @@ import { Dispatch } from "redux";
 import '../js/skulpt/skulpt.min.js';
 import '../js/skulpt/skulpt-stdlib.js';
 import EventTypes from "./EventTypes";
-import { IProblem, ICodeProblem, ICodeFile, IProblemType, IProblemLeaderBoardList } from "../reducers/problems";
-import { ICodeTest, CodeTestType, CodeTestStatus } from "../reducers/aggregateData";
+import { IProblem, ICodeProblem, ICodeFile, IProblemType } from "../reducers/problems";
+import { ICodeTest, CodeTestType, CodeTestStatus, IProblemLeaderBoardList } from "../reducers/aggregateData";
 import { ICodeSolutionState, CodePassedState, ICodeTestResult } from "../reducers/intermediateUserState";
 import { IPMState } from "../reducers/index.js";
 import uuid from "../utils/uuid";
-import { logEvent } from '../utils/Firebase';
 import { IDeleteUserFileAction } from "./user_actions.js";
 
 declare const Sk;
@@ -317,13 +316,12 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
             const isMarkedAsPassedAll = completedIndex >= 0;
             if (passedAll && !isMarkedAsPassedAll) {
                 if(problem.problemDetails.problemType === IProblemType.Code){
-                    const username = users.allUsers[myuid].username!;
-                    const problemsDoc = shareDBDocs.problems!;
+                    const user = users.allUsers[myuid];
                     const newMember:IProblemLeaderBoardList = {
-                        username: username,
+                        username: user.username!,
                         completionTime: problem.problemDetails.config.maxTime - problem.problemDetails.config.currentTime
                     }
-                    problemsDoc.submitListPushOp(['allProblems', problem.id, 'problemDetails', 'config', 'problemLeaderBoard'], newMember);
+                    if(!user.isInstructor) aggregateDataDoc.submitListPushOp(['userData', problem.id, 'problemLeaderBoard'], newMember);
                 }
                 aggregateDataDoc.submitListPushOp(['userData', problem.id, 'completed'], myuid);
             } else if (!passedAll && isMarkedAsPassedAll) {
@@ -339,8 +337,6 @@ export function runCode(code: string, userFiles: ICodeFile[], problem: IProblem,
                 }
                 problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'liveCode', 'testResults', testID], newResult)
             }
-
-            logEvent("run_code", { code, test: test ? JSON.stringify(test) : "", result: JSON.stringify({ passed, errString, output }) }, problem.id, myuid);
         });
     }
 }
@@ -369,7 +365,7 @@ export function runVerifyTest(problem: IProblem, test: ICodeTest) {
         Promise.all([standardCodePromise, emptyCodePromise]).then(([standardCodeResult, emptyCodeResult]) => {
             const passedStandard = !standardCodeResult.errString;
             const passedEmpty = !emptyCodeResult.errString;
-            const { shareDBDocs, users } = getState();
+            const { shareDBDocs } = getState();
             const problemsDoc = shareDBDocs.problems;
             const aggregateDataDoc = shareDBDocs.aggregateData;
             const newStatus = (passedStandard && !passedEmpty) ? CodeTestStatus.VERIFIED : CodeTestStatus.VERIFICATION_FAILED;
@@ -378,8 +374,6 @@ export function runVerifyTest(problem: IProblem, test: ICodeTest) {
             } else {
                 aggregateDataDoc.submitObjectReplaceOp(['userData', problemID, 'tests', test.id, 'status'], newStatus);
             }
-            const myuid = users.myuid as string;
-            logEvent("verify_test", { code: standardCode, test: test ? JSON.stringify(test) : "", newStatus: newStatus }, problem.id, myuid);
         })
     }
 }

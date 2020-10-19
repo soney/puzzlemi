@@ -5,14 +5,12 @@ import update from 'immutability-helper';
 import { connect } from "react-redux";
 import { CodePassedState } from '../../../../reducers/intermediateUserState';
 import { CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
-import { logEvent } from '../../../../utils/Firebase';
 
 const TestItem = ({ isAdmin, problem, test, username, testResults, myuid, doSelectCallback, currentTest }) => {
     const selected = currentTest && currentTest.id === test.id;
 
     const doSetCurrentTest = (e) => {
         doSelectCallback(test.id)
-        logEvent("focus_test", { testID: test.id }, problem.id, myuid);
     }
 
     const baseClasses = "list-group-item list-group-item-action test-list-item " + (test.type === CodeTestType.INSTRUCTOR ? 'instructor' : 'student');

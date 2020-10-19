@@ -6,7 +6,7 @@ import { IPMState } from '../../../reducers';
 import { ISharedSession, IGroupSolution } from '../../../reducers/aggregateData';
 import { getTimeStamp } from '../../../utils/timestamp';
 import uuid from '../../../utils/uuid';
-import { logEvent } from '../../../utils/Firebase';
+// import { logEvent } from '../../../utils/Firebase';
 let interval;
 let givenTime;
 let currentTime;
@@ -34,10 +34,10 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, rawSolut
         if (item === "revealSolutions") {
             let allGroups = e.target.checked ? getGroupMatching(allSolutions, allUsers) : {};
             dispatch(initAllGroups(problem.id, allGroups));
-            logEvent("instructor_toggle_group_discussion", { status: e.target.checked, groups: JSON.stringify(allGroups) }, problem.id, myuid);
+            // logEvent("instructor_toggle_group_discussion", { status: e.target.checked, groups: JSON.stringify(allGroups) }, problem.id, myuid);
         }
         else if (item === "disableEdit") {
-            logEvent("instructor_toggle_disable_student_edits", { status: e.target.checked }, problem.id, myuid);
+            // logEvent("instructor_toggle_disable_student_edits", { status: e.target.checked }, problem.id, myuid);
         }
         else if (item === "startTimer") {
             toggleTimer(e.target.checked)

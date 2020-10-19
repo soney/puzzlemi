@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { connect } from "react-redux";
 import ProblemDescription from '../ProblemDescription';
-// import ProblemNotes from './LiveCode/ProblemNotes';
 import update from 'immutability-helper';
 import CodeProblemConfigPanel from './CodeConfigPanel';
 import Files from './Files';
@@ -14,10 +13,9 @@ import CodeSolutionView from './CodeSolutionView';
 import PuzzleEditor from './PuzzleEditor/PuzzleEditor';
 import CodeOutput from './CodeOutput';
 import AllSolutions from './AllSolutions/AllSolutions';
-import { logEvent } from '../../../utils/Firebase';
 import { IProblem, ICodeProblemConfig, ICodeProblem, getCodeProblemCompletionStatus, CodeProblemCompletionStatus } from '../../../reducers/problems';
 import { HELP_DOCS } from '../../App';
-import { ICodeTest, ICodeSolutionAggregate } from '../../../reducers/aggregateData';
+import { ICodeTest, ICodeSolutionAggregate, IProblemLeaderBoardList } from '../../../reducers/aggregateData';
 
 interface ICodeProblemOwnProps {
     problem: IProblem;
@@ -34,9 +32,10 @@ interface ICodeProblemProps extends ICodeProblemOwnProps {
     myuid: string;
     codeTestFeedback: CodeProblemCompletionStatus;
     allTests: any;
+    problemLeaderBoard: IProblemLeaderBoardList[];
 }
 
-const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid, allTests }: ICodeProblemProps): JSX.Element => {
+const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid, allTests, problemLeaderBoard }: ICodeProblemProps): JSX.Element => {
     const [count, setCount] = React.useState(0);
     const [peer, setPeer] = React.useState(0);
     const [currentTestID, setCurrentTestID] = React.useState(Object.keys(allTests)[0]);
@@ -74,10 +73,6 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
     }
 
     const switchPanel = (e) => {
-        const panel = e.target.id.slice(4, 5)
-        if (panel === "h") logEvent("focus_my_solution", {}, problem.id, myuid);
-        if (panel === "p") logEvent("focus_instructor_board", {}, problem.id, myuid);
-        if (panel === "s") logEvent("focus_group_discussion", {}, problem.id, myuid);
         refreshCM();
     }
     const refreshCM = () => {
@@ -204,19 +199,21 @@ const CodeProblem = ({ problem, isAdmin, config, claimFocus, codeTestFeedback, p
             }
             {config.startTimer &&
             <div className="problemleaderboard-info">
-                <button className="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                    Check Leaderboard
-  </button>
+                <div className="problemleaderboard-button">
+                    <button className="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                        Check Leaderboard
+                    </button>
+                </div>
             <div className="collapse" id="collapseExample">
                 <div className="card card-body">
                         <div className="problemleaderboard-header">Leaderboard</div>
                         <ul className="list-group problemleaderboard-list">
-                            {config.problemLeaderBoard.map((member, index) =>
+                            {problemLeaderBoard.map((member, index) =>
                                 <li className="list-group-item" key={index}>
                                     <div className="row leaderboard-user">
                                         <div className="col leaderboard-rank"> {index + 1}
                                         </div>
-                                        <div className="col leaderboard-username"> {member.username}
+                                        <div className="col leaderboard-username"> {member.username || 'anon.'}
                                         </div>
                                         <div className="col leaderboard-time"> {member.completionTime}
                                         </div>
@@ -248,6 +245,7 @@ function mapStateToProps(state: IPMState, ownProps: ICodeProblemOwnProps): ICode
     const isInstructor = localUsers && localUsers[myuid] && localUsers[myuid].isInstructor;
 
     const completed = (problemAggregateData && problemAggregateData.completed) || [];
+    const problemLeaderBoard = (problemAggregateData && problemAggregateData.problemLeaderBoard) || [];
     const sdbUsers = shareDBDocs.i.users ? shareDBDocs.i.users.allUsers : {};
     const allUsers = Object.keys(sdbUsers).length > Object.keys(localUsers).length ? sdbUsers : localUsers;
     const allUsersID = Object.keys(allUsers);
@@ -265,6 +263,6 @@ function mapStateToProps(state: IPMState, ownProps: ICodeProblemOwnProps): ICode
 
     const allTests = Object.assign(JSON.parse(JSON.stringify(instructorTests)), JSON.parse(JSON.stringify(tests)));
 
-    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid, codeTestFeedback, allTests } as any }) as ICodeProblemProps;
+    return update(ownProps, { $merge: { isAdmin, problemsDoc, userSolution, intermediateCodeState, config, claimFocus, numCompleted, passedAll, isInstructor, numStuCompleted, numStuTotal, myuid, codeTestFeedback, allTests, problemLeaderBoard } as any }) as ICodeProblemProps;
 }
 export default connect(mapStateToProps)(CodeProblem);

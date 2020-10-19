@@ -14,7 +14,7 @@ import { appState } from '..';
 import { ISolutions } from '../reducers/solutions';
 import { IUsers, IUserInfo } from '../reducers/users';
 import uuid from '../utils/uuid';
-import { analytics } from '../utils/Firebase';
+// import { analytics } from '../utils/Firebase';
 
 import '../css/App.scss';
 import '../css/fontawesome-pro-5.8.2-web/css/all.min.css';
@@ -71,7 +71,7 @@ function mapDispatchToProps(dispatch: React.Dispatch<any>, ownProps: IPMAppOwnPr
             let id = uuid();
             myInfo = update(myInfo, { uid: { $set: 'testuid-' + id }, username: {$set: 'user-' + id.slice(-4)}, email: {$set:'testemail-' + id.slice(-4)} })
         }
-        analytics.logEvent("load_app", {debugMode: appState.debugMode, userInfo:JSON.stringify(myInfo)})
+        // analytics.logEvent("load_app", {debugMode: appState.debugMode, userInfo:JSON.stringify(myInfo)})
         dispatch(setUser(myInfo));
         if (myInfo.isInstructor) {
             const solutionsDoc: SDBDoc<ISolutions> = sdbClient.get(appState.channel, 'solutions');
