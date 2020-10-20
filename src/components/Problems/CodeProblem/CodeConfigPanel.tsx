@@ -177,7 +177,7 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, rawSolut
         </div>
         <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"startTimer-" + problem.id} onClick={onSwitch} defaultChecked={config.startTimer} />
-<label className="custom-control-label" htmlFor={"startTimer-" + problem.id}>Enable Timer for <input type="text" className="timeInput" id="timer-value" name="timer-value" defaultValue={config.maxTime} onKeyUp={updateGivenTime} disabled={config.startTimer}/> secs <div className="timeBox" id={"timeBox-" + problem.id}>{config.currentTime} secs left</div></label>
+<label className="custom-control-label" htmlFor={"startTimer-" + problem.id}>Enable Timer for <input type="text" className="timeInput" id={"timer-value-"+problem.id} name="timer-value" defaultValue={config.maxTime} onKeyUp={updateGivenTime} disabled={config.startTimer}/> secs <div className="timeBox" id={"timeBox-" + problem.id}>{config.currentTime} secs left</div></label>
         </div>
     </>
 }

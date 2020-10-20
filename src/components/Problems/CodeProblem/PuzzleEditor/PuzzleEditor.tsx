@@ -10,7 +10,7 @@ import { runCode, runVerifyTest } from '../../../../actions/runCode_actions';
 import TestList from './TestList';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 
-const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, flag, aggregateDataDoc, doSelectCallback, currentTest, testResults }) => {
+const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, flag, aggregateDataDoc, doSelectCallback, currentTest, testResults }) => {
     const [count, setCount] = React.useState(0);
     const [codeTab, setCodeTab] = React.useState('g');
 
@@ -19,7 +19,6 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc,
     const givenCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'givenCode']);
     const liveCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'liveCode', 'code']);
     const standardCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'standardCode']);
-
     const p_test = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? ['allProblems', problem.id, 'problemDetails', 'tests', currentTest.id] : ['userData', problem.id, 'tests', currentTest.id]);
     const beforeCodeSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'before']) : aggregateDataDoc.subDoc([...p_test, 'before']));
     const afterCodeSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'after']) : aggregateDataDoc.subDoc([...p_test, 'after']));
@@ -52,6 +51,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc,
         }
         doRunAll(code);
         if (currentTest) {
+            if(!isAdmin && currentTest.type == CodeTestType.INSTRUCTOR) return;
             doVerifyTest();
         }
     };
@@ -68,6 +68,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc,
         if (currentTest.status === CodeTestStatus.UNVERIFIED) return;
         if (currentTest.author === 'default') return;
         if (isAdmin) return;
+        if (currentTest.type === CodeTestType.INSTRUCTOR) return;
         const newStatus = CodeTestStatus.UNVERIFIED;
         dispatch(changeTestStatus(problem.id, currentTest, newStatus));
     }
