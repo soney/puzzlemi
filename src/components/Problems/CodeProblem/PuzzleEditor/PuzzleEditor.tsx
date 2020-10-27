@@ -51,7 +51,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmi
         }
         doRunAll(code);
         if (currentTest) {
-            if(!isAdmin && currentTest.type == CodeTestType.INSTRUCTOR) return;
+            if(!isAdmin && currentTest.type === CodeTestType.INSTRUCTOR) return;
             doVerifyTest();
         }
     };
