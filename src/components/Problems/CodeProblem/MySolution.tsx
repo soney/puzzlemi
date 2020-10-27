@@ -19,9 +19,7 @@ const MySolution = ({ problem, config, flag, redirectCallback, currentTest, doSe
             <div className={currentTest ? "col-5" : "col"}>
                 <CodeOutput problem={problem} currentTest={currentTest} />
                 <div ref={graphicsRef} className='graphics'></div>
-
                 <Files problem={problem} />
-
             </div>
         </div>
         {config.peerHelp &&

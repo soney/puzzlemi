@@ -76,6 +76,9 @@ export interface ICodeProblemConfig {
     peerHelp: boolean;
     revealSolutions: boolean;
     disableEdit: boolean;
+    startTimer: boolean;
+    maxTime: number;
+    currentTime: number;
     studentTests: StudentTestConfig;
 }
 

@@ -66,6 +66,11 @@ html {
       text-align: center;
     }
 
+    .time-info {
+      color: #aaa;
+      text-align: center;
+    }
+
     .btn-toolbar {
       margin-bottom: 10px;
     }
@@ -489,6 +494,17 @@ nav {
   margin-top: 20px;
 }
 
+.timeInput {
+  width: 80px
+}
+
+.timeBox {
+  display:inline;
+  font-family: monospace;
+  font-weight: bold;
+  color: #28a745;
+  margin-left:5px;
+}
 .config-panel {
 }
 
@@ -790,3 +806,22 @@ nav {
   background:#f7f7f7
 }
 
+.problemleaderboard-info {
+  margin:auto;
+  text-align:center;
+  padding: 20px;
+}
+
+.problemleaderboard-header{
+  margin-bottom:20px;
+  font-weight:bold;
+}
+
+.problemleaderboard-list{
+  margin:auto;
+  width: 60%;
+}
+
+.problemleaderboard-button{
+  margin-bottom: 10px;
+}

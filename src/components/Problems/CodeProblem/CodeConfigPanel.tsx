@@ -6,12 +6,18 @@ import { IPMState } from '../../../reducers';
 import { ISharedSession, IGroupSolution } from '../../../reducers/aggregateData';
 import { getTimeStamp } from '../../../utils/timestamp';
 import uuid from '../../../utils/uuid';
-import { logEvent } from '../../../utils/Firebase';
+// import { logEvent } from '../../../utils/Firebase';
+let interval;
+let givenTime;
+let currentTime;
 
 const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, rawSolutions, rawUsers, myuid }) => {
     const rawUserIDs = Object.keys(rawSolutions);
     let allSolutions = {};
     let allUsers = {};
+    const disableButton = React.createRef<HTMLInputElement>();
+    givenTime = config.maxTime;
+
     rawUserIDs.forEach(ID => {
         if (rawUsers[ID]&&(!rawUsers[ID].isInstructor || !rawUsers[ID].loggedIn)) {
             allSolutions[ID] = rawSolutions[ID];
@@ -28,10 +34,53 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, rawSolut
         if (item === "revealSolutions") {
             let allGroups = e.target.checked ? getGroupMatching(allSolutions, allUsers) : {};
             dispatch(initAllGroups(problem.id, allGroups));
-            logEvent("instructor_toggle_group_discussion", { status: e.target.checked, groups: JSON.stringify(allGroups) }, problem.id, myuid);
+            // logEvent("instructor_toggle_group_discussion", { status: e.target.checked, groups: JSON.stringify(allGroups) }, problem.id, myuid);
+        }
+        else if (item === "disableEdit") {
+            // logEvent("instructor_toggle_disable_student_edits", { status: e.target.checked }, problem.id, myuid);
+        }
+        else if (item === "startTimer") {
+            toggleTimer(e.target.checked)
+        }
+    }
+    const toggleTimer = (flag:boolean) => {
+        if(flag){
+            const btn = document.querySelector('#disableEdit-'+problem.id) as HTMLInputElement
+            if(btn) btn.checked = false;
+            dispatch(changeProblemConfig(problem.id, 'disableEdit', false));
+
+            currentTime = givenTime
+            dispatch(changeProblemConfig(problem.id, 'currentTime', currentTime));
+            if (interval) {
+                clearInterval(interval);
+            }
+            interval = setInterval(updateTimer, 1000);
         }
         else {
-            logEvent("instructor_toggle_disable_student_edits", { status: e.target.checked }, problem.id, myuid);
+            if (interval) {
+                clearInterval(interval);
+            }
+            currentTime = 0
+            dispatch(changeProblemConfig(problem.id, 'currentTime', currentTime));
+        }
+    }
+    const updateTimer = () => {
+        if(currentTime > 0) {
+            currentTime = currentTime - 1
+            dispatch(changeProblemConfig(problem.id, 'currentTime', currentTime));
+        }
+        else {
+            const btn = document.querySelector('#disableEdit-'+problem.id) as HTMLInputElement
+            if(btn) btn.checked = true;
+            dispatch(changeProblemConfig(problem.id, 'disableEdit', true));
+            clearInterval(interval)
+        }
+    }
+
+    const updateGivenTime = (e) => {
+        if(e.target.value!=='') {
+            givenTime = parseInt(e.target.value)
+            dispatch(changeProblemConfig(problem.id, 'maxTime', givenTime));
         }
     }
     const getSharedSession = (userID, allSolutions, allUsers): ISharedSession => {
@@ -119,12 +168,16 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, rawSolut
     
     return <>
         <div className="custom-control custom-switch">
-            <input type="checkbox" className="custom-control-input" id={"disableEdit-" + problem.id} onClick={onSwitch} defaultChecked={config.disableEdit} />
+            <input ref={disableButton} type="checkbox" className="custom-control-input" id={"disableEdit-" + problem.id} onClick={onSwitch} defaultChecked={config.disableEdit} />
             <label className="custom-control-label" htmlFor={"disableEdit-" + problem.id}>Disable student code edits</label>
         </div>
         <div className="custom-control custom-switch">
             <input type="checkbox" className="custom-control-input" id={"revealSolutions-" + problem.id} onClick={onSwitch} defaultChecked={config.revealSolutions} />
             <label className="custom-control-label" htmlFor={"revealSolutions-" + problem.id}>Enable Group Discussion ({Object.keys(allSolutions).length}/{Object.keys(allUsers).length} loaded, {completedU.length}/{userIDs.length} completed)</label>
+        </div>
+        <div className="custom-control custom-switch">
+            <input type="checkbox" className="custom-control-input" id={"startTimer-" + problem.id} onClick={onSwitch} defaultChecked={config.startTimer} />
+<label className="custom-control-label" htmlFor={"startTimer-" + problem.id}>Enable Timer for <input type="text" className="timeInput" id={"timer-value-"+problem.id} name="timer-value" defaultValue={config.maxTime} onKeyUp={updateGivenTime} disabled={config.startTimer}/> secs <div className="timeBox" id={"timeBox-" + problem.id}>{config.currentTime} secs left</div></label>
         </div>
     </>
 }

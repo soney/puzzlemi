@@ -14,7 +14,7 @@ import download from "../../utils/download";
 import { IUsers } from "../../reducers/users";
 import { SDBDoc } from "sdb-ts";
 import { ISolutions } from "../../reducers/solutions";
-import Leaderboard from "./Leaderboard";
+// import Leaderboard from "./Leaderboard";
 
 interface IUserHeaderOwnProps {
 }
@@ -164,7 +164,7 @@ const PMUserHeader = ({ users, channel, selectedUserForSolutionsView, dispatch, 
             </form>
         </nav>
         {usersRow}
-        <Leaderboard maximumToDisplay={isAdmin ? false : 10} />
+        {/* <Leaderboard maximumToDisplay={isAdmin ? false : 10} /> */}
     </>;
 }
 

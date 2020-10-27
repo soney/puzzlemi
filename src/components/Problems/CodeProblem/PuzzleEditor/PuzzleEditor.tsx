@@ -5,13 +5,12 @@ import { CodeEditor } from '../../../CodeEditor';
 import { ICodeSolution } from '../../../../reducers/solutions';
 import { codeChanged } from '../../../../actions/user_actions';
 import { ICodeTest, CodeTestType, CodeTestStatus } from '../../../../reducers/aggregateData';
-import { logEvent } from '../../../../utils/Firebase';
 import { deleteTest, changeTestStatus, changeProblemConfig } from '../../../../actions/sharedb_actions';
 import { runCode, runVerifyTest } from '../../../../actions/runCode_actions';
 import TestList from './TestList';
 import { ICodeSolutionState } from '../../../../reducers/intermediateUserState';
 
-const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, flag, aggregateDataDoc, doSelectCallback, currentTest, testResults }) => {
+const PuzzleEditor = ({ userSolution, graphicsRef, allTests, problemsDoc, isAdmin, problem, config, username, dispatch, flag, aggregateDataDoc, doSelectCallback, currentTest, testResults }) => {
     const [count, setCount] = React.useState(0);
     const [codeTab, setCodeTab] = React.useState('g');
 
@@ -20,7 +19,6 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc,
     const givenCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'givenCode']);
     const liveCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'liveCode', 'code']);
     const standardCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'standardCode']);
-
     const p_test = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? ['allProblems', problem.id, 'problemDetails', 'tests', currentTest.id] : ['userData', problem.id, 'tests', currentTest.id]);
     const beforeCodeSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'before']) : aggregateDataDoc.subDoc([...p_test, 'before']));
     const afterCodeSubDoc = currentTest && (currentTest.type === CodeTestType.INSTRUCTOR ? problemsDoc.subDoc([...p_test, 'after']) : aggregateDataDoc.subDoc([...p_test, 'after']));
@@ -53,6 +51,7 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc,
         }
         doRunAll(code);
         if (currentTest) {
+            if(!isAdmin && currentTest.type === CodeTestType.INSTRUCTOR) return;
             doVerifyTest();
         }
     };
@@ -69,13 +68,13 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc,
         if (currentTest.status === CodeTestStatus.UNVERIFIED) return;
         if (currentTest.author === 'default') return;
         if (isAdmin) return;
+        if (currentTest.type === CodeTestType.INSTRUCTOR) return;
         const newStatus = CodeTestStatus.UNVERIFIED;
         dispatch(changeTestStatus(problem.id, currentTest, newStatus));
     }
 
     const doDeleteTest = () => {
         dispatch(deleteTest(problem.id, currentTest));
-        logEvent("add_test", { test: JSON.stringify(currentTest) }, problem.id, myuid);
     }
 
     const doVerifyTest = () => {
@@ -90,7 +89,6 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc,
     const onSwitchLiveCode = (e) => {
         const item = e.target.id.split('-')[0];
         dispatch(changeProblemConfig(problem.id, item, e.target.checked));
-        logEvent("instructor_toggle_live_code", { status: e.target.checked }, problem.id, myuid);
     }
 
     const doRunAll = (code) => {
@@ -98,9 +96,6 @@ const PuzzleEditor = ({ userSolution, graphicsRef, myuid, allTests, problemsDoc,
         if (graphicsEl_tmp) {
             graphicsEl_tmp.innerHTML = '';
         }
-        const allTestIDs = Object.keys(allTests);
-        logEvent("run_all", { code, tests: allTestIDs }, problem.id, myuid);
-
         const allTestsObjects: ICodeTest[] = Object.values(allTests);
 
         allTestsObjects.forEach(test => {
