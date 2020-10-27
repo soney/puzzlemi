@@ -8,8 +8,10 @@ import TestItem from './TestItem';
 import uuid from '../../../../utils/uuid';
 import { StudentTestConfig } from '../../../../reducers/problems';
 
-const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, otherTestObjects, dispatch, instructorTestObjects, allTestsObjects, doSelectCallback, currentTest, disable, testResults }) => {
+const TestList = ({ problemsDoc, isAdmin, problem, config, username, myuid, myTestObjects, otherTestObjects, dispatch, instructorTestObjects, allTestsObjects, doSelectCallback, currentTest, disable, testResults }) => {
     const myWIP = myTestObjects.filter(o => o.status !== CodeTestStatus.VERIFIED).length;
+    const p_prb = ['allProblems', problem.id];
+    const standardCodeSubDoc = problemsDoc.subDoc([...p_prb, 'problemDetails', 'standardCode']);
 
     const doAddInstructorTest = () => {
         const testID = uuid();
@@ -26,6 +28,8 @@ const TestList = ({ isAdmin, problem, config, username, myuid, myTestObjects, ot
     }
 
     const doVerifyAll = () => {
+        let solution = standardCodeSubDoc.getData();
+        if (solution === '# standard solution') return;
         allTestsObjects.forEach(test => {
             if (test.author !== 'default') dispatch(runVerifyTest(problem, test))
         })
