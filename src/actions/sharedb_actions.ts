@@ -524,11 +524,11 @@ export interface ITestAddedAction {
     test: any
 }
 
-export function changeProblemConfig(problemID: string, item: string, value: boolean) {
+export function changeProblemConfig(problemID: string, item: string, value: boolean|number) {
     return async (dispatch: Dispatch, getState) => {
         const { shareDBDocs } = getState();
         const problemsDoc = shareDBDocs.problems;
-    
+        console.log(problemsDoc.getData()['allProblems'][problemID]['problemDetails']['config'])
         problemsDoc.submitObjectReplaceOp(['allProblems', problemID, 'problemDetails', 'config', item], value);
     }
 }
