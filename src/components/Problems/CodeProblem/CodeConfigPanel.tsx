@@ -8,7 +8,6 @@ import { getTimeStamp } from '../../../utils/timestamp';
 import uuid from '../../../utils/uuid';
 // import { logEvent } from '../../../utils/Firebase';
 let interval;
-let givenTime;
 let currentTime;
 
 const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, rawSolutions, rawUsers, myuid }) => {
@@ -16,7 +15,6 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, rawSolut
     let allSolutions = {};
     let allUsers = {};
     const disableButton = React.createRef<HTMLInputElement>();
-    givenTime = config.maxTime;
 
     rawUserIDs.forEach(ID => {
         if (rawUsers[ID]&&(!rawUsers[ID].isInstructor || !rawUsers[ID].loggedIn)) {
@@ -48,8 +46,7 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, rawSolut
             const btn = document.querySelector('#disableEdit-'+problem.id) as HTMLInputElement
             if(btn) btn.checked = false;
             dispatch(changeProblemConfig(problem.id, 'disableEdit', false));
-
-            currentTime = givenTime
+            currentTime = config.maxTime
             dispatch(changeProblemConfig(problem.id, 'currentTime', currentTime));
             if (interval) {
                 clearInterval(interval);
@@ -79,8 +76,7 @@ const CodeProblemConfigPanel = ({ dispatch, problem, config, completed, rawSolut
 
     const updateGivenTime = (e) => {
         if(e.target.value!=='') {
-            givenTime = parseInt(e.target.value)
-            dispatch(changeProblemConfig(problem.id, 'maxTime', givenTime));
+            dispatch(changeProblemConfig(problem.id, 'maxTime', parseInt(e.target.value)));
         }
     }
     const getSharedSession = (userID, allSolutions, allUsers): ISharedSession => {
